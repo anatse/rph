@@ -2,14 +2,14 @@
  * This template takes a single argument, a String containing a
  * message to display.
  *@
-@(message: String, csrf_name: String, csrf_value: String)
+@(webJarAssets: WebJarAssets, message: String, csrf_name: String, csrf_value: String)
 
 @*
  * Call the `main` template with two arguments. The first
  * argument is a `String` with the title of the page, the second
  * argument is an `Html` object containing the body of the page.
  *@
-@main("Welcome to Play", csrf_name, csrf_value) {
+@main(webJarAssets, "Welcome to Play", csrf_name, csrf_value) {
 
     @*
      * Get an `Html` object by calling the built-in Play welcome

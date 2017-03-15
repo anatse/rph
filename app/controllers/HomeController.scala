@@ -4,7 +4,6 @@ import javax.inject._
 
 import com.orientechnologies.orient.core.sql.OCommandSQL
 import com.tinkerpop.blueprints.impls.orient.{OrientDynaElementIterable, OrientGraph, OrientGraphFactory, OrientVertex}
-import io.surfkit.gremlin.GremlinClient
 import play.api.mvc._
 import play.api.i18n.{I18nSupport, Messages, MessagesApi}
 import play.filters.csrf.CSRF.Token
@@ -18,10 +17,12 @@ import scala.collection.JavaConversions._
  * application's home page.
  * https://github.com/mpollmeier/gremlin-scala
  * https://github.com/coreyauger/reactive-gremlin
+  *
+  * insert into cluster:u_patient(name, email)  values ('ai-bolit', 'ai-bolit@rph.ru')
  *
  */
 @Singleton
-class HomeController @Inject()(val messagesApi: MessagesApi, addToken: CSRFAddToken, checkToken: CSRFCheck) extends Controller with I18nSupport {
+class HomeController @Inject()(webJarAssets: WebJarAssets, val messagesApi: MessagesApi, addToken: CSRFAddToken, checkToken: CSRFCheck) extends Controller with I18nSupport {
 
   /**
    * Create an Action to render an HTML page with a welcome message.
@@ -33,18 +34,20 @@ class HomeController @Inject()(val messagesApi: MessagesApi, addToken: CSRFAddTo
     Action { implicit request =>
       val Token(name, value) = CSRF.getToken.get
       test
-      Ok(views.html.index(Messages("ready.msg"), name, value))
+      Ok(views.html.index(webJarAssets, Messages("ready.msg"), name, value))
     }
   }
 
   def test = {
-    val uri = "remote:localhost/GratefulDeadConcerts"
-    val graphFactory = new OrientGraphFactory(uri, "root", "123456")
+    println ("start test procedure")
+    val uri = "remote:localhost/test"
+    val graphFactory = new OrientGraphFactory(uri, "root", "root")
     Try (graphFactory.getTx) map { graph =>
       val results: OrientDynaElementIterable = graph
         .command(new OCommandSQL(s"SELECT * FROM v"))
         .execute()
 
+      println ("Query statement executed")
       results.foreach (v => {
         val person = v.asInstanceOf[OrientVertex]
         println(s"Name: ${person.getProperty("name")}, ${person.getProperty("type")}")
@@ -53,7 +56,7 @@ class HomeController @Inject()(val messagesApi: MessagesApi, addToken: CSRFAddTo
       graph.shutdown()
     }
 
-    val simple = GremlinClient.buildRequest("g.V().has('email','donald@trumpdonald.org').has('is_douchebag','true').valueMap();")
+    //val simple = GremlinClient.buildRequest("g.V().has('email','donald@trumpdonald.org').has('is_douchebag','true').valueMap();")
 
   }
 }
