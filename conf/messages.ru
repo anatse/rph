@@ -1,1 +1,1 @@
-ready.msg=Приложение запущено и готово к работе.
+ready.msg=hjggjhgjhgjhgjhgjhgjh
