@@ -85,6 +85,8 @@ lazy val sharedJs = shared.js
 // loads the server project at sbt startup
 onLoad in Global := (Command.process("project server", _: State)) compose (onLoad in Global).value
 
+resolvers += "Atlassian Releases" at "https://maven.atlassian.com/public/"
+
 //// for Eclipse users
 //EclipseKeys.skipParents in ThisBuild := false
 //// Compile the project before generating Eclipse files, so that generated .scala or .class files for views and routes are present
