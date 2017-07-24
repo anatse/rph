@@ -8,7 +8,7 @@ lazy val server = (project in file("server")).settings(
   scalaVersion := scalaV,
   scalaJSProjects := Seq(client),
   pipelineStages in Assets := Seq(scalaJSPipeline),
-  pipelineStages := Seq(uglify, digest, gzip),
+  pipelineStages := Seq(digest, gzip),
   // triggers scalaJSPipeline when using compile or continuous compilation
   compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
   resolvers += "Atlassian Releases" at "https://maven.atlassian.com/public/",
@@ -45,7 +45,7 @@ lazy val server = (project in file("server")).settings(
   // Compile the project before generating Eclipse files, so that generated .scala or .class files for views and routes are present
   EclipseKeys.preTasks := Seq(compile in Compile)
 ).enablePlugins(PlayScala).
-  aggregate(client). //clients.map(projectToRef): _*).
+  aggregate(thrift, client). //clients.map(projectToRef): _*).
   dependsOn(sharedJvm)
 
 lazy val client = (project in file("client")).settings(

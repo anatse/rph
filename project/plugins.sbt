@@ -22,5 +22,3 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-gzip" % "1.0.0")
 addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.1.1")
 
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "4.0.0")
-
-addSbtPlugin("com.typesafe.sbt" % "sbt-uglify" % "1.0.4")
