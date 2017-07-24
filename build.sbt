@@ -11,6 +11,7 @@ lazy val server = (project in file("server")).settings(
   pipelineStages := Seq(uglify, digest, gzip),
   // triggers scalaJSPipeline when using compile or continuous compilation
   compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
+  resolvers += "Atlassian Releases" at "https://maven.atlassian.com/public/",
   libraryDependencies ++= Seq(
     "com.atlassian.jwt" % "jwt-api" % "1.6.2",
     "com.atlassian.jwt" % "jwt-core" % "1.6.2",
