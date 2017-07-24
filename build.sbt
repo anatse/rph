@@ -45,7 +45,7 @@ lazy val server = (project in file("server")).settings(
   // Compile the project before generating Eclipse files, so that generated .scala or .class files for views and routes are present
   EclipseKeys.preTasks := Seq(compile in Compile)
 ).enablePlugins(PlayScala).
-  aggregate(thrift, client). //clients.map(projectToRef): _*).
+  aggregate(client). //clients.map(projectToRef): _*).
   dependsOn(sharedJvm)
 
 lazy val client = (project in file("client")).settings(
@@ -85,8 +85,6 @@ lazy val sharedJs = shared.js
 
 // loads the server project at sbt startup
 onLoad in Global := (Command.process("project server", _: State)) compose (onLoad in Global).value
-
-resolvers += "Atlassian Releases" at "https://maven.atlassian.com/public/"
 
 //// for Eclipse users
 //EclipseKeys.skipParents in ThisBuild := false
