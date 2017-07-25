@@ -37,6 +37,7 @@ lazy val server = (project in file("server")).settings(
     "com.enragedginger" %% "akka-quartz-scheduler" % "1.+",
     "com.adrianhurt" %% "play-bootstrap" % "1.2-P26-B3-RC2",
     "com.mohiva" %% "play-silhouette-testkit" % silhouetteVersion % "test",
+    "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.1" % "test",
     specs2 % Test,
     ehcache,
     guice,
