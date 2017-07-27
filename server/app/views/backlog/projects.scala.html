@@ -1,0 +1,21 @@
+@import play.api.data.Form
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import org.webjars.play.WebJarsUtil
+@import model._
+@import scalajs._
+
+@(projects: Seq[Project])(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
+
+<div id="scalajsShoutOut"></div>
+@html.scripts(projectName = "client",
+  name => s"/assets/$name",
+  name => getClass.getResource(s"/public/$name") != null)
+
+@main(messages("sign.in.title")) {
+  <ul>
+  @projects.map { prj =>
+    <li>@prj.name</li>
+  }
+  </ul>
+}

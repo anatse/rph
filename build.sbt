@@ -18,10 +18,10 @@ lazy val server = (project in file("server")).settings(
 
     "com.vmunier" %% "scalajs-scripts" % "1.1.1",
 
-    // Apache thrift
-    "org.apache.thrift" % "libthrift" % thriftVersion,
-    "com.twitter" %% "scrooge-core" % "4.18.0" exclude("com.twitter", "libthrift"),
-    "com.twitter" %% "finagle-thrift" % "6.45.0" exclude("com.twitter", "libthrift"),
+    // Apache thrift, removed
+//    "org.apache.thrift" % "libthrift" % thriftVersion,
+//    "com.twitter" %% "scrooge-core" % "4.18.0" exclude("com.twitter", "libthrift"),
+//    "com.twitter" %% "finagle-thrift" % "6.45.0" exclude("com.twitter", "libthrift"),
 
     "com.mohiva" %% "play-silhouette" % silhouetteVersion,
     "com.mohiva" %% "play-silhouette-password-bcrypt" % silhouetteVersion,
@@ -36,15 +36,24 @@ lazy val server = (project in file("server")).settings(
     "com.typesafe.play" %% "play-mailer-guice" % "6.0.0",
     "com.enragedginger" %% "akka-quartz-scheduler" % "1.+",
     "com.adrianhurt" %% "play-bootstrap" % "1.2-P26-B3-RC2",
+
+    // Database slick & postgresql
+    "com.typesafe.play" %% "play-slick" % "3.0.0",
+    "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0",
+    "com.typesafe.slick" %% "slick-hikaricp" % "3.2.1",
+    "org.postgresql" % "postgresql" % "42.1.3",
+
     "com.mohiva" %% "play-silhouette-testkit" % silhouetteVersion % "test",
     "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.1" % "test",
+    "com.h2database" % "h2" % "1.4.196" % "test",
     specs2 % Test,
+
     ehcache,
     guice,
     filters
-  ),
+  )
   // Compile the project before generating Eclipse files, so that generated .scala or .class files for views and routes are present
-  EclipseKeys.preTasks := Seq(compile in Compile)
+  // EclipseKeys.preTasks := Seq(compile in Compile)
 ).enablePlugins(PlayScala).
   aggregate(client). //clients.map(projectToRef): _*).
   dependsOn(sharedJvm)
@@ -59,23 +68,23 @@ lazy val client = (project in file("client")).settings(
 ).enablePlugins(ScalaJSPlugin, ScalaJSWeb).
   dependsOn(sharedJs)
 
-lazy val thrift = (project in file("thrift"))
-  .settings (
-    scalaVersion := scalaV,
-    scalacOptions ++= Seq("-Ypartial-unification"),
-    libraryDependencies ++= Seq(
-      "org.apache.thrift" % "libthrift" % thriftVersion,
-      "com.twitter" %% "scrooge-core" % "4.18.0" exclude("com.twitter", "libthrift"),
-      "com.twitter" %% "finagle-thrift" % "6.45.0" exclude("com.twitter", "libthrift")
-    ),
-    scroogeThriftSourceFolder in (Compile) := baseDirectory {
-      base => base / "src/thrift"
-    }.value,
-    scroogeThriftOutputFolder in (Compile) := baseDirectory {
-      base => base / "../server/app"
-    }.value,
-    scroogeLanguages in (Compile) := Seq("scala", "javascript")
-  ).enablePlugins(ScroogeSBT).dependsOn(sharedJvm)
+//lazy val thrift = (project in file("thrift"))
+//  .settings (
+//    scalaVersion := scalaV,
+//    scalacOptions ++= Seq("-Ypartial-unification"),
+//    libraryDependencies ++= Seq(
+//      "org.apache.thrift" % "libthrift" % thriftVersion,
+//      "com.twitter" %% "scrooge-core" % "4.18.0" exclude("com.twitter", "libthrift"),
+//      "com.twitter" %% "finagle-thrift" % "6.45.0" exclude("com.twitter", "libthrift")
+//    ),
+//    scroogeThriftSourceFolder in (Compile) := baseDirectory {
+//      base => base / "src/thrift"
+//    }.value,
+//    scroogeThriftOutputFolder in (Compile) := baseDirectory {
+//      base => base / "../server/app"
+//    }.value,
+//    scroogeLanguages in (Compile) := Seq("scala", "javascript")
+//  ).enablePlugins(ScroogeSBT).dependsOn(sharedJvm)
 
 lazy val shared = (crossProject.crossType(CrossType.Pure) in file("shared")).
   settings(scalaVersion := scalaV).

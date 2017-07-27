@@ -1,1 +1,1 @@
-ready.msg=hjggjhgjhgjhgjhgjhgjh
+ready.msg=Приложение готово к работе

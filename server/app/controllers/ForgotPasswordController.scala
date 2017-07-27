@@ -32,8 +32,7 @@ class ForgotPasswordController @Inject() (
   authTokenService: AuthTokenService,
   mailerClient: MailerClient)(
   implicit
-  webJarsUtil: WebJarsUtil,
-  ex: ExecutionContext) extends AbstractController(components) with I18nSupport {
+  webJarsUtil: WebJarsUtil, ex: ExecutionContext) extends AbstractController(components) with I18nSupport {
 
   /**
    * Views the `Forgot Password` page.
