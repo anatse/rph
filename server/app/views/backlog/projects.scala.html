@@ -1,10 +1,11 @@
 @import play.api.i18n.Messages
 @import play.api.mvc.RequestHeader
 @import org.webjars.play.WebJarsUtil
-@import model._
+@import model.Project
+@import models.User
 @import scalajs._
 
-@(projects: Seq[Project], user: models.User)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
+@(projects: Seq[Project], user: User)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
 
 <head>
   @html.scripts(projectName = "client",
