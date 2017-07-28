@@ -107,3 +107,4 @@ prj.list.title = Projects list
 prj.number = Project number
 prj.description = Description
 projects = Projects list
+prj.goto=Goto project
