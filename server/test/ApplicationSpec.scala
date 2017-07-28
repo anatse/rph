@@ -15,7 +15,7 @@ import org.scalatest.TestData
 import play.api.{ Application, Configuration }
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.CSRFTokenHelper._
-import controllers.routes.ApplicationController
+import controllers.routes._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -43,6 +43,7 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
     }
   }
 
+  // Create application object with test config
   implicit override def newAppForTest(testData: TestData): Application = new GuiceApplicationBuilder().
     overrides(new FakeModule).
     loadConfig(conf = {
@@ -51,8 +52,8 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
     }).
     build()
 
-  "Routes" should {
-    "index should redirect to login page if user is unauthorized " in {
+  "Application controller" should {
+    "Redirect to login page if user is unauthorized " in {
       val Some(redirectResult) = route(app, FakeRequest(ApplicationController.index).withAuthenticator[DefaultEnv](LoginInfo("invalid", "invalid")))
 
       status(redirectResult) mustBe (SEE_OTHER)
@@ -74,6 +75,41 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
     "return 200 if user is authorized" in {
       val Some(result) = route(app, addCSRFToken(FakeRequest(ApplicationController.index).withAuthenticator[DefaultEnv](identity.loginInfo)))
       status(result) mustBe (OK)
+    }
+  }
+
+  "Project controller" should {
+    "create projects table" in {
+      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.create).withAuthenticator[DefaultEnv](identity.loginInfo)))
+      status(result) mustBe (OK)
+
+      contentType(result) mustBe (Some("text/plain"))
+      contentAsString(result) must include("created")
+    }
+
+    "create throws an exception when projects table already created" in {
+      val caught = intercept[org.h2.jdbc.JdbcSQLException] {
+        var Some(result) =route(app, addCSRFToken(FakeRequest(ProjectController.create).withAuthenticator[DefaultEnv](identity.loginInfo)))
+        status(result) must not be(OK)
+      }
+
+      caught.getMessage must include("Table \"projects\" already exists")
+    }
+
+    "add new project" in {
+      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.index).withAuthenticator[DefaultEnv](identity.loginInfo)))
+      status(result) mustBe (OK)
+
+      contentType(result) mustBe (Some("text/plain"))
+      contentAsString(result) must include("inserted")
+    }
+
+    "list all projects" in {
+      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.findAll).withAuthenticator[DefaultEnv](identity.loginInfo)))
+      status(result) mustBe (OK)
+
+      contentType(result) mustBe (Some("text/html"))
+      contentAsString(result) must include("<h3>test</h3>")
     }
   }
 }

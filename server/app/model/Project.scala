@@ -15,7 +15,7 @@ object Status extends Enumeration {
   val New, Approved, InWork, Done = Value
 }
 
-case class Project(id: Option[Long] = None, number: String, name: String, description: String = "", status: Int = 0, startDate: Timestamp, endDate: Timestamp)
+case class Project(id: Option[Long] = None, number: String, name: String, description: Option[String] = None, status: Int = 0, startDate: Option[Timestamp] = None, endDate: Option[Timestamp] = None)
 
 @Singleton
 class ProjectDAO @Inject() (@NamedDatabase("estima") protected val dbConfigProvider: DatabaseConfigProvider) extends HasDatabaseConfigProvider[JdbcProfile] {
@@ -48,10 +48,10 @@ class ProjectDAO @Inject() (@NamedDatabase("estima") protected val dbConfigProvi
     def id = column[Long]("ID", O.PrimaryKey, O.AutoInc)
     def name = column[String]("NAME")
     def number = column[String]("NUM")
-    def description = column[String]("DESCR")
+    def description = column[Option[String]]("DESCR")
     def status = column[Int]("STATUS")
-    def startDate = column[Timestamp]("START_DATE")
-    def endDate = column[Timestamp]("END_DATE")
+    def startDate = column[Option[Timestamp]]("START_DATE")
+    def endDate = column[Option[Timestamp]]("END_DATE")
 
     def * = (id.?, number, name, description, status, startDate, endDate) <> (Project.tupled, Project.unapply _)
   }

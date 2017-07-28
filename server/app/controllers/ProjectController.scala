@@ -22,13 +22,11 @@ class ProjectController @Inject() (
   pdao: ProjectDAO)(implicit webJarsUtil: WebJarsUtil) extends AbstractController(components) with I18nSupport with Logger {
 
   def index = silhouette.SecuredAction.async { implicit request: SecuredRequest[DefaultEnv, AnyContent] =>
-    logger.warn("insert new project")
-
     val ins = pdao.insert(Project(
       number = "1",
       name = "test",
-      startDate = new Timestamp(new Date().getTime),
-      endDate = new Timestamp(new Date().getTime)))
+      startDate = Some(new Timestamp(new Date().getTime)))
+    )
 
     ins.map(_ => Ok("inserted"))
   }
@@ -36,7 +34,6 @@ class ProjectController @Inject() (
   implicit val projectWrites = Json.writes[Project]
   def findAll = silhouette.SecuredAction.async { implicit request: SecuredRequest[DefaultEnv, AnyContent] =>
     val prjs: Future[Seq[Project]] = pdao.findAll
-    //    prjs.map(rows => Ok(Json.obj("projects" -> rows)))
     prjs.map(rows => Ok(views.html.backlog.projects(rows, request.identity)))
   }
 
