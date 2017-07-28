@@ -6,9 +6,9 @@ import org.scalajs.dom.raw.DragEvent
 import shared.SharedMessages
 
 import scala.scalajs.js
-import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
-@JSExport(name = "rphApp")
+@JSExportTopLevel(name = "rphApp")
 object ScalaJSExample extends js.JSApp {
   def main(): Unit = {
     //dom.document.getElementById("scalajsShoutOut").textContent = SharedMessages.itWorks
