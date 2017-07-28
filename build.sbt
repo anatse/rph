@@ -1,14 +1,15 @@
 name := """rph"""
 
-val scalaV = "2.12.2"
+val scalaV = "2.12.3"
 val silhouetteVersion = "5.+"
-val thriftVersion = "0.9.3"
+//val thriftVersion = "0.9.3"
 
 lazy val server = (project in file("server")).settings(
   scalaVersion := scalaV,
   scalaJSProjects := Seq(client),
   pipelineStages in Assets := Seq(scalaJSPipeline),
   pipelineStages := Seq(digest, gzip),
+  scalacOptions := Seq("-unchecked", "-deprecation", "-opt-inline-from"),
   // triggers scalaJSPipeline when using compile or continuous compilation
   compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
   resolvers += "Atlassian Releases" at "https://maven.atlassian.com/public/",
