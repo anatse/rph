@@ -13,10 +13,8 @@ import play.api.libs.json.Json
 import play.api.mvc.{ AbstractController, AnyContent, ControllerComponents }
 import utils.Logger
 import utils.auth.DefaultEnv
-
-import scala.concurrent.duration._
-import scala.concurrent.{ Await, Future }
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{ Future }
 
 class ProjectController @Inject() (
   components: ControllerComponents,
@@ -39,7 +37,7 @@ class ProjectController @Inject() (
   def findAll = silhouette.SecuredAction.async { implicit request: SecuredRequest[DefaultEnv, AnyContent] =>
     val prjs: Future[Seq[Project]] = pdao.findAll
     //    prjs.map(rows => Ok(Json.obj("projects" -> rows)))
-    prjs.map(rows => Ok(views.html.backlog.projects(rows)))
+    prjs.map(rows => Ok(views.html.backlog.projects(rows, request.identity)))
   }
 
   def create = silhouette.SecuredAction.async { implicit request: SecuredRequest[DefaultEnv, AnyContent] =>

@@ -8,13 +8,14 @@ import play.api.test._
 import play.api.test.Helpers._
 import utils.auth.DefaultEnv
 import com.mohiva.play.silhouette.test._
-import controllers.routes
+import com.typesafe.config.ConfigFactory
 import models.User
 import net.codingwell.scalaguice.ScalaModule
 import org.scalatest.TestData
-import play.api.Application
+import play.api.{ Application, Configuration }
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.CSRFTokenHelper._
+import controllers.routes.ApplicationController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -42,11 +43,17 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
     }
   }
 
-  implicit override def newAppForTest(testData: TestData): Application = new GuiceApplicationBuilder().overrides(new FakeModule).build()
+  implicit override def newAppForTest(testData: TestData): Application = new GuiceApplicationBuilder().
+    overrides(new FakeModule).
+    loadConfig(conf = {
+      val testConfig = ConfigFactory.load("application.test.conf")
+      Configuration(testConfig)
+    }).
+    build()
 
   "Routes" should {
     "index should redirect to login page if user is unauthorized " in {
-      val Some(redirectResult) = route(app, FakeRequest(GET, "/").withAuthenticator[DefaultEnv](LoginInfo("invalid", "invalid")))
+      val Some(redirectResult) = route(app, FakeRequest(ApplicationController.index).withAuthenticator[DefaultEnv](LoginInfo("invalid", "invalid")))
 
       status(redirectResult) mustBe (SEE_OTHER)
 
@@ -57,7 +64,7 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
 
       status(unauthorizedResult) mustBe (OK)
       contentType(unauthorizedResult) mustBe (Some("text/html"))
-      contentAsString(unauthorizedResult) must include("Silhouette - Sign In")
+      contentAsString(unauthorizedResult) must include("- Sign In")
     }
 
     "send 404 on a bad request" in {
@@ -65,11 +72,7 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
     }
 
     "return 200 if user is authorized" in {
-      val Some(result) = route(app, addCSRFToken(FakeRequest(GET, "/").withAuthenticator[DefaultEnv](identity.loginInfo)))
-      val redirectURL = redirectLocation(result).getOrElse("")
-
-      System.out.println(redirectURL)
-
+      val Some(result) = route(app, addCSRFToken(FakeRequest(ApplicationController.index).withAuthenticator[DefaultEnv](identity.loginInfo)))
       status(result) mustBe (OK)
     }
   }

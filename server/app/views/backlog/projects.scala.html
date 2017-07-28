@@ -5,17 +5,21 @@
 @import model._
 @import scalajs._
 
-@(projects: Seq[Project])(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
+@(projects: Seq[Project], user: models.User)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
 
 <div id="scalajsShoutOut"></div>
 @html.scripts(projectName = "client",
   name => s"/assets/$name",
   name => getClass.getResource(s"/public/$name") != null)
 
-@main(messages("sign.in.title")) {
-  <ul>
+@main(messages("prj.list.title"), Some(user)) {
   @projects.map { prj =>
-    <li>@prj.name</li>
+    <div class="card">
+      <div class="container">
+        <h3>@prj.name</h3>
+        <p>@messages("prj.number"):  @prj.number</p>
+        <p>@messages("prj.description"): @prj.description</p>
+      </div>
+    </div>
   }
-  </ul>
 }
