@@ -1,0 +1,25 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import org.webjars.play.WebJarsUtil
+@import model.Project
+@import models.User
+@import scalajs._
+
+@(project: Project, user: User)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
+
+<head>
+  @html.scripts(projectName = "client",
+    name => s"/assets/$name",
+    name => getClass.getResource(s"/public/$name") != null)
+
+    <meta name="keywords" content="@messages("prj.title") @project.name @project.number">
+    <meta name="description" content='@messages("prj.title") @project.name @project.description'>
+<script>
+        rph = rphApp();
+</script>
+</head>
+
+@main(messages("prj.title") + ": " + project.name, Some(user)) {
+    <div>@project.name</div>
+    <div>@project.id</div>
+}

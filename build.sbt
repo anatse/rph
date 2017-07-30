@@ -16,7 +16,7 @@ lazy val server = (project in file("server")).settings(
   libraryDependencies ++= Seq(
     "com.atlassian.jwt" % "jwt-api" % "1.6.2",
     "com.atlassian.jwt" % "jwt-core" % "1.6.2",
-
+    // Scala js scripts
     "com.vmunier" %% "scalajs-scripts" % "1.1.1",
 
     // Apache thrift, removed
@@ -24,19 +24,25 @@ lazy val server = (project in file("server")).settings(
 //    "com.twitter" %% "scrooge-core" % "4.18.0" exclude("com.twitter", "libthrift"),
 //    "com.twitter" %% "finagle-thrift" % "6.45.0" exclude("com.twitter", "libthrift"),
 
+    // Memcached
+    // "io.monix" %% "shade" % "1.9.5"
+
     "com.mohiva" %% "play-silhouette" % silhouetteVersion,
     "com.mohiva" %% "play-silhouette-password-bcrypt" % silhouetteVersion,
     "com.mohiva" %% "play-silhouette-persistence" % silhouetteVersion,
     "com.mohiva" %% "play-silhouette-crypto-jca" % silhouetteVersion,
     "org.webjars" %% "webjars-play" % "2.6.0",
+
+    // Javascript libraries
     "org.webjars" % "bootstrap" % "3.3.7-1" exclude("org.webjars", "jquery"),
     "org.webjars" % "jquery" % "3.2.1",
+    "com.adrianhurt" %% "play-bootstrap" % "1.2-P26-B3-RC2",
+
     "net.codingwell" %% "scala-guice" % "4.1.0",
     "com.iheart" %% "ficus" % "1.4.1",
     "com.typesafe.play" %% "play-mailer" % "6.0.0",
     "com.typesafe.play" %% "play-mailer-guice" % "6.0.0",
     "com.enragedginger" %% "akka-quartz-scheduler" % "1.+",
-    "com.adrianhurt" %% "play-bootstrap" % "1.2-P26-B3-RC2",
 
     // Database slick & postgresql
     "com.typesafe.play" %% "play-slick" % "3.0.0",
@@ -49,6 +55,7 @@ lazy val server = (project in file("server")).settings(
     "com.h2database" % "h2" % "1.4.196" % "test",
     specs2 % Test,
 
+    // Play libraries
     ehcache,
     guice,
     filters
@@ -65,6 +72,8 @@ lazy val client = (project in file("client")).settings(
   libraryDependencies ++= Seq(
     "org.scala-js" %%% "scalajs-dom" % "0.9.1",
     "com.lihaoyi" %%% "scalatags" % "0.6.5"
+//    "com.github.japgolly.scalacss" %% "core" % "0.5.3",
+//    "com.github.japgolly.scalacss" %% "ext-scalatags" % "0.5.3"
   )
 ).enablePlugins(ScalaJSPlugin, ScalaJSWeb).
   dependsOn(sharedJs)

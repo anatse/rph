@@ -12,14 +12,15 @@
     name => s"/assets/$name",
     name => getClass.getResource(s"/public/$name") != null)
 
+  @* SEO meta tags *@
+  <meta name="keywords" content="@messages("prj.list.title"), @projects.map(prj => messages("prj.title") + " " + prj.name + ", " + prj.number).mkString(", ")">
+  <meta name="description" content='@messages("prj.list.title"), @projects.map(prj => messages("prj.title") + " " + prj.name + ", " + prj.number).mkString(", ")'>
   <script>
     rph = rphApp();
   </script>
 </head>
 
 @main(messages("prj.list.title"), Some(user)) {
-  <div class="card" ondrop="rph.drop(event)" ondragover="rph.allowDrop(event)">drop area</div>
-
   @projects.map { prj =>
     <div class="card" id="card_@java.util.UUID.randomUUID.toString" draggable="true" ondragstart="rph.drag(event)">
       <div class="container">

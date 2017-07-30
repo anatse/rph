@@ -37,6 +37,11 @@ class ProjectController @Inject() (
     prjs.map(rows => Ok(views.html.backlog.projects(rows, request.identity)))
   }
 
+  def project(projectId: Long) = silhouette.SecuredAction.async { implicit request: SecuredRequest[DefaultEnv, AnyContent] =>
+    val prjs: Future[Project] = pdao.findById (projectId)
+    prjs.map(project => Ok(views.html.backlog.project(project, request.identity)))
+  }
+
   def create = silhouette.SecuredAction.async { implicit request: SecuredRequest[DefaultEnv, AnyContent] =>
     pdao.create.map(p => Ok("created"))
   }
