@@ -108,4 +108,5 @@ prj.number = Project number
 prj.description = Description
 projects = Projects list
 prj.goto = Goto project
-prj.title = `Project
+prj.title = Project
+prj.list.description = Here you can see list of projects in which you whenever participating

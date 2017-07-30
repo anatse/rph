@@ -34,7 +34,7 @@ class ProjectController @Inject() (
   implicit val projectWrites = Json.writes[Project]
   def findAll = silhouette.SecuredAction.async { implicit request: SecuredRequest[DefaultEnv, AnyContent] =>
     val prjs: Future[Seq[Project]] = pdao.findAll
-    prjs.map(rows => Ok(views.html.backlog.projects(rows, request.identity)))
+    prjs.map(rows => Ok(views.html.rph.projects(rows, request.identity)))
   }
 
   def project(projectId: Long) = silhouette.SecuredAction.async { implicit request: SecuredRequest[DefaultEnv, AnyContent] =>

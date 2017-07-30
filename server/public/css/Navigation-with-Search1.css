@@ -38,6 +38,11 @@
   color:#222;
 }
 
+.navbar-default .navbar-brand:hover, .navbar-default .navbar-brand:focus {
+  color:#000000;
+  background-color:transparent; !important;
+}
+
 .navigation-clean-search.navbar-inverse .navbar-brand:hover {
   color:#f0f0f0;
 }

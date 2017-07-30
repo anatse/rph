@@ -1,0 +1,42 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import org.webjars.play.WebJarsUtil
+@import model.Project
+@import models.User
+@import scalajs._
+
+@(projects: Seq[Project], user: User)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
+
+<head>
+  @html.scripts(projectName = "client",
+    name => s"/assets/$name",
+    name => getClass.getResource(s"/public/$name") != null)
+
+  @* SEO meta tags *@
+  <meta name="keywords" content="@messages("prj.list.title"), @projects.map(prj => messages("prj.title") + " " + prj.name + ", " + prj.number).mkString(", ")">
+  <meta name="description" content='@messages("prj.list.title"), @projects.map(prj => messages("prj.title") + " " + prj.name + ", " + prj.number).mkString(", ")'>
+  <script>
+    rph = rphApp();
+  </script>
+</head>
+
+@main(messages("prj.list.title"), Some(user)) {
+  <div class="projects-clean">
+    <div class="container">
+      <div class="intro">
+        <h2 class="text-center">@messages("prj.list.title") </h2>
+        <p class="text-center">@messages("prj.list.description") </p>
+      </div>
+      <div class="row projects">
+      @projects.map { prj =>
+        <div class="col-lg-4 col-sm-6 item"><img class="img-responsive" src="/assets/img/desk.jpg">
+          <h3 class="name">@prj.name</h3>
+          <h4 class="memberNameLabel">@prj.number</h4>
+          <p class="description">@prj.description</p>
+          <a class="memberNameLink" href="/project/@prj.number">@messages("prj.goto")</a>
+        </div>
+      }
+      </div>
+    </div>
+  </div>
+}
