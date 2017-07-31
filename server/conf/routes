@@ -25,7 +25,7 @@ GET         /account/activate/:token         controllers.ActivateAccountControll
 
 GET         /projects                        controllers.ProjectController.index
 GET         /projects/create                 controllers.ProjectController.create
-GET         /projects/list                   controllers.ProjectController.findAll
+GET         /projects/list                   controllers.ProjectController.findAll(offset: Option[Int])
 GET         /project/:prjId                  controllers.ProjectController.project(prjId: Long)
 
 # Map static resources from the /public folder to the /assets URL path

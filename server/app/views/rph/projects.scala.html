@@ -5,7 +5,7 @@
 @import models.User
 @import scalajs._
 
-@(projects: Seq[Project], user: User)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
+@(projects: Seq[Project], offset: Int, user: User)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
 
 <head>
   @html.scripts(projectName = "client",
@@ -29,8 +29,8 @@
       </div>
       <nav>
         <ul class="pager">
-          <li class="previous"><a href="#">@messages("page.prev")</a></li>
-          <li class="next"><a href="#">@messages("page.next")</a></li>
+          <li class="previous @if(offset < 3){ disabled }"><a href="@if(offset >= 3){?offset=@{offset-3}} else {#}">@messages("page.prev")</a></li>
+          <li class="next @if(projects.length < 3){ disabled }"><a href="@if(offset < 3){?offset=@{offset+3}} else {#}">@messages("page.next")</a></li>
         </ul>
       </nav>
       <div class="row projects">
@@ -45,8 +45,8 @@
       </div>
       <nav>
         <ul class="pager">
-          <li class="previous"><a href="#">@messages("page.prev")</a></li>
-          <li class="next"><a href="#">@messages("page.next")</a></li>
+          <li class="previous @if(offset < 3){ disabled }"><a href="@if(offset >= 3){?offset=@{offset-3}} else {#}">@messages("page.prev")</a></li>
+          <li class="next @if(projects.length < 3){ disabled }"><a href="@if(offset < 3){?offset=@{offset+3}} else {#}">@messages("page.next")</a></li>
         </ul>
       </nav>
     </div>
