@@ -1,14 +1,15 @@
 package model
 
 import java.sql.Timestamp
-import javax.inject.{ Inject, Singleton }
+import javax.inject.{Inject, Singleton}
 
-import play.api.db.slick.{ DatabaseConfigProvider, HasDatabaseConfigProvider }
+import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import slick.jdbc.JdbcProfile
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success, Try}
 
 object Status extends Enumeration {
   type Status = Value
@@ -34,15 +35,19 @@ class ProjectDAO @Inject() (@NamedDatabase("estima") protected val dbConfigProvi
   val projects = TableQuery[ProjectTable]
   val stages = TableQuery[StageTable]
 
+  def dropAll = {
+    db.run(sql"drop all objects".asUpdate)
+  }
+
   def create = {
-    var schema = projects.schema ++ stages.schema
+    var schema = projects.schema// ++ stages.schema
     db.run(DBIO.seq(schema.create))
   }
 
-  def findAll: Future[Seq[Project]] = {
+  def findAll (pageSize: Option[Int] = Some(10), offset: Option[Int] = None): Future[Seq[Project]] = {
     val query = (for {
       project <- projects
-    } yield (project)).sortBy(_.name)
+    } yield (project)).sortBy(_.name).drop(offset.getOrElse(0)).take(pageSize.get)
 
     db.run(query.result)
   }

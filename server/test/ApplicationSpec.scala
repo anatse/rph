@@ -79,6 +79,14 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
   }
 
   "Project controller" should {
+//    "drop all tables" in {
+//      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.dropAll).withAuthenticator[DefaultEnv](identity.loginInfo)))
+//      status(result) mustBe (OK)
+//
+//      contentType(result) mustBe (Some("text/plain"))
+//      contentAsString(result) must include("dropped")
+//    }
+
     "create projects table" in {
       var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.create).withAuthenticator[DefaultEnv](identity.loginInfo)))
       status(result) mustBe (OK)
@@ -109,7 +117,7 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
       status(result) mustBe (OK)
 
       contentType(result) mustBe (Some("text/html"))
-      contentAsString(result) must include("<h3>test</h3>")
+      contentAsString(result) must include("Projects list")
     }
   }
 }

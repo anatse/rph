@@ -110,3 +110,7 @@ projects = Projects list
 prj.goto = Goto project
 prj.title = Project
 prj.list.description = Here you can see list of projects in which you whenever participating
+
+# Pages
+page.prev = Older
+page.next = Newer
