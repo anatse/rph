@@ -14,27 +14,11 @@ import scalatags.Text.all._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 @js.native
-//@JSImport("jquery", JSImport.Namespace)
 @JSGlobal
 object jquery extends JQueryStatic
 
 @JSExportTopLevel(name = "rphApp")
 object ScalaJSExample extends js.JSApp {
-
-  @JSExport
-  def findAlljQuery (pageSize: Int, offset: Int, csrfHeader: String, csrfValue: String) = {
-    jQuery.ajax(js.Dynamic.literal(
-      url = s"/projects/list?offset=$offset&pageSize=$pageSize",
-      success = { (data: js.Any, textStatus: String, jqXHR: JQueryXHR) =>
-        dom.console.log(s"data=$data, text=$textStatus, jqXHR=$jqXHR")
-      },
-      error = { (jqXHR: JQueryXHR, textStatus: String, errorThrow: String) =>
-        dom.console.log(s"jqXHR=$jqXHR, text=$textStatus, err=$errorThrow")
-      },
-      `type` = "POST",
-      headers = Map(csrfHeader -> csrfValue)
-    ).asInstanceOf[JQueryAjaxSettings])
-  }
 
   @JSExport
   def findAll (pageSize: Int, offset: Int, csrfHeader: String, csrfValue: String, linkText: String) = {
@@ -106,7 +90,6 @@ object ScalaJSExample extends js.JSApp {
 
   val pattern = "[#|,]([\\w|=]+=\\w*)+".r
   def parseHash (url: String): Map[String, String] = {
-    //val pars = params.toList.flatten.groupBy(_._1).mapValues(_.map(_._2))
     (pattern findAllMatchIn url).map( m => {
       val splits = m.group(1).split("=")
       Map[String, String](splits(0) -> splits(1))
