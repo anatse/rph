@@ -69,9 +69,11 @@ lazy val server = (project in file("server")).settings(
 lazy val client = (project in file("client")).settings(
   scalaVersion := scalaV,
   scalaJSUseMainModuleInitializer := true,
+//  scalaJSModuleKind := ModuleKind.CommonJSModule,
   libraryDependencies ++= Seq(
     "org.scala-js" %%% "scalajs-dom" % "0.9.1",
-    "com.lihaoyi" %%% "scalatags" % "0.6.5"
+    "com.lihaoyi" %%% "scalatags" % "0.6.5",
+    "be.doeraene" %%% "scalajs-jquery" % "0.9.1"
 //    "com.github.japgolly.scalacss" %% "core" % "0.5.3",
 //    "com.github.japgolly.scalacss" %% "ext-scalatags" % "0.5.3"
   )

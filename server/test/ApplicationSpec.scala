@@ -95,7 +95,7 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
       contentAsString(result) must include("created")
     }
 
-    "create throws an exception when projects table already created" in {
+    "throws an exception when trying to create already created projects table" in {
       val caught = intercept[org.h2.jdbc.JdbcSQLException] {
         var Some(result) =route(app, addCSRFToken(FakeRequest(ProjectController.create).withAuthenticator[DefaultEnv](identity.loginInfo)))
         status(result) must not be(OK)
@@ -113,7 +113,7 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
     }
 
     "list all projects" in {
-      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.findAll).withAuthenticator[DefaultEnv](identity.loginInfo)))
+      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.findAll(None, None)).withAuthenticator[DefaultEnv](identity.loginInfo)))
       status(result) mustBe (OK)
 
       contentType(result) mustBe (Some("text/html"))

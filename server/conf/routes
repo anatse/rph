@@ -6,6 +6,7 @@
 GET         /                                controllers.ApplicationController.index
 GET         /signOut                         controllers.ApplicationController.signOut
 GET         /authenticate/:provider          controllers.SocialAuthController.authenticate(provider)
+POST        /authenticate/:provider          controllers.SocialAuthController.authenticate(provider)
 
 GET         /signUp                          controllers.SignUpController.view
 POST        /signUp                          controllers.SignUpController.submit
@@ -25,7 +26,8 @@ GET         /account/activate/:token         controllers.ActivateAccountControll
 
 GET         /projects                        controllers.ProjectController.index
 GET         /projects/create                 controllers.ProjectController.create
-GET         /projects/list                   controllers.ProjectController.findAll(offset: Option[Int])
+GET         /projects/list                   controllers.ProjectController.findAll(offset: Option[Int], pageSize: Option[Int])
+POST        /projects/list                   controllers.ProjectController.jsonFindAll(offset: Option[Int], pageSize: Option[Int])
 GET         /project/:prjId                  controllers.ProjectController.project(prjId: Long)
 
 # Map static resources from the /public folder to the /assets URL path

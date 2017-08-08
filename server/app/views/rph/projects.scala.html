@@ -1,24 +1,20 @@
 @import play.api.i18n.Messages
 @import play.api.mvc.RequestHeader
 @import org.webjars.play.WebJarsUtil
-@import model.Project
+@import shared.Project
 @import models.User
 @import scalajs._
 
-@(projects: Seq[Project], offset: Int, user: User)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
+@(projects: Seq[Project], offset: Int, pageSize: Int, existsMore: Boolean, user: User)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
+<script>
+  function load (pageSize, offset) {
+    rphApp.findAll (pageSize, offset, 'Csrf-Token', '@helper.CSRF.getToken.value', '@messages("prj.goto")');
+  }
+</script>
 
-<head>
-  @html.scripts(projectName = "client",
-    name => s"/assets/$name",
-    name => getClass.getResource(s"/public/$name") != null)
-
-  @* SEO meta tags *@
-  <meta name="keywords" content="@messages("prj.list.title"), @projects.map(prj => messages("prj.title") + " " + prj.name + ", " + prj.number).mkString(", ")">
-  <meta name="description" content='@messages("prj.list.title"), @projects.map(prj => messages("prj.title") + " " + prj.name + ", " + prj.number).mkString(", ")'>
-  <script>
-    rph = rphApp();
-  </script>
-</head>
+@html.scripts(projectName = "client",
+  name => s"/assets/$name",
+  name => getClass.getResource(s"/public/$name") != null)
 
 @main(messages("prj.list.title"), Some(user)) {
   <div class="projects-clean">
@@ -29,8 +25,8 @@
       </div>
       <nav>
         <ul class="pager">
-          <li class="previous @if(offset < 3){ disabled }"><a href="@if(offset >= 3){?offset=@{offset-3}} else {#}">@messages("page.prev")</a></li>
-          <li class="next @if(projects.length < 3){ disabled }"><a href="@if(offset < 3){?offset=@{offset+3}} else {#}">@messages("page.next")</a></li>
+          <li class="previous @if(offset < pageSize){ disabled }"><a href="@if(offset >= pageSize){javascript:load(offset=@{offset-pageSize}, pageSize=@pageSize);} else {javascript:void(0);}">@messages("page.prev")</a></li>
+          <li class="next @if(!existsMore){ disabled }"><a href="@if(existsMore){javascript:load(offset=@{offset+pageSize}, pageSize=@pageSize);} else {javascript:void(0);}">@messages("page.next")</a></li>
         </ul>
       </nav>
       <div class="row projects">
@@ -45,8 +41,8 @@
       </div>
       <nav>
         <ul class="pager">
-          <li class="previous @if(offset < 3){ disabled }"><a href="@if(offset >= 3){?offset=@{offset-3}} else {#}">@messages("page.prev")</a></li>
-          <li class="next @if(projects.length < 3){ disabled }"><a href="@if(offset < 3){?offset=@{offset+3}} else {#}">@messages("page.next")</a></li>
+          <li class="previous @if(offset < pageSize){ disabled }"><a href="@if(offset >= pageSize){javascript:load(offset=@{offset-pageSize}, pageSize=@pageSize);} else {javascript:void(0);}">@messages("page.prev")</a></li>
+          <li class="next @if(!existsMore){ disabled }"><a href="@if(existsMore){javascript:load(offset=@{offset+pageSize}, pageSize=@pageSize);} else {javascript:void(0);}">@messages("page.next")</a></li>
         </ul>
       </nav>
     </div>
