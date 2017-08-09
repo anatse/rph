@@ -41,6 +41,9 @@ lazy val server = (project in file("server")).settings(
     "com.typesafe.slick" %% "slick-hikaricp" % "3.2.1",
     "org.postgresql" % "postgresql" % "42.1.3",
 
+    // mongoDB
+    "org.reactivemongo" %% "play2-reactivemongo" % "0.12.+",
+
     "com.mohiva" %% "play-silhouette-testkit" % silhouetteVersion % "test",
     "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.1" % "test",
     "com.h2database" % "h2" % "1.4.196" % "test",
