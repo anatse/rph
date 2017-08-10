@@ -9,6 +9,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import reactivemongo.api.{Cursor, DefaultDB, MongoConnection, MongoDriver}
 import reactivemongo.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter, Macros, document}
 
+// Information about mongodb module http://reactivemongo.org/releases/0.12/documentation/tutorial/play.html
+
 // Custom persistent types
 case class Person(firstName: String, lastName: String, age: Int)
 

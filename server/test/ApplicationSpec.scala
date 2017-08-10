@@ -27,7 +27,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
   val identity = User(
     userID = UUID.randomUUID(),
-    loginInfo = LoginInfo("facebook", "user@facebook.com"),
+    providerID = Some("facebook"),
+    providerKey = Some("user@facebook.com"),
     firstName = None,
     lastName = None,
     fullName = None,
@@ -35,7 +36,8 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
     avatarURL = None,
     activated = true)
 
-  implicit val env: Environment[DefaultEnv] = new FakeEnvironment[DefaultEnv](Seq(identity.loginInfo -> identity))
+  val li = LoginInfo (identity.providerID.get, identity.providerKey.get)
+  implicit val env: Environment[DefaultEnv] = new FakeEnvironment[DefaultEnv](Seq(li -> identity))
 
   class FakeModule extends AbstractModule with ScalaModule {
     def configure() = {
@@ -73,14 +75,14 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
     }
 
     "return 200 if user is authorized" in {
-      val Some(result) = route(app, addCSRFToken(FakeRequest(ApplicationController.index).withAuthenticator[DefaultEnv](identity.loginInfo)))
+      val Some(result) = route(app, addCSRFToken(FakeRequest(ApplicationController.index).withAuthenticator[DefaultEnv](li)))
       status(result) mustBe (OK)
     }
   }
 
   "Project controller" should {
 //    "drop all tables" in {
-//      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.dropAll).withAuthenticator[DefaultEnv](identity.loginInfo)))
+//      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.dropAll).withAuthenticator[DefaultEnv](li)))
 //      status(result) mustBe (OK)
 //
 //      contentType(result) mustBe (Some("text/plain"))
@@ -88,7 +90,7 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
 //    }
 
     "create projects table" in {
-      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.create).withAuthenticator[DefaultEnv](identity.loginInfo)))
+      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.create).withAuthenticator[DefaultEnv](li)))
       status(result) mustBe (OK)
 
       contentType(result) mustBe (Some("text/plain"))
@@ -97,7 +99,7 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
 
     "throws an exception when trying to create already created projects table" in {
       val caught = intercept[org.h2.jdbc.JdbcSQLException] {
-        var Some(result) =route(app, addCSRFToken(FakeRequest(ProjectController.create).withAuthenticator[DefaultEnv](identity.loginInfo)))
+        var Some(result) =route(app, addCSRFToken(FakeRequest(ProjectController.create).withAuthenticator[DefaultEnv](li)))
         status(result) must not be(OK)
       }
 
@@ -105,7 +107,7 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
     }
 
     "add new project" in {
-      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.index).withAuthenticator[DefaultEnv](identity.loginInfo)))
+      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.index).withAuthenticator[DefaultEnv](li)))
       status(result) mustBe (OK)
 
       contentType(result) mustBe (Some("text/plain"))
@@ -113,7 +115,7 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
     }
 
     "list all projects" in {
-      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.findAll(None, None)).withAuthenticator[DefaultEnv](identity.loginInfo)))
+      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.findAll(None, None)).withAuthenticator[DefaultEnv](li)))
       status(result) mustBe (OK)
 
       contentType(result) mustBe (Some("text/html"))

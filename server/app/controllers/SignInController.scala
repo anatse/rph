@@ -55,7 +55,7 @@ class SignInController @Inject() (
 
   /**
    * Handles the submitted form.
-   *
+   * http://localhost:9000/account/activate/73ad970b-82ce-4484-8f47-4c5d1be5db1c
    * @return The result to display.
    */
   def submit = silhouette.UnsecuredAction.async { implicit request: Request[AnyContent] =>
@@ -87,7 +87,7 @@ class SignInController @Inject() (
             case None => Future.failed(new IdentityNotFoundException("Couldn't find user"))
           }
         }.recover {
-          case _: ProviderException =>
+          case ex: ProviderException =>
             Redirect(routes.SignInController.view()).flashing("error" -> Messages("invalid.credentials"))
         }
       })

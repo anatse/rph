@@ -1,18 +1,53 @@
 package models.daos
 
 import java.util.UUID
+import javax.inject.Inject
 
 import models.AuthToken
-import models.daos.AuthTokenDAOImpl._
 import org.joda.time.DateTime
+import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import play.db.NamedDatabase
+import slick.jdbc.JdbcProfile
+import slick.jdbc.meta.MTable.getTables
 
-import scala.collection.mutable
-import scala.concurrent.Future
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration._
 
 /**
  * Give access to the [[AuthToken]] object.
  */
-class AuthTokenDAOImpl extends AuthTokenDAO {
+class AuthTokenDAOImpl @Inject() (@NamedDatabase("estima") protected val dbConfigProvider: DatabaseConfigProvider, implicit val ex: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] with AuthTokenDAO {
+  import profile.api._
+  import com.github.tototoshi.slick.PostgresJodaSupport._
+
+  implicit class ResultEnrichment[T](action: DBIO[Seq[T]]) {
+    def exactlyOne: DBIO[Option[T]] = action.flatMap { xs =>
+      xs.length match {
+        case 1 => DBIO.successful(Some(xs.head))
+        case 0 => DBIO.successful(None)
+        case n => DBIO.failed(new RuntimeException(s"Expected 1 result, not $n"))
+      }
+    }
+  }
+
+  class AuthTokenTable(tag: Tag) extends Table[AuthToken](tag, "tokens") {
+    def expiry = column[DateTime]("EXPIRY")
+    def userID = column[UUID]("EXT_USER_ID")
+    def id = column[UUID]("ID", O.PrimaryKey)
+    def * = (id, userID, expiry) <> (AuthToken.tupled, AuthToken.unapply _)
+  }
+
+  // Create table
+  val tokens = TableQuery[AuthTokenTable]
+
+  def createTable () = {
+    if (!checkTableExists())
+      Await.result(db.run(DBIO.seq(tokens.schema.create)), 1 second)
+  }
+
+  def checkTableExists ():Boolean = {
+    return Await.result(db.run(getTables), 1 seconds).contains("TOKENS")
+  }
 
   /**
    * Finds a token by its ID.
@@ -20,18 +55,20 @@ class AuthTokenDAOImpl extends AuthTokenDAO {
    * @param id The unique token ID.
    * @return The found token or None if no token for the given ID could be found.
    */
-  def find(id: UUID) = Future.successful(tokens.get(id))
+  def find(id: UUID) = {
+    var query = tokens.filter(u => u.id === id)
+    val found = Await.result(db.run(query.result.exactlyOne), 1 second)
+    Future.successful(found)
+  }
 
   /**
    * Finds expired tokens.
    *
    * @param dateTime The current date time.
    */
-  def findExpired(dateTime: DateTime) = Future.successful {
-    tokens.filter {
-      case (_, token) =>
-        token.expiry.isBefore(dateTime)
-    }.values.toSeq
+  def findExpired(dateTime: DateTime) = {
+    var query = tokens.filter(u => u.expiry <= dateTime)
+    db.run(query.result)
   }
 
   /**
@@ -41,8 +78,8 @@ class AuthTokenDAOImpl extends AuthTokenDAO {
    * @return The saved token.
    */
   def save(token: AuthToken) = {
-    tokens += (token.id -> token)
-    Future.successful(token)
+    val tokenWithId = (tokens returning tokens.map(_.id) into ((token, id) => token.copy(id = id))) += token
+    db.run(tokenWithId)
   }
 
   /**
@@ -52,18 +89,7 @@ class AuthTokenDAOImpl extends AuthTokenDAO {
    * @return A future to wait for the process to be completed.
    */
   def remove(id: UUID) = {
-    tokens -= id
-    Future.successful(())
+    var query = tokens.filter(u => u.id === id)
+    db.run(query.delete).map(_ => ())
   }
-}
-
-/**
- * The companion object.
- */
-object AuthTokenDAOImpl {
-
-  /**
-   * The list of tokens.
-   */
-  val tokens: mutable.HashMap[UUID, AuthToken] = mutable.HashMap()
 }
