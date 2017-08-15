@@ -15,12 +15,12 @@ lazy val server = (project in file("server")).settings(
   compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
   resolvers += "Atlassian Releases" at "https://maven.atlassian.com/public/",
   libraryDependencies ++= Seq(
-    "com.atlassian.jwt" % "jwt-api" % "1.6.2",
-    "com.atlassian.jwt" % "jwt-core" % "1.6.2",
+//    "com.atlassian.jwt" % "jwt-api" % "1.6.2",
+//    "com.atlassian.jwt" % "jwt-core" % "1.6.2",
     // Scala js scripts
     "com.vmunier" %% "scalajs-scripts" % "1.1.1",
 
-    "com.mohiva" %% "play-silhouette" % silhouetteVersion,
+    "com.mohiva" %% "play-silhouette" % silhouetteVersion exclude ("com.atlassian.jwt", "jwt-api") exclude ("com.atlassian.jwt", "jwt-core"),
     "com.mohiva" %% "play-silhouette-password-bcrypt" % silhouetteVersion,
     "com.mohiva" %% "play-silhouette-persistence" % silhouetteVersion,
     "com.mohiva" %% "play-silhouette-crypto-jca" % silhouetteVersion,
@@ -66,7 +66,6 @@ lazy val client = (project in file("client")).settings(
   scalaVersion := scalaV,
   scalaJSUseMainModuleInitializer := true,
   coverageEnabled := false,
-  resolvers += "Atlassian Releases" at "https://maven.atlassian.com/public/",
   libraryDependencies ++= Seq(
     "org.scala-js" %%% "scalajs-dom" % "0.9.1",
     "com.lihaoyi" %%% "scalatags" % "0.6.5",
@@ -76,9 +75,7 @@ lazy val client = (project in file("client")).settings(
   dependsOn(sharedJs)
 
 lazy val shared = (crossProject.crossType(CrossType.Pure) in file("shared")).
-  settings(
-    scalaVersion := scalaV,
-    resolvers += "Atlassian Releases" at "https://maven.atlassian.com/public/").
+  settings(scalaVersion := scalaV).
   jsConfigure(_ enablePlugins ScalaJSWeb)
 
 lazy val sharedJvm = shared.jvm

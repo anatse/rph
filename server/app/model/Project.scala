@@ -94,4 +94,6 @@ class ProjectDAO @Inject() (@NamedDatabase("estima") protected val dbConfigProvi
     def * = (id.?, projectId, name, description, status, startDate, endDate) <> (Stage.tupled, Stage.unapply _)
   }
 
+  // http://maven.atlassian.com:8081/content/repositories/atlassian-public/com/atlassian/jwt/jwt-core/1.6.2/jwt-core-1.6.2.pom
+  // https://maven.atlassian.com/public/com/atlassian/jwt/jwt-core/1.6.2/jwt-core-1.6.2.pom
 }
