@@ -8,7 +8,12 @@
 
 @(signInForm: Form[Data], socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
 
-@rph.main(messages("sign.in.title")) {
+@styles = {
+    <link rel="stylesheet" href="/assets/css/Login-Form-Clean.css">
+    <link rel="stylesheet" href="@controllers.routes.Assets.at("styles/main.css")">
+}
+
+@rph.main(messages("sign.in.title"), None, Some(styles)) {
     <div class="login-clean">
         @helper.form(action = controllers.routes.SignInController.submit()) {
             @helper.CSRF.formField

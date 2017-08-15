@@ -6,17 +6,21 @@
 @import scalajs._
 
 @(projects: Seq[Project], offset: Int, pageSize: Int, existsMore: Boolean, user: User)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
+
+@styles = {
+  <link rel="stylesheet" href="/assets/css/Projects-Clean.css">
+  <link rel="stylesheet" href="@controllers.routes.Assets.at("styles/main.css")">
+  <meta name="keywords" content="@messages("prj.list.title"): @projects.map(p => p.name).mkString(", ")">
+  <meta name="description" content='@messages("prj.list.title"): @projects.filter(p => p.description != None).map(p => p.description.get).mkString(", ")'>
+}
+
 <script>
   function load (pageSize, offset) {
     rphApp.findAll (pageSize, offset, 'Csrf-Token', '@helper.CSRF.getToken.value', '@messages("prj.goto")');
   }
 </script>
 
-@html.scripts(projectName = "client",
-  name => s"/assets/$name",
-  name => getClass.getResource(s"/public/$name") != null)
-
-@main(messages("prj.list.title"), Some(user)) {
+@rph.main(messages("prj.list.title"), Some(user), Some(styles)) {
   <div class="projects-clean">
     <div class="container">
       <div class="intro">
@@ -25,127 +29,23 @@
       </div>
       <nav>
         <ul class="pager">
-          <li class="previous @if(offset < pageSize){ disabled }"><a href="@if(offset >= pageSize){javascript:load(offset=@{offset-pageSize}, pageSize=@pageSize);} else {javascript:void(0);}">@messages("page.prev")</a></li>
-          <li class="next @if(!existsMore){ disabled }"><a href="@if(existsMore){javascript:load(offset=@{offset+pageSize}, pageSize=@pageSize);} else {javascript:void(0);}">@messages("page.next")</a></li>
+          <li class="previous @if(offset < pageSize){ disabled }"><a href="@if(offset >= pageSize){#offset=@{offset-pageSize},pageSize=@pageSize} else {javascript:void(0);}">@messages("page.prev")</a></li>
+          <li class="next @if(!existsMore){ disabled }"><a href="@if(existsMore){#offset=@{offset+pageSize},pageSize=@pageSize} else {javascript:void(0);}">@messages("page.next")</a></li>
         </ul>
       </nav>
       <div class="row projects">
-      @projects.map { prj =>
-        <div class="col-lg-4 col-sm-6 item"><img class="img-responsive" src="/assets/img/desk.jpg">
-          <h3 class="name">@prj.name</h3>
-          <h4 class="memberNameLabel">@prj.number</h4>
-          <p class="description">@prj.description</p>
-          <a class="memberNameLink" href="/project/@prj.number">@messages("prj.goto")</a>
-        </div>
-      }
+
       </div>
       <nav>
         <ul class="pager">
-          <li class="previous @if(offset < pageSize){ disabled }"><a href="@if(offset >= pageSize){javascript:load(offset=@{offset-pageSize}, pageSize=@pageSize);} else {javascript:void(0);}">@messages("page.prev")</a></li>
-          <li class="next @if(!existsMore){ disabled }"><a href="@if(existsMore){javascript:load(offset=@{offset+pageSize}, pageSize=@pageSize);} else {javascript:void(0);}">@messages("page.next")</a></li>
+          <li class="previous @if(offset < pageSize){ disabled }"><a href="@if(offset >= pageSize){#offset=@{offset-pageSize},pageSize=@pageSize} else {javascript:void(0);}">@messages("page.prev")</a></li>
+          <li class="next @if(!existsMore){ disabled }"><a href="@if(existsMore){#offset=@{offset+pageSize},pageSize=@pageSize} else {javascript:void(0);}">@messages("page.next")</a></li>
         </ul>
       </nav>
     </div>
   </div>
-}
 
-@*<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#mymodal">Open Modal</button>*@
-@*<div id="mymodal" role="dialog" tabindex="-1" class="modal fade" id="reservar">*@
-  @*<div class="modal-dialog" role="document">*@
-    @*<div class="modal-content">*@
-      @*<div class="modal-header">*@
-        @*<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>*@
-        @*<h5 class="modal-title cinza"><i class="fa fa-calendar-plus-o padding-r7"></i>Reservar</h5></div>*@
-      @*<div class="modal-body">*@
-        @*<form method="post" id="reserva">*@
-          @*<div class="row">*@
-            @*<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">*@
-              @*<select class="form-control">*@
-                @*<option value="Apartamento A" selected>Apartamento A</option>*@
-                @*<option value="Apartamento B">Apartamento B</option>*@
-                @*<option value="Apartamento C">Apartamento C</option>*@
-                @*<option value="Apartamento D">Apartamento D</option>*@
-                @*<option value="Apartamento E">Apartamento E</option>*@
-                @*<option value="Apartamento F">Apartamento F</option>*@
-              @*</select>*@
-            @*</div>*@
-          @*</div>*@
-          @*<div class="row margin-t30">*@
-            @*<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">*@
-              @*<input type="text" name="nome" placeholder="Nome" class="form-control" />*@
-            @*</div>*@
-            @*<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">*@
-              @*<input type="text" name="sobrenome" placeholder="Sobrenome" class="form-control" />*@
-            @*</div>*@
-          @*</div>*@
-          @*<div class="row margin-t10">*@
-            @*<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">*@
-              @*<input type="text" name="email" placeholder="Email" inputmode="email" class="form-control" />*@
-            @*</div>*@
-            @*<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">*@
-              @*<input type="text" name="celular" placeholder="(__)_____-____" inputmode="tel" class="form-control" id="celular" />*@
-            @*</div>*@
-          @*</div>*@
-          @*<div class="row margin-t10">*@
-            @*<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">*@
-              @*<p class="text-center p-reserva-modal margin0 margin-t10 verde"><i class="fa fa-calendar-plus-o padding-r7 verde"></i>Entrada</p>*@
-            @*</div>*@
-            @*<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">*@
-              @*<input type="text" name="data_in" placeholder="__/__/____" class="form-control" id="data-in" />*@
-            @*</div>*@
-            @*<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">*@
-              @*<p class="text-center p-reserva-modal margin0 margin-t10 vermelho"><i class="fa fa-calendar-minus-o padding-r7 vermelho"></i>Saída</p>*@
-            @*</div>*@
-            @*<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">*@
-              @*<input type="text" name="data_out" placeholder="__/__/____" class="form-control" id="data-out" />*@
-            @*</div>*@
-          @*</div>*@
-          @*<hr class="hidden-xs" />*@
-          @*<div class="row">*@
-            @*<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">*@
-              @*<p class="text-center p-reserva-modal margin0 margin-t10 roxo"><i class="icon ion-person-add padding-r7 roxo"></i>Pessoas</p>*@
-            @*</div>*@
-            @*<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12">*@
-              @*<select name="pessoas" class="form-control">*@
-                @*<option value="1 Pessoa">1</option>*@
-                @*<option value="2 Pessoas">2</option>*@
-                @*<option value="3 Pessoas">3</option>*@
-                @*<option value="4 Pessoas">4</option>*@
-                @*<option value="5 Pessoas">5</option>*@
-                @*<option value="6 Pessoas">6</option>*@
-                @*<option value="7 Pessoas">7</option>*@
-                @*<option value="8 Pessoas">8</option>*@
-              @*</select>*@
-            @*</div>*@
-            @*<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">*@
-              @*<div class="checkbox">*@
-                @*<label class="label">*@
-                  @*<input type="checkbox" name="aceito_transfer" value="Quero Transfer R$130" class="margin0" />Serviço de Transfer / R$130</label>*@
-              @*</div>*@
-            @*</div>*@
-          @*</div>*@
-          @*<hr />*@
-          @*<div class="row margin-t10">*@
-            @*<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">*@
-              @*<textarea name="mensagem" placeholder="Deixe mais informações se quiser!" class="form-control"></textarea>*@
-            @*</div>*@
-          @*</div>*@
-          @*<div class="row margin-t20">*@
-            @*<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">*@
-              @*<div class="checkbox">*@
-                @*<label class="label">*@
-                  @*<input type="checkbox" name="aceito_termo" value="Aceito a Política de Reserva" class="margin0" />Li e aceito a <a href="#">Política de Reserva</a></label>*@
-              @*</div>*@
-            @*</div>*@
-            @*<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">*@
-              @*<hr />*@
-            @*</div>*@
-            @*<div class="col-lg-4 col-lg-offset-4 col-md-4 col-md-offset-4 col-sm-4 col-sm-offset-4 col-xs-12 col-xs-offset-0 padding0">*@
-              @*<button class="btn btn-default btn-lg margin-t10" type="submit">Enviar</button>*@
-            @*</div>*@
-          @*</div>*@
-        @*</form>*@
-      @*</div>*@
-    @*</div>*@
-  @*</div>*@
-@*</div>*@
+  @html.scripts(projectName = "client",
+    name => s"/assets/$name",
+    name => getClass.getResource(s"/public/$name") != null)
+}

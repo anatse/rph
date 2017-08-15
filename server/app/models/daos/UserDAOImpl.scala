@@ -47,13 +47,19 @@ class UserDAOImpl @Inject() (@NamedDatabase("estima") protected val dbConfigProv
   val users = TableQuery[UserTable]
 
   def createTable () = {
-    if (!checkTableExists())
+    if (!checkTableExists()) {
+      println ("start creation table")
       Await.result(db.run(DBIO.seq(users.schema.create)), 1 second)
+    }
   }
 
   def checkTableExists ():Boolean = {
-    return Await.result(db.run(getTables), 1 seconds).contains("USERS")
+    val tables = Await.result(db.run(getTables), 1 seconds)
+    val isExists = !tables.filter(t => t.name.name.contains("users")).isEmpty
+    isExists
   }
+
+  createTable
 
   /**
    * Finds a user by its login info.

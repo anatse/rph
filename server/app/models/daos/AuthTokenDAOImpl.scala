@@ -39,15 +39,18 @@ class AuthTokenDAOImpl @Inject() (@NamedDatabase("estima") protected val dbConfi
 
   // Create table
   val tokens = TableQuery[AuthTokenTable]
-
   def createTable () = {
     if (!checkTableExists())
       Await.result(db.run(DBIO.seq(tokens.schema.create)), 1 second)
   }
 
   def checkTableExists ():Boolean = {
-    return Await.result(db.run(getTables), 1 seconds).contains("TOKENS")
+    val tables = Await.result(db.run(getTables), 1 seconds)
+    val isExists = !tables.filter(t => t.name.name.contains("tokens")).isEmpty
+    isExists
   }
+
+  createTable
 
   /**
    * Finds a token by its ID.
