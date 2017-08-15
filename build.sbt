@@ -1,3 +1,5 @@
+import sbt.Keys.resolvers
+
 name := """rph"""
 
 val scalaV = "2.12.3"
@@ -13,8 +15,8 @@ lazy val server = (project in file("server")).settings(
   compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
   resolvers += "Atlassian Releases" at "https://maven.atlassian.com/public/",
   libraryDependencies ++= Seq(
-//    "com.atlassian.jwt" % "jwt-api" % "1.6.2",
-//    "com.atlassian.jwt" % "jwt-core" % "1.6.2",
+    "com.atlassian.jwt" % "jwt-api" % "1.6.2",
+    "com.atlassian.jwt" % "jwt-core" % "1.6.2",
     // Scala js scripts
     "com.vmunier" %% "scalajs-scripts" % "1.1.1",
 
@@ -64,6 +66,7 @@ lazy val client = (project in file("client")).settings(
   scalaVersion := scalaV,
   scalaJSUseMainModuleInitializer := true,
   coverageEnabled := false,
+  resolvers += "Atlassian Releases" at "https://maven.atlassian.com/public/",
   libraryDependencies ++= Seq(
     "org.scala-js" %%% "scalajs-dom" % "0.9.1",
     "com.lihaoyi" %%% "scalatags" % "0.6.5",
@@ -73,7 +76,9 @@ lazy val client = (project in file("client")).settings(
   dependsOn(sharedJs)
 
 lazy val shared = (crossProject.crossType(CrossType.Pure) in file("shared")).
-  settings(scalaVersion := scalaV).
+  settings(
+    scalaVersion := scalaV,
+    resolvers += "Atlassian Releases" at "https://maven.atlassian.com/public/").
   jsConfigure(_ enablePlugins ScalaJSWeb)
 
 lazy val sharedJvm = shared.jvm
