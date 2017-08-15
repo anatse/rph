@@ -13,8 +13,8 @@ lazy val server = (project in file("server")).settings(
   compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
   resolvers += "Atlassian Releases" at "https://maven.atlassian.com/public/",
   libraryDependencies ++= Seq(
-    "com.atlassian.jwt" % "jwt-api" % "1.6.2",
-    "com.atlassian.jwt" % "jwt-core" % "1.6.2",
+//    "com.atlassian.jwt" % "jwt-api" % "1.6.2",
+//    "com.atlassian.jwt" % "jwt-core" % "1.6.2",
     // Scala js scripts
     "com.vmunier" %% "scalajs-scripts" % "1.1.1",
 
