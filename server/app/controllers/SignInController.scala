@@ -5,7 +5,7 @@ import javax.inject.Inject
 import com.mohiva.play.silhouette.api.Authenticator.Implicits._
 import com.mohiva.play.silhouette.api._
 import com.mohiva.play.silhouette.api.exceptions.ProviderException
-import com.mohiva.play.silhouette.api.util.{ Clock, Credentials }
+import com.mohiva.play.silhouette.api.util.{Clock, Credentials}
 import com.mohiva.play.silhouette.impl.exceptions.IdentityNotFoundException
 import com.mohiva.play.silhouette.impl.providers._
 import forms.SignInForm
@@ -13,12 +13,12 @@ import models.services.UserService
 import net.ceedubs.ficus.Ficus._
 import org.webjars.play.WebJarsUtil
 import play.api.Configuration
-import play.api.i18n.{ I18nSupport, Messages }
-import play.api.mvc.{ AbstractController, AnyContent, ControllerComponents, Request }
-import utils.auth.DefaultEnv
+import play.api.i18n.{I18nSupport, Messages}
+import play.api.mvc.{AbstractController, AnyContent, ControllerComponents, Request}
+import utils.auth.{DefaultEnv, JWTEnv}
 
 import scala.concurrent.duration._
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * The `Sign In` controller.
@@ -33,13 +33,13 @@ import scala.concurrent.{ ExecutionContext, Future }
  * @param webJarsUtil            The webjar util.
  */
 class SignInController @Inject() (
-  components: ControllerComponents,
-  silhouette: Silhouette[DefaultEnv],
-  userService: UserService,
-  credentialsProvider: CredentialsProvider,
-  socialProviderRegistry: SocialProviderRegistry,
-  configuration: Configuration,
-  clock: Clock)(
+     components: ControllerComponents,
+     silhouette: Silhouette[DefaultEnv],
+     userService: UserService,
+     credentialsProvider: CredentialsProvider,
+     socialProviderRegistry: SocialProviderRegistry,
+     configuration: Configuration,
+     clock: Clock)(
   implicit
   webJarsUtil: WebJarsUtil,
   ex: ExecutionContext) extends AbstractController(components) with I18nSupport {
@@ -50,17 +50,17 @@ class SignInController @Inject() (
    * @return The result to display.
    */
   def view = silhouette.UnsecuredAction.async { implicit request: Request[AnyContent] =>
-    Future.successful(Ok(views.html.signIn(SignInForm.form, socialProviderRegistry)))
+    Future.successful(Ok(views.html.rph.signIn(SignInForm.form, socialProviderRegistry)))
   }
 
   /**
    * Handles the submitted form.
-   *
+   * http://localhost:9000/account/activate/73ad970b-82ce-4484-8f47-4c5d1be5db1c
    * @return The result to display.
    */
   def submit = silhouette.UnsecuredAction.async { implicit request: Request[AnyContent] =>
     SignInForm.form.bindFromRequest.fold(
-      form => Future.successful(BadRequest(views.html.signIn(form, socialProviderRegistry))),
+      form => Future.successful(BadRequest(views.html.rph.signIn(form, socialProviderRegistry))),
       data => {
         val credentials = Credentials(data.email, data.password)
         credentialsProvider.authenticate(credentials).flatMap { loginInfo =>
@@ -75,7 +75,8 @@ class SignInController @Inject() (
                   authenticator.copy(
                     expirationDateTime = clock.now + c.as[FiniteDuration]("silhouette.authenticator.rememberMe.authenticatorExpiry"),
                     idleTimeout = c.getAs[FiniteDuration]("silhouette.authenticator.rememberMe.authenticatorIdleTimeout"),
-                    cookieMaxAge = c.getAs[FiniteDuration]("silhouette.authenticator.rememberMe.cookieMaxAge"))
+                    cookieMaxAge = c.getAs[FiniteDuration]("silhouette.authenticator.rememberMe.cookieMaxAge")
+                  )
                 case authenticator => authenticator
               }.flatMap { authenticator =>
                 silhouette.env.eventBus.publish(LoginEvent(user, request))
@@ -86,7 +87,7 @@ class SignInController @Inject() (
             case None => Future.failed(new IdentityNotFoundException("Couldn't find user"))
           }
         }.recover {
-          case _: ProviderException =>
+          case ex: ProviderException =>
             Redirect(routes.SignInController.view()).flashing("error" -> Messages("invalid.credentials"))
         }
       })

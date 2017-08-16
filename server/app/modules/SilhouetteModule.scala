@@ -1,30 +1,30 @@
 package modules
 
 import com.google.inject.name.Named
-import com.google.inject.{ AbstractModule, Provides }
-import com.mohiva.play.silhouette.api.actions.{ SecuredErrorHandler, UnsecuredErrorHandler }
+import com.google.inject.{AbstractModule, Provides}
+import com.mohiva.play.silhouette.api.actions.{SecuredErrorHandler, UnsecuredErrorHandler}
 import com.mohiva.play.silhouette.api.crypto._
 import com.mohiva.play.silhouette.api.repositories.AuthInfoRepository
 import com.mohiva.play.silhouette.api.services._
 import com.mohiva.play.silhouette.api.util._
-import com.mohiva.play.silhouette.api.{ Environment, EventBus, Silhouette, SilhouetteProvider }
-import com.mohiva.play.silhouette.crypto.{ JcaCrypter, JcaCrypterSettings, JcaSigner, JcaSignerSettings }
+import com.mohiva.play.silhouette.api.{Environment, EventBus, Silhouette, SilhouetteProvider}
+import com.mohiva.play.silhouette.crypto.{JcaCrypter, JcaCrypterSettings, JcaSigner, JcaSignerSettings}
 import com.mohiva.play.silhouette.impl.authenticators._
 import com.mohiva.play.silhouette.impl.providers._
 import com.mohiva.play.silhouette.impl.providers.oauth1._
-import com.mohiva.play.silhouette.impl.providers.oauth1.secrets.{ CookieSecretProvider, CookieSecretSettings }
+import com.mohiva.play.silhouette.impl.providers.oauth1.secrets.{CookieSecretProvider, CookieSecretSettings}
 import com.mohiva.play.silhouette.impl.providers.oauth1.services.PlayOAuth1Service
 import com.mohiva.play.silhouette.impl.providers.oauth2._
 import com.mohiva.play.silhouette.impl.providers.openid.YahooProvider
 import com.mohiva.play.silhouette.impl.providers.openid.services.PlayOpenIDService
-import com.mohiva.play.silhouette.impl.providers.state.{ CsrfStateItemHandler, CsrfStateSettings }
+import com.mohiva.play.silhouette.impl.providers.state.{CsrfStateItemHandler, CsrfStateSettings}
 import com.mohiva.play.silhouette.impl.services._
 import com.mohiva.play.silhouette.impl.util._
 import com.mohiva.play.silhouette.password.BCryptPasswordHasher
-import com.mohiva.play.silhouette.persistence.daos.{ DelegableAuthInfoDAO, InMemoryAuthInfoDAO }
+import com.mohiva.play.silhouette.persistence.daos.{DelegableAuthInfoDAO, InMemoryAuthInfoDAO}
 import com.mohiva.play.silhouette.persistence.repositories.DelegableAuthInfoRepository
 import models.daos._
-import models.services.{ UserService, UserServiceImpl }
+import models.services.{UserService, UserServiceImpl}
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 import net.codingwell.scalaguice.ScalaModule
@@ -32,9 +32,10 @@ import play.api.Configuration
 import play.api.libs.openid.OpenIdClient
 import play.api.libs.ws.WSClient
 import play.api.mvc.CookieHeaderEncoding
-import utils.auth.{ CustomSecuredErrorHandler, CustomUnsecuredErrorHandler, DefaultEnv }
+import utils.auth.{CustomSecuredErrorHandler, CustomUnsecuredErrorHandler, DefaultEnv, JWTEnv}
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 /**
  * The Guice module which wires all Silhouette dependencies.
@@ -46,6 +47,7 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
    */
   def configure() {
     bind[Silhouette[DefaultEnv]].to[SilhouetteProvider[DefaultEnv]]
+//    bind[Silhouette[JWTEnv]].to[SilhouetteProvider[JWTEnv]]
     bind[UnsecuredErrorHandler].to[CustomUnsecuredErrorHandler]
     bind[SecuredErrorHandler].to[CustomSecuredErrorHandler]
     bind[UserService].to[UserServiceImpl]
@@ -88,6 +90,19 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
     eventBus: EventBus): Environment[DefaultEnv] = {
 
     Environment[DefaultEnv](
+      userService,
+      authenticatorService,
+      Seq(),
+      eventBus)
+  }
+
+  @Provides
+  def provideJWTEnvironment(
+    userService: UserService,
+    authenticatorService: AuthenticatorService[JWTAuthenticator],
+    eventBus: EventBus): Environment[JWTEnv] = {
+
+    Environment[JWTEnv](
       userService,
       authenticatorService,
       Seq(),
@@ -249,6 +264,28 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
 
     new CookieAuthenticatorService(config, None, signer, cookieHeaderEncoding, authenticatorEncoder, fingerprintGenerator, idGenerator, clock)
   }
+
+
+  @Provides
+  def provideJWTAuthenticatorService(
+     @Named("authenticator-crypter") crypter: Crypter,
+     idGenerator: IDGenerator,
+     configuration: Configuration,
+     clock: Clock): AuthenticatorService[JWTAuthenticator] = {
+    val authenticatorService: AuthenticatorService[JWTAuthenticator] = {
+      val authenticatorDecoder = new Base64AuthenticatorEncoder
+      val duration = configuration.underlying.getString("silhouette.jwt.authenticator.authenticatorExpiry")
+      val expiration = Duration.apply(duration).asInstanceOf[FiniteDuration]
+      val config = new JWTAuthenticatorSettings(fieldName = configuration.underlying.getString("silhouette.jwt.authenticator.headerName"),
+        issuerClaim = configuration.underlying.getString("silhouette.jwt.authenticator.issuerClaim"),
+        authenticatorExpiry = expiration,
+        sharedSecret = configuration.underlying.getString("silhouette.jwt.authenticator.sharedSecret"))
+      new JWTAuthenticatorService(config, None, authenticatorDecoder, idGenerator, clock)
+    }
+
+    authenticatorService
+  }
+
 
   /**
    * Provides the avatar service.

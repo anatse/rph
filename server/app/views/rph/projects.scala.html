@@ -1,0 +1,51 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import org.webjars.play.WebJarsUtil
+@import shared.Project
+@import models.User
+@import scalajs._
+
+@(projects: Seq[Project], offset: Int, pageSize: Int, existsMore: Boolean, user: User)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
+
+@styles = {
+  <link rel="stylesheet" href="/assets/css/Projects-Clean.css">
+  <link rel="stylesheet" href="@controllers.routes.Assets.at("styles/main.css")">
+  <meta name="keywords" content="@messages("prj.list.title"): @projects.map(p => p.name).mkString(", ")">
+  <meta name="description" content='@messages("prj.list.title"): @projects.filter(p => p.description != None).map(p => p.description.get).mkString(", ")'>
+}
+
+<script>
+  function load (pageSize, offset) {
+    rphApp.findAll (pageSize, offset, 'Csrf-Token', '@helper.CSRF.getToken.value', '@messages("prj.goto")');
+  }
+</script>
+
+@rph.main(messages("prj.list.title"), Some(user), Some(styles)) {
+  <div class="projects-clean">
+    <div class="container">
+      <div class="intro">
+        <h2 class="text-center">@messages("prj.list.title") </h2>
+        <p class="text-center">@messages("prj.list.description") </p>
+      </div>
+      <nav>
+        <ul class="pager">
+          <li class="previous @if(offset < pageSize){ disabled }"><a href="@if(offset >= pageSize){#offset=@{offset-pageSize},pageSize=@pageSize} else {javascript:void(0);}">@messages("page.prev")</a></li>
+          <li class="next @if(!existsMore){ disabled }"><a href="@if(existsMore){#offset=@{offset+pageSize},pageSize=@pageSize} else {javascript:void(0);}">@messages("page.next")</a></li>
+        </ul>
+      </nav>
+      <div class="row projects">
+
+      </div>
+      <nav>
+        <ul class="pager">
+          <li class="previous @if(offset < pageSize){ disabled }"><a href="@if(offset >= pageSize){#offset=@{offset-pageSize},pageSize=@pageSize} else {javascript:void(0);}">@messages("page.prev")</a></li>
+          <li class="next @if(!existsMore){ disabled }"><a href="@if(existsMore){#offset=@{offset+pageSize},pageSize=@pageSize} else {javascript:void(0);}">@messages("page.next")</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  @html.scripts(projectName = "client",
+    name => s"/assets/$name",
+    name => getClass.getResource(s"/public/$name") != null)
+}
