@@ -9,16 +9,6 @@
 
 @(signInForm: Form[Data], socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
 
-<div id="scalajsShoutOut"></div>
-@html.scripts(projectName = "client",
-    name => s"/assets/$name",
-    name => getClass.getResource(s"/public/$name") != null)
-
-<script>
-        alert ("test");
-        example.ScalaJSExample().main();
-</script>
-
 @main(messages("sign.in.title")) {
     <fieldset class="col-md-6 col-md-offset-3">
         <legend>@messages("sign.in.credentials")</legend>

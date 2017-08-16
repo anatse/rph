@@ -62,7 +62,8 @@ class UserServiceImpl @Inject() (userDAO: UserDAO)(implicit ex: ExecutionContext
       case None => // Insert a new user
         userDAO.save(User(
           userID = UUID.randomUUID(),
-          loginInfo = profile.loginInfo,
+          providerID = Some(profile.loginInfo.providerID),
+          providerKey = Some(profile.loginInfo.providerKey),
           firstName = profile.firstName,
           lastName = profile.lastName,
           fullName = profile.fullName,

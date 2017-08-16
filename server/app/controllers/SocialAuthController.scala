@@ -7,11 +7,12 @@ import com.mohiva.play.silhouette.api.exceptions.ProviderException
 import com.mohiva.play.silhouette.api.repositories.AuthInfoRepository
 import com.mohiva.play.silhouette.impl.providers._
 import models.services.UserService
-import play.api.i18n.{ I18nSupport, Messages }
-import play.api.mvc.{ AbstractController, AnyContent, ControllerComponents, Request }
+import play.api.i18n.{I18nSupport, Messages}
+import play.api.libs.json.Json
+import play.api.mvc.{AbstractController, AnyContent, ControllerComponents, Request}
 import utils.auth.DefaultEnv
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * The social auth controller.
@@ -39,6 +40,8 @@ class SocialAuthController @Inject() (
    * @return The result to display.
    */
   def authenticate(provider: String) = Action.async { implicit request: Request[AnyContent] =>
+    val sourceUrl = request2session.get("sourceUrl")
+
     (socialProviderRegistry.get[SocialProvider](provider) match {
       case Some(p: SocialProvider with CommonSocialProfileBuilder) =>
         p.authenticate().flatMap {
@@ -49,8 +52,11 @@ class SocialAuthController @Inject() (
             authInfo <- authInfoRepository.save(profile.loginInfo, authInfo)
             authenticator <- silhouette.env.authenticatorService.create(profile.loginInfo)
             value <- silhouette.env.authenticatorService.init(authenticator)
-            result <- silhouette.env.authenticatorService.embed(value, Redirect(routes.ApplicationController.index()))
+//          JWT Implementation
+//            result <- silhouette.env.authenticatorService.embed(value, Ok(Json.obj("token" -> value)))
+            result <- silhouette.env.authenticatorService.embed(value, Redirect(sourceUrl.getOrElse(routes.ApplicationController.index().url)).withHeaders("X-Auth-Token" -> s"$value"))
           } yield {
+            //println (s"profile: ${profile}\nuser: ${user}\nauthInfo: ${authInfo}\nauthenticator: ${authenticator}\nvallue: ${value}\nresult: ${result}")
             silhouette.env.eventBus.publish(LoginEvent(user, request))
             result
           }
