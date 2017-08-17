@@ -101,7 +101,7 @@ object ProjectJS extends js.JSApp {
 
   def callLoad (url: String): Unit = {
     val load = js.Dynamic.global.selectDynamic("load")
-    if (js.isUndefined(load)) {
+    if (!js.isUndefined(load)) {
       val params = parseHash(url)
       val offset: Int = params.getOrElse("offset", "0").toInt
       val pageSize: Int = params.getOrElse("pageSize", "4").toInt
