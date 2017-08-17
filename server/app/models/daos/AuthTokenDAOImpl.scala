@@ -13,6 +13,8 @@ import slick.jdbc.meta.MTable.getTables
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 
+
+
 /**
  * Give access to the [[AuthToken]] object.
  */
