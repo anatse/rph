@@ -3,12 +3,10 @@ package model
 import java.sql.Timestamp
 import javax.inject.{Inject, Singleton}
 
-import play.api.cache.{AsyncCacheApi, NamedCache}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.db.NamedDatabase
 import shared._
 import slick.jdbc.JdbcProfile
-import utils.Logger
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -19,8 +17,7 @@ object Status extends Enumeration {
 }
 
 @Singleton
-class ProjectDAO @Inject() (@NamedDatabase("estima") protected val dbConfigProvider: DatabaseConfigProvider, @NamedCache("session-cache") sessionCache: AsyncCacheApi)
-  extends HasDatabaseConfigProvider[JdbcProfile] with Logger {
+class ProjectDAO @Inject() (@NamedDatabase("estima") protected val dbConfigProvider: DatabaseConfigProvider) extends HasDatabaseConfigProvider[JdbcProfile] {
   import profile.api._
 
   implicit class ResultEnrichment[T](action: DBIO[Seq[T]]) {
@@ -45,12 +42,11 @@ class ProjectDAO @Inject() (@NamedDatabase("estima") protected val dbConfigProvi
     db.run(DBIO.seq(schema.create))
   }
 
-  def findAll (pageSize: Option[Int] = None, offset: Option[Int] = None): Future[Seq[Project]] = sessionCache.getOrElseUpdate[Seq[Project]](s"pfa_${pageSize}_${offset}"){
+  def findAll (pageSize: Option[Int] = None, offset: Option[Int] = None): Future[Seq[Project]] = {
     val query = (for {
       project <- projects
     } yield (project)).sortBy(_.name.asc.nullsFirst).drop(offset.getOrElse(0)).take(pageSize.getOrElse(3))
 
-    logger.info(s"load from database: ${pageSize}/${offset}")
     db.run(query.result)
   }
 

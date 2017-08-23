@@ -4,26 +4,63 @@
 @import org.webjars.play.WebJarsUtil
 @import forms.SignUpForm.Data
 @import b3.inline.fieldConstructor
+@import scalajs._
 
 @(signUpForm: Form[Data])(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
 
-@main(messages("sign.up.title")) {
-    <fieldset class="col-md-6 col-md-offset-3">
-        <legend>@messages("sign.up.account")</legend>
-        @helper.form(action = controllers.routes.SignUpController.submit()) {
-            @helper.CSRF.formField
-            @b3.text(signUpForm("firstName"), '_hiddenLabel -> messages("first.name"), 'placeholder -> messages("first.name"), 'class -> "form-control input-lg")
-            @b3.text(signUpForm("lastName"), '_hiddenLabel -> messages("last.name"), 'placeholder -> messages("last.name"), 'class -> "form-control input-lg")
-            @b3.text(signUpForm("email"), '_hiddenLabel -> messages("email"), 'placeholder -> messages("email"), 'class -> "form-control input-lg")
-            @passwordStrength(signUpForm("password"), '_hiddenLabel -> messages("password"), 'placeholder -> messages("password"), 'class -> "form-control input-lg")
-            <div class="form-group">
-                <div>
-                    <button id="submit" type="submit" value="submit" class="btn btn-lg btn-primary btn-block">@messages("sign.up")</button>
+@content = {
+    <div class="register-photo">
+        <div class="form-container">
+            <div class="image-holder"></div>
+            @helper.form(action = controllers.routes.SignUpController.submit()) {
+                @helper.CSRF.formField
+                <h2 class="text-center"><strong>@messages("sign.up.account")</strong></h2>
+                @b3.text(signUpForm("firstName"), '_hiddenLabel -> messages("first.name"), 'placeholder -> messages("first.name"), 'class -> "form-control input-sg")
+                @b3.text(signUpForm("lastName"), '_hiddenLabel -> messages("last.name"), 'placeholder -> messages("last.name"), 'class -> "form-control input-sg")
+                @b3.text(signUpForm("email"), '_hiddenLabel -> messages("email"), 'placeholder -> messages("email"), 'class -> "form-control input-sg")
+                @passwordStrength(signUpForm("password"), '_hiddenLabel -> messages("password"), 'placeholder -> messages("password"), 'class -> "form-control input-sg")
+
+                <div class="form-group">
+                    <div class="checkbox">
+                        <label class="control-label">
+                            <input type="checkbox" onchange="document.getElementById('submit').disabled = !this.checked;" />
+                            I agree to the <a data-toggle="modal" data-target="#myModal">license</a> terms.</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button id="submit" disabled class="btn btn-primary btn-block" type="submit">@messages("sign.up")</button>
+                </div>
+                <a href="@controllers.routes.SignInController.view" class="already">@messages("sign.in.now")</a>
+            }
+        </div>
+    </div>
+
+    <div class="modal fade" id="myModal" role="dialog">
+        <div class="modal-dialog modal-lg">
+
+                <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Modal Header</h4>
+                </div>
+                <div class="modal-body">
+                    <p class="text-justify">
+                        Регистрируясь на сайте {0}, вы свободно, по своей воле и в своих интересах даёте полное и безоговорочное согласие {1}, далее — «Оператор») на: 1. Обработку предоставленных вами ваших персональных данных (Ф.И.О., пол, дата рождения, email, номер телефона), в том числе на любые действия (операции), совершаемые с вашими персональными данными, как с использованием средств автоматизации, так и без них, включая сбор, запись, систематизацию, накопление, хранение, уточнение (обновление, изменение), извлечение, использование, передачу третьим лицам (распространение, предоставление, доступ), обезличивание, блокирование, удаление, уничтожение в соответствии со ст. 3, ст. 9, ст. 15 ФЗ N 152-ФЗ «О персональных данных», в целях: исполнения Оператором своих обязательств по договорам поставки, заключенным между Оператором и Аптеками, и в иных целях, определённых на сайте {0}; формирования клиентом заказа на сайте {0} от имени Аптеки в адрес поставщика для последующей покупки товара в Аптеке; проведения и контроля результатов маркетинговых акций. Также вы соглашаетесь с тем, что Оператор под свою ответственность вправе поручить обработку персональных данных любому третьему лицу по своему усмотрению при условии соблюдения требований ст. 6 Закона, в том числе осуществления таким лицом конфиденциальности и защиты персональных данных. Согласие на обработку ваших персональных данных и иные вышеуказанные действия предоставляется без ограничения срока его действия и, согласно п. 5 ст. 21 Закона, может быть отозвано вами путём направления письменного уведомления Оператору по вышеуказанному адресу. Обработка ваших данных будет прекращена в срок, не превышающий тридцати дней с момента поступления указанного отзыва. Регистрация на указанном Интернет-сайте Оператора является достаточным подтверждением вашего согласия на обработку ваших персональных данных Оператором на указанных выше условиях, в соответствии с п. 1 ст. 9 Закона, при этом письменная форма или иные доказательства для дополнительного подтверждения вашего свободного волеизъявления Оператору не потребуются. 2.Получение от Оператора либо от третьих лиц, уполномоченных Оператором, SMS- и email-рассылок рекламно-информационного характера на телефон и электронный адрес, указанные вами при регистрации на сайте Apteka.RU или дополнительно указанные после такой регистрации. Вы подтверждаете, что проинформированы о том, что можете отказаться от получения рассылок рекламно-информационного характера путем письменного уведомления Оператора по вышеуказанному адресу либо путем отписки от рассылок в соответствии с инструкциями, указанными в тексте полученного сообщения рекламно-информационного характера.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
             </div>
-            <div class="sign-in-now">
-                <p>@messages("already.a.member") <a href="@controllers.routes.SignInController.view">@messages("sign.in.now")</a></p>
-            </div>
-        }
-    </fieldset>
+        </div>
+    </div>
 }
+
+@rph.main(messages("sign.up.title")) {@content}
+
+@html.scripts(projectName = "client",
+    name => s"/assets/$name",
+    name => getClass.getResource(s"/public/$name") != null)
+
+<script>pwdStrong();</script>

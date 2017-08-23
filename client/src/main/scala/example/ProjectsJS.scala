@@ -17,8 +17,6 @@ object ProjectJS extends js.JSApp {
 
   @JSExport
   def findAll (pageSize: Int, offset: Int, csrfHeader: String, csrfValue: String, linkText: String) = {
-    dom.console.error("test")
-
     val xhr = new XMLHttpRequest()
 
     xhr.open("POST", s"/projects/list?offset=$offset&pageSize=$pageSize")
