@@ -15,8 +15,6 @@ lazy val server = (project in file("server")).settings(
   compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
   resolvers += "Atlassian Releases" at "https://maven.atlassian.com/public/",
   libraryDependencies ++= Seq(
-//    "com.atlassian.jwt" % "jwt-api" % "1.6.2",
-//    "com.atlassian.jwt" % "jwt-core" % "1.6.2",
     // Scala js scripts
     "com.vmunier" %% "scalajs-scripts" % "1.1.1",
 
@@ -24,26 +22,26 @@ lazy val server = (project in file("server")).settings(
     "com.mohiva" %% "play-silhouette-password-bcrypt" % silhouetteVersion,
     "com.mohiva" %% "play-silhouette-persistence" % silhouetteVersion,
     "com.mohiva" %% "play-silhouette-crypto-jca" % silhouetteVersion,
-    "org.webjars" %% "webjars-play" % "2.6.0",
+    "org.webjars" %% "webjars-play" % "2.6.+",
 
     // Javascript libraries
     "org.webjars" % "bootstrap" % "3.3.7-1" exclude("org.webjars", "jquery"),
     "org.webjars" % "jquery" % "3.2.1",
     "com.adrianhurt" %% "play-bootstrap" % "1.2-P26-B3-RC2",
 
-    "net.codingwell" %% "scala-guice" % "4.1.0",
+    "net.codingwell" %% "scala-guice" % "4.+",
     "com.iheart" %% "ficus" % "1.4.1",
-    "com.typesafe.play" %% "play-mailer" % "6.0.0",
-    "com.typesafe.play" %% "play-mailer-guice" % "6.0.0",
+    "com.typesafe.play" %% "play-mailer" % "6.+",
+    "com.typesafe.play" %% "play-mailer-guice" % "6.+",
     "com.enragedginger" %% "akka-quartz-scheduler" % "1.+",
 
     // Database slick & postgresql
-    "com.typesafe.play" %% "play-slick" % "3.0.0",
-    "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0",
-    "com.typesafe.slick" %% "slick-hikaricp" % "3.2.1",
-    "com.github.tototoshi" %% "slick-joda-mapper" % "2.3.0",
-    "com.github.tototoshi" %% "scala-csv" % "1.3.4",
-    "org.postgresql" % "postgresql" % "42.1.3",
+//    "com.typesafe.play" %% "play-slick" % "3.0.0",
+    //    "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0",
+    //    "com.typesafe.slick" %% "slick-hikaricp" % "3.2.1",
+    //    "com.github.tototoshi" %% "slick-joda-mapper" % "2.3.0",
+    //    "com.github.tototoshi" %% "scala-csv" % "1.3.4",
+    //    "org.postgresql" % "postgresql" % "42.1.3",
 
     // mongoDB
     "org.reactivemongo" %% "play2-reactivemongo" % "0.12.+",
@@ -70,10 +68,11 @@ lazy val client = (project in file("client")).settings(
   scalaVersion := scalaV,
   scalaJSUseMainModuleInitializer := true,
   coverageEnabled := false,
+  mainClass in Compile := Some("example.ProjectJS"),
   libraryDependencies ++= Seq(
-    "org.scala-js" %%% "scalajs-dom" % "0.9.1",
-    "com.lihaoyi" %%% "scalatags" % "0.6.5",
-    "be.doeraene" %%% "scalajs-jquery" % "0.9.1"
+    "org.scala-js" %%% "scalajs-dom" % "0.9.+",
+    "com.lihaoyi" %%% "scalatags" % "0.6.+",
+    "be.doeraene" %%% "scalajs-jquery" % "0.9.+"
   )
 ).enablePlugins(ScalaJSPlugin, ScalaJSWeb).
   dependsOn(sharedJs)

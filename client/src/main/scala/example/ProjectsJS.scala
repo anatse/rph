@@ -13,7 +13,20 @@ import scalatags.Text.all._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 @JSExportTopLevel(name = "rphApp")
-object ProjectJS extends js.JSApp {
+object ProjectJS {
+  @JSExport
+  def main: Unit = {
+    dom.window.addEventListener("hashchange", { (event: dom.HashChangeEvent) =>
+      callLoad(event.newURL)
+      event.preventDefault()
+    }, false)
+
+    // Connect to search field
+    dom.document.getElementById("search-field").addEventListener("keyup", onSearch)
+
+    // Calling first time function
+    callLoad(dom.window.location.hash)
+  }
 
   @JSExport
   def findAll (pageSize: Int, offset: Int, csrfHeader: String, csrfValue: String, linkText: String) = {
@@ -112,19 +125,6 @@ object ProjectJS extends js.JSApp {
   def onSearch (event: dom.KeyboardEvent) = {
     val stringToSearch = event.target.asInstanceOf[Input].value
     dom.console.log(stringToSearch)
-  }
-
-  override def main: Unit = {
-    dom.window.addEventListener("hashchange", { (event: dom.HashChangeEvent) =>
-      callLoad(event.newURL)
-      event.preventDefault()
-    }, false)
-
-    // Connect to search field
-    dom.document.getElementById("search-field").addEventListener("keyup", onSearch)
-
-    // Calling first time function
-    callLoad(dom.window.location.hash)
   }
 
   @JSExportTopLevel(name = "pwdStrong")

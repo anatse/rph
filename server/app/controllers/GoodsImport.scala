@@ -3,7 +3,7 @@ package controllers
 import javax.inject.Inject
 
 import com.mohiva.play.silhouette.api.Silhouette
-import model.ProjectDAO
+import models.DrugsProduct
 import org.webjars.play.WebJarsUtil
 import play.api.i18n.I18nSupport
 import play.api.mvc.{AbstractController, ControllerComponents}
@@ -16,34 +16,14 @@ import scala.io.Source
 
 class GoodsImport @Inject()(
     components: ControllerComponents,
-    silhouette: Silhouette[DefaultEnv],
-    pdao: ProjectDAO)(implicit webJarsUtil: WebJarsUtil) extends AbstractController(components) with I18nSupport with Logger {
-
-  case class Good (
-    RetailPrice: String,
-    BarCode: String,
-    OstFirst: String,
-    TradeTech: String,
-    ProducerFullName: String,
-    DrugsFullName: String,
-    SupplierFullName: String,
-    MNN: String,
-    Ost: String,
-    UnitFullName: String,
-    ProducerShortName: String,
-    DrugFullName: String,
-    OstLast: String,
-    DrugsShortName: String,
-    Packaging: String,
-    ID: String,
-    UnitShortName: String
-  )
+    silhouette: Silhouette[DefaultEnv])(implicit webJarsUtil: WebJarsUtil) extends AbstractController(components) with I18nSupport with Logger {
 
   def uploadNonSecured = Action(parse.multipartFormData).async { request =>
     Future {
       request.body.file("data").map { picture =>
         val filename = picture.filename
         val contentType = picture.contentType
+
         println(s"file: ${picture.ref.getAbsolutePath}, realPath: ${picture.ref.path.toRealPath()}")
 
         Source.fromFile(picture.ref.path.toString).foreach {
@@ -68,28 +48,26 @@ class GoodsImport @Inject()(
 
       val mapValues = JsonUtil.fromJson[List[Map[String, String]]](json);
       val values = mapValues.map (v => {
-        Good (
-          RetailPrice = v("RetailPrice"),
-          BarCode = v("BarCode"),
-          OstFirst = v("OstFirst"),
-          TradeTech = v("TradeTech"),
-          ProducerFullName = v("ProducerFullName"),
-          DrugsFullName = v("DrugsFullName"),
-          SupplierFullName = v("SupplierFullName"),
+        DrugsProduct (
+          retailPrice = v("RetailPrice").toDouble,
+          barCode = v("BarCode"),
+          ostFirst = v("OstFirst").toDouble,
+          tradeTech = v("TradeTech"),
+          producerFullName = v("ProducerFullName"),
+          drugsFullName = v("DrugsFullName"),
+          supplierFullName = v("SupplierFullName"),
           MNN = v("MNN"),
-          Ost = v("Ost"),
-          UnitFullName = v("UnitFullName"),
-          ProducerShortName = v("ProducerShortName"),
-          DrugFullName = v("DrugFullName"),
-          OstLast = v("OstLast"),
-          DrugsShortName = v("DrugsShortName"),
-          Packaging = v("Packaging"),
-          ID = v("ID"),
-          UnitShortName = v("UnitShortName")
+          ost = v("Ost").toDouble,
+          unitFullName = v("UnitFullName"),
+          producerShortName = v("ProducerShortName"),
+          drugFullName = v("DrugFullName"),
+          ostLast = v("OstLast").toDouble,
+          drugsShortName = v("DrugsShortName"),
+          packaging = v("Packaging"),
+          id = v("ID"),
+          unitShortName = v("UnitShortName")
         )
       })
-
-      println (values)
 
       Ok("File uploaded")
     }.get

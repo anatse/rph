@@ -24,11 +24,11 @@ POST        /password/change                 controllers.ChangePasswordControlle
 GET         /account/email/:email            controllers.ActivateAccountController.send(email: String)
 GET         /account/activate/:token         controllers.ActivateAccountController.activate(token: java.util.UUID)
 
-GET         /projects                        controllers.ProjectController.index
-GET         /projects/create                 controllers.ProjectController.create
-GET         /projects/list                   controllers.ProjectController.findAll(offset: Option[Int], pageSize: Option[Int])
-POST        /projects/list                   controllers.ProjectController.jsonFindAll(offset: Option[Int], pageSize: Option[Int])
-GET         /project/:prjId                  controllers.ProjectController.project(prjId: Long)
+#GET         /projects                        controllers.ProjectController.index
+#GET         /projects/create                 controllers.ProjectController.create
+#GET         /projects/list                   controllers.ProjectController.findAll(offset: Option[Int], pageSize: Option[Int])
+#POST        /projects/list                   controllers.ProjectController.jsonFindAll(offset: Option[Int], pageSize: Option[Int])
+#GET         /project/:prjId                  controllers.ProjectController.project(prjId: Long)
 
 POST        /goods/upload                    controllers.GoodsImport.upload
 
