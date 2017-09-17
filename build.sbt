@@ -48,6 +48,10 @@ lazy val server = (project in file("server")).settings(
     // mongoDB
     "org.reactivemongo" %% "play2-reactivemongo" % "0.12.+",
 
+    // json
+    "com.fasterxml.jackson.core" % "jackson-databind" % "2.+",
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.+",
+
     "com.mohiva" %% "play-silhouette-testkit" % silhouetteVersion % "test",
     "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.1" % "test",
     "com.h2database" % "h2" % "1.4.196" % "test",

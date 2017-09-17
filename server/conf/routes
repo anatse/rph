@@ -30,7 +30,10 @@ GET         /projects/list                   controllers.ProjectController.findA
 POST        /projects/list                   controllers.ProjectController.jsonFindAll(offset: Option[Int], pageSize: Option[Int])
 GET         /project/:prjId                  controllers.ProjectController.project(prjId: Long)
 
+POST        /goods/upload                    controllers.GoodsImport.upload
+
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                    controllers.Assets.at(path="/public", file)
+
 ->          /webjars                         webjars.Routes
 

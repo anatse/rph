@@ -21,6 +21,17 @@
 </script>
 
 @rph.main(messages("prj.list.title"), Some(user), Some(styles)) {
+  @helper.form(action = routes.GoodsImport.upload, 'enctype -> "multipart/form-data") {
+    @helper.CSRF.formField
+    <input type="file" name="data">
+
+
+    <p>
+      <input type="submit">
+    </p>
+
+  }
+
   <div class="projects-clean">
     <div class="container">
       <div class="intro">
