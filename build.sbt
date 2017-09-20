@@ -22,11 +22,12 @@ lazy val server = (project in file("server")).settings(
     "com.mohiva" %% "play-silhouette-password-bcrypt" % silhouetteVersion,
     "com.mohiva" %% "play-silhouette-persistence" % silhouetteVersion,
     "com.mohiva" %% "play-silhouette-crypto-jca" % silhouetteVersion,
-    "org.webjars" %% "webjars-play" % "2.6.+",
+    "org.webjars" %% "webjars-play" % "2.6.0",
 
     // Javascript libraries
     "org.webjars" % "bootstrap" % "3.3.7-1" exclude("org.webjars", "jquery"),
     "org.webjars" % "jquery" % "3.2.1",
+    "org.webjars" % "fuelux" % "3.3.1",
     "com.adrianhurt" %% "play-bootstrap" % "1.2-P26-B3-RC2",
 
     "net.codingwell" %% "scala-guice" % "4.+",
@@ -35,16 +36,8 @@ lazy val server = (project in file("server")).settings(
     "com.typesafe.play" %% "play-mailer-guice" % "6.+",
     "com.enragedginger" %% "akka-quartz-scheduler" % "1.+",
 
-    // Database slick & postgresql
-//    "com.typesafe.play" %% "play-slick" % "3.0.0",
-    //    "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0",
-    //    "com.typesafe.slick" %% "slick-hikaricp" % "3.2.1",
-    //    "com.github.tototoshi" %% "slick-joda-mapper" % "2.3.0",
-    //    "com.github.tototoshi" %% "scala-csv" % "1.3.4",
-    //    "org.postgresql" % "postgresql" % "42.1.3",
-
     // mongoDB
-    "org.reactivemongo" %% "play2-reactivemongo" % "0.12.+",
+    "org.reactivemongo" %% "play2-reactivemongo" % "0.12.6-play26",
 
     // json
     "com.fasterxml.jackson.core" % "jackson-databind" % "2.+",

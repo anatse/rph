@@ -8,13 +8,14 @@ import models.{MongoBaseDao, User}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson.{BSONDocumentReader, BSONDocumentWriter, Macros, document}
+import utils.Logger
 
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * Give access to the user object.
  */
-class UserDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex: ExecutionContext) extends UserDAO with MongoBaseDao {
+class UserDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex: ExecutionContext) extends UserDAO with MongoBaseDao with Logger {
   /**
     * Create users table/collection
     * @return users mongodb collections
@@ -31,12 +32,14 @@ class UserDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex: Ex
    * @return The found user or None if no user for the given login info could be found.
    */
   def find(loginInfo: LoginInfo) = {
+    logger.info(s"loginInfoL ${loginInfo}")
+
     usersCollection.flatMap(_.find(
       document(
         "providerID" -> loginInfo.providerID,
         "providerKey" -> loginInfo.providerKey
       )
-    ).cursor[User]().collect[List](-1, handler[User])).map(_.headOption)
+    ).one[User])
   }
 
   /**
@@ -55,7 +58,7 @@ class UserDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex: Ex
    */
   def save(user: User) = {
     // Insert or update the user
-    usersCollection.flatMap(_.update(document("userID" -> user.userID), user, upsert = true).map(_.upserted.map(ups => user).head))
+    usersCollection.flatMap(_.update(document("userID" -> user.userID), user, upsert = true).map(_.upserted.map(ups => user) .headOption.getOrElse(user)))
   }
 }
 

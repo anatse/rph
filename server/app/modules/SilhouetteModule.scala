@@ -59,8 +59,9 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
     bind[EventBus].toInstance(EventBus())
     bind[Clock].toInstance(Clock())
 
+    bind[DelegableAuthInfoDAO[PasswordInfo]].to[MongoAuthInfoDAOImpl]
+
     // Replace this with the bindings to your concrete DAOs
-    bind[DelegableAuthInfoDAO[PasswordInfo]].toInstance(new InMemoryAuthInfoDAO[PasswordInfo])
     bind[DelegableAuthInfoDAO[OAuth1Info]].toInstance(new InMemoryAuthInfoDAO[OAuth1Info])
     bind[DelegableAuthInfoDAO[OAuth2Info]].toInstance(new InMemoryAuthInfoDAO[OAuth2Info])
     bind[DelegableAuthInfoDAO[OpenIDInfo]].toInstance(new InMemoryAuthInfoDAO[OpenIDInfo])

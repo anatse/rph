@@ -60,10 +60,18 @@ class SignInController @Inject() (
    */
   def submit = silhouette.UnsecuredAction.async { implicit request: Request[AnyContent] =>
     SignInForm.form.bindFromRequest.fold(
-      form => Future.successful(BadRequest(views.html.rph.signIn(form, socialProviderRegistry))),
+      form => {
+        println (s"BadRequest: ${form}")
+        Future.successful(BadRequest(views.html.rph.signIn(form, socialProviderRegistry)))
+      },
       data => {
         val credentials = Credentials(data.email, data.password)
-        credentialsProvider.authenticate(credentials).flatMap { loginInfo =>
+        println (s"credentials: $credentials")
+        val auth = credentialsProvider.authenticate(credentials)
+
+
+        auth.flatMap { loginInfo =>
+          println (s"Credentials logininfo: ${loginInfo}")
           val result = Redirect(routes.ApplicationController.index())
           userService.retrieve(loginInfo).flatMap {
             case Some(user) if !user.activated =>
@@ -88,6 +96,7 @@ class SignInController @Inject() (
           }
         }.recover {
           case ex: ProviderException =>
+            ex.printStackTrace()
             Redirect(routes.SignInController.view()).flashing("error" -> Messages("invalid.credentials"))
         }
       })

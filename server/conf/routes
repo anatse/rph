@@ -2,6 +2,12 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
+GET         /new                            controllers.CompanyController.view
+GET         /drugs/group                    controllers.CompanyController.findDrugsGroups
+GET         /drugs/prod                     controllers.CompanyController.findDrugsProducts(offset: Int, pageSize: Int, sort: Option[String])
+GET         /drugs/searchProd               controllers.CompanyController.searchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String])
+GET         /drugs/create                   controllers.CompanyController.create
+
 # Home page
 GET         /                                controllers.ApplicationController.index
 GET         /signOut                         controllers.ApplicationController.signOut
@@ -30,7 +36,7 @@ GET         /account/activate/:token         controllers.ActivateAccountControll
 #POST        /projects/list                   controllers.ProjectController.jsonFindAll(offset: Option[Int], pageSize: Option[Int])
 #GET         /project/:prjId                  controllers.ProjectController.project(prjId: Long)
 
-POST        /goods/upload                    controllers.GoodsImport.upload
+POST        /goods/upload                    controllers.GoodsImportController.upload
 
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                    controllers.Assets.at(path="/public", file)

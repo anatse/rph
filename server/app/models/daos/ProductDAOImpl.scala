@@ -1,7 +1,6 @@
 package models.daos
 
-import models.DrugsProduct
-import models.MongoBaseDao
+import models.{DrugsGroup, DrugsProduct, MongoBaseDao}
 import reactivemongo.api.collections.bson.BSONCollection
 
 import scala.concurrent.Future
@@ -58,8 +57,13 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex:
     .collect[List](-1, handler[DrugsProduct]))
 
   override def findById(id: String) = productCollection.flatMap(_.find(document("id" -> id)).one[DrugsProduct])
-
   override def save(product: DrugsProduct) = productCollection.flatMap(_.update(document("id" -> product.id), product, upsert = true).map(_.upserted.map(ups => product).head))
-
   override def remove(id: String) = productCollection.flatMap(_.remove(document("id" -> id)).map(r => {}))
+
+  override def bulkInsert(entities: List[DrugsProduct]): Future[Unit] = productCollection.flatMap(
+      col => {
+        val bulkDocs = entities.map(implicitly[col.ImplicitlyDocumentProducer](_))
+        col.bulkInsert(ordered = true)(bulkDocs: _*)
+      }
+    ).map(_ => {})
 }

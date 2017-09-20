@@ -42,5 +42,9 @@ case class DrugsProduct(
    unitFullName: String,
    unitShortName: String,
 
-   packaging: String
+   packaging: String,
+
+   drugGroups: Option[Array[String]] = None
 )
+
+case class DrugsGroup (id: String, groupName: String, description: String)

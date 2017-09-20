@@ -21,7 +21,7 @@
 </script>
 
 @rph.main(messages("prj.list.title"), Some(user), Some(styles)) {
-  @helper.form(action = routes.GoodsImport.upload, 'enctype -> "multipart/form-data") {
+  @helper.form(action = routes.GoodsImportController.upload, 'enctype -> "multipart/form-data") {
     @helper.CSRF.formField
     <input type="file" name="data">
 
