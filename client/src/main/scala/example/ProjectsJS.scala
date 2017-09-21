@@ -32,7 +32,7 @@ object ProjectJS {
   def findAll (pageSize: Int, offset: Int, csrfHeader: String, csrfValue: String, linkText: String) = {
     val xhr = new XMLHttpRequest()
 
-    xhr.open("POST", s"/projects/list?offset=$offset&pageSize=$pageSize")
+    xhr.open("POST", s"/drugs/prod?offset=$offset&pageSize=$pageSize")
     xhr.onload = { (e: Event) =>
       if (xhr.status == 200) {
         val page = JSON.parse(xhr.responseText)

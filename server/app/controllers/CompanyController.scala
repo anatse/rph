@@ -47,6 +47,10 @@ class CompanyController @Inject()(
     drugsProductDAO.textSearch(searchText, sort, offset, pageSize).map(rows => Ok(Json.obj("rows" -> rows)))
   }
 
+  def combinedSearchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String] = None) = silhouette.UserAwareAction.async { implicit request =>
+    drugsProductDAO.combinedSearch(searchText, sort, offset, pageSize).map(rows => Ok(Json.obj("rows" -> rows)))
+  }
+
   def insertDrugsGroup(drugsGroup: DrugsGroup) = silhouette.UserAwareAction.async { implicit request =>
     drugsGroupDAO.save(drugsGroup).map(rows => Ok(Json.obj("rows" -> rows)))
   }

@@ -66,4 +66,22 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex:
         col.bulkInsert(ordered = true)(bulkDocs: _*)
       }
     ).map(_ => {})
+
+  override def fuzzySearch(text: String, sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(
+    document ("$where" -> s"compareString (this.drugsFullName, '${text}')")).options(QueryOpts().skip(offset).batchSize(pageSize))
+      .sort(sortField match {
+        case Some(value:String) => BSONDocument(value -> 1)
+        case _ => BSONDocument.empty
+      })
+      .cursor[DrugsProduct]()
+      .collect[List](-1, handler[DrugsProduct]))
+
+  override def combinedSearch(text: String, sortField: Option[String], offset: Int, pageSize: Int) = textSearch(text, sortField, offset, pageSize).flatMap(
+    result =>
+      // If not found then trying to fuzzy search
+      if (result.size == 0)
+        fuzzySearch (text, sortField, offset, pageSize)
+      else
+        Future(result)
+  )
 }

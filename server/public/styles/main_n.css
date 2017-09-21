@@ -18,7 +18,7 @@ h4 {
     margin-bottom: 30px;
 }
 .jumbotron {
-    background-color: #f4511e;
+    background-color: #456df4;
     color: #fff;
     padding: 100px 25px;
     font-family: Montserrat, sans-serif;
@@ -30,7 +30,7 @@ h4 {
     background-color: #f6f6f6;
 }
 .logo-small {
-    color: #f4511e;
+    color: #41f4ab;
     font-size: 50px;
 }
 .logo {
@@ -107,7 +107,7 @@ h4 {
 }
 .navbar {
     margin-bottom: 0;
-    background-color: #f4511e;
+    background-color: #1f5085;
     z-index: 9999;
     border: 0;
     font-size: 12px !important;
@@ -117,10 +117,10 @@ h4 {
     font-family: Montserrat, sans-serif;
 }
 .navbar li a, .navbar .navbar-brand {
-    color: #fff !important;
+    color: rgb(255, 255, 255) !important;
 }
 .navbar-nav li a:hover, .navbar-nav li.active a {
-    color: #f4511e !important;
+    color: #1f5085 !important;
     background-color: #fff !important;
 }
 .navbar-default .navbar-toggle {
