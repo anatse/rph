@@ -46,32 +46,34 @@ class GoodsImportController @Inject()(
       val contentType = picture.contentType
       val fileText = Source.fromFile(picture.ref.path.toString).mkString
 
-      val mapValues = JsonUtil.fromJson[List[Map[String, String]]](json);
+      val mapValues = JsonUtil.fromJson[List[Map[String, Option[String]]]](fileText);
       mapValues.map (v => {
         DrugsProduct (
-          retailPrice = v("RetailPrice").toDouble,
-          barCode = v("BarCode"),
-          ostFirst = v("OstFirst").toDouble,
-          tradeTech = v("TradeTech"),
-          producerFullName = v("ProducerFullName"),
-          drugsFullName = v("DrugsFullName"),
-          supplierFullName = v("SupplierFullName"),
-          MNN = v("MNN"),
-          ost = v("Ost").toDouble,
-          unitFullName = v("UnitFullName"),
-          producerShortName = v("ProducerShortName"),
-          drugFullName = v("DrugFullName"),
-          ostLast = v("OstLast").toDouble,
-          drugsShortName = v("DrugsShortName"),
-          packaging = v("Packaging"),
-          id = v("ID"),
-          unitShortName = v("UnitShortName")
+          retailPrice = v("RetailPrice").getOrElse("0").toDouble,
+          barCode = v("BarCode").getOrElse(""),
+          ostFirst = v("OstFirst").getOrElse("0").toDouble,
+          tradeTech = v("TradeTech").getOrElse(""),
+          producerFullName = v("ProducerFullName").getOrElse(""),
+          drugsFullName = v("DrugsFullName").getOrElse(""),
+          supplierFullName = v("SupplierFullName").getOrElse(""),
+          MNN = v("MNN").getOrElse(""),
+          ost = v("Ost").getOrElse("0").toDouble,
+          unitFullName = v("UnitFullName").getOrElse(""),
+          producerShortName = v("ProducerShortName").getOrElse(""),
+          drugFullName = v("DrugFullName").getOrElse(""),
+          ostLast = v("OstLast").getOrElse("0").toDouble,
+          drugsShortName = v("DrugsShortName").getOrElse(""),
+          packaging = v("Packaging").getOrElse(""),
+          id = v("ID").getOrElse(""),
+          unitShortName = v("UnitShortName").getOrElse("")
         )
       })
     }
 
+    println("drugsTOSave: " + drugsToSave)
+
     drugsToSave match {
-      case Some(drugs) => productDAO.bulkInsert(drugsToSave.getOrElse(List.empty)).map(_ => Ok("uploaded"))
+      case Some(drugs) => productDAO.bulkInsert(drugs).map(_ => Ok("uploaded"))
       case _ => Future(Ok("No drugs provided"))
     }
   }

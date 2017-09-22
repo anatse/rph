@@ -115,3 +115,7 @@ page.prev = Назад
 page.next = Вперед
 
 search.placeholder=Введите название лекарства
+
+company.title=ООО Фармрус
+company.name=Фармрус
+company.description=Купите лекарствов пачку, сможете улечься в тачку

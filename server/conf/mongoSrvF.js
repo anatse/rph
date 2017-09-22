@@ -49,12 +49,17 @@ db.system.js.save ({
 db.system.js.save({
     _id: "compareString",
     value : function (textData, searchString ) {
+        var rusSearch = rusLayout(searchString).toLowerCase();
+        var lowerText = textData.toLowerCase();
+        var lowerSearchString = searchString.toLowerCase();
+
         return (
-            textData === searchString
-            || textData === rusLayout(searchString)
-            || textData.indexOf(searchString) > 0
-            || soundex(textData) === soundex (searchString)
-            || soundex (textData) === soundex (rusLayout(searchString))
+            lowerText === lowerSearchString
+            || lowerText.toLowerCase() === rusSearch
+            || lowerText.indexOf(lowerSearchString) >= 0
+            || lowerText.indexOf(rusSearch) >= 0
+            || soundex(lowerText) === soundex (lowerSearchString)
+            || soundex (lowerText) === soundex (rusSearch)
         );
     }
 });

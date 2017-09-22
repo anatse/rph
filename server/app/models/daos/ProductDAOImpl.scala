@@ -40,21 +40,15 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex:
         "$search" -> text,
         "$caseSensitive" -> false)
     )).options(QueryOpts().skip(offset).batchSize(pageSize))
-      .sort(sortField match {
-        case Some(value:String) => BSONDocument(value -> 1)
-        case _ => BSONDocument.empty
-      })
+      .sort(document("retailPrice" -> 1))
       .cursor[DrugsProduct]()
-      .collect[List](-1, handler[DrugsProduct]))
+      .collect[List](pageSize, handler[DrugsProduct]))
 
   override def findAll(sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(document())
     .options(QueryOpts().skip(offset).batchSize(pageSize))
-    .sort(sortField match {
-      case Some(value:String) => BSONDocument(value -> 1)
-      case _ => BSONDocument.empty
-    })
+    .sort(document("retailPrice" -> 1))
     .cursor[DrugsProduct]()
-    .collect[List](-1, handler[DrugsProduct]))
+    .collect[List](pageSize, handler[DrugsProduct]))
 
   override def findById(id: String) = productCollection.flatMap(_.find(document("id" -> id)).one[DrugsProduct])
   override def save(product: DrugsProduct) = productCollection.flatMap(_.update(document("id" -> product.id), product, upsert = true).map(_.upserted.map(ups => product).head))
@@ -63,18 +57,16 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex:
   override def bulkInsert(entities: List[DrugsProduct]): Future[Unit] = productCollection.flatMap(
       col => {
         val bulkDocs = entities.map(implicitly[col.ImplicitlyDocumentProducer](_))
-        col.bulkInsert(ordered = true)(bulkDocs: _*)
+        col.bulkInsert(ordered = true)(bulkDocs:_*)
       }
     ).map(_ => {})
 
   override def fuzzySearch(text: String, sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(
-    document ("$where" -> s"compareString (this.drugsFullName, '${text}')")).options(QueryOpts().skip(offset).batchSize(pageSize))
-      .sort(sortField match {
-        case Some(value:String) => BSONDocument(value -> 1)
-        case _ => BSONDocument.empty
-      })
+    document ("$where" -> s"compareString (this.drugsFullName, '${text}')"))
+      .options(QueryOpts().skip(offset).batchSize(pageSize))
+      .sort(document ("retailPrice" -> 1))
       .cursor[DrugsProduct]()
-      .collect[List](-1, handler[DrugsProduct]))
+      .collect[List](pageSize, handler[DrugsProduct]))
 
   override def combinedSearch(text: String, sortField: Option[String], offset: Int, pageSize: Int) = textSearch(text, sortField, offset, pageSize).flatMap(
     result =>

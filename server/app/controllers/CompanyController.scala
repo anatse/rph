@@ -31,7 +31,12 @@ class CompanyController @Inject()(
   implicit val productWrites = Json.writes[DrugsProduct]
   implicit val groupWrites = Json.writes[DrugsGroup]
 
-  def create = silhouette.UserAwareAction.async { implicit request =>
+  protected def makeResult (rows:List[DrugsProduct], realPageSize:Int, offset:Int) = {
+    val filterredRows = if (rows.length > realPageSize) rows.dropRight(1) else rows
+    Ok(Json.obj("rows" -> filterredRows, "pageSize" -> realPageSize, "offset" -> offset, "hasMore" -> (rows.length > realPageSize)))
+  }
+
+  def create = silhouette.SecuredAction.async { implicit request =>
     drugsProductDAO.createTextIndex().map(_ => Ok("OK"))
   }
 
@@ -40,18 +45,18 @@ class CompanyController @Inject()(
   }
 
   def findDrugsProducts(offset:Int, pageSize:Int, sort:Option[String] = None) = silhouette.UserAwareAction.async { implicit request =>
-    drugsProductDAO.findAll(sort, offset, pageSize).map(rows => Ok(Json.obj("rows" -> rows)))
+    drugsProductDAO.findAll(sort, offset, pageSize).map(rows => makeResult(rows, pageSize, offset))
   }
 
   def searchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String] = None) = silhouette.UserAwareAction.async { implicit request =>
-    drugsProductDAO.textSearch(searchText, sort, offset, pageSize).map(rows => Ok(Json.obj("rows" -> rows)))
+    drugsProductDAO.textSearch(searchText, sort, offset, pageSize).map(rows => makeResult(rows, pageSize, offset))
   }
 
   def combinedSearchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String] = None) = silhouette.UserAwareAction.async { implicit request =>
-    drugsProductDAO.combinedSearch(searchText, sort, offset, pageSize).map(rows => Ok(Json.obj("rows" -> rows)))
+    drugsProductDAO.combinedSearch(searchText, sort, offset, pageSize).map(rows => makeResult(rows, pageSize, offset))
   }
 
-  def insertDrugsGroup(drugsGroup: DrugsGroup) = silhouette.UserAwareAction.async { implicit request =>
+  def insertDrugsGroup(drugsGroup: DrugsGroup) = silhouette.SecuredAction.async { implicit request =>
     drugsGroupDAO.save(drugsGroup).map(rows => Ok(Json.obj("rows" -> rows)))
   }
 }
