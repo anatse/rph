@@ -25,13 +25,13 @@
         <link rel="stylesheet" href="@controllers.routes.Assets.at("styles/main_n.css")">
 
         <script>
-                function load (pageSize, offset) {
-                    rphApp.findAll (pageSize, offset, 'Csrf-Token', '@helper.CSRF.getToken.value', '@messages("prj.goto")');
+                function load (pageSize, offset, search) {
+                    rphApp.findAll (pageSize, offset, search, 'Csrf-Token', '@helper.CSRF.getToken.value', '@messages("prj.goto")');
                 }
         </script>
     </head>
 
-    <body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="60">
+    <body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="60" >
         <nav class="navbar navbar-default navbar-fixed-top">
             <div class="container">
                 <div class="navbar-header">
@@ -44,7 +44,7 @@
                 </div>
                 <div class="collapse navbar-collapse" id="myNavbar">
                     <ul class="nav navbar-nav navbar-right">
-                        <li><a href="#about">@messages("")</a></li>
+                        <li><a href="#about">@messages("shop.menu.item")</a></li>
                         <li><a href="#services">SERVICES</a></li>
                         <li><a href="#portfolio">PORTFOLIO</a></li>
                         <li><a href="#pricing">PRICING</a></li>
@@ -68,7 +68,7 @@
                 <div class="input-group">
                     <input type="search" class="form-control search-field" size="50" id="search-field" placeholder="@{messages("search.placeholder")}" required>
                     <div class="input-group-btn">
-                        <button type="button" class="btn btn-info">
+                        <button type="button" class="btn btn-info" id="search-button">
                             <span class="glyphicon glyphicon-search"></span> Поиск
                         </button>
                     </div>
@@ -78,17 +78,40 @@
 
         <!-- Container (About Section) -->
         <div id="about" class="container-fluid">
-            <div class="row">
-                <div class="col-sm-8">
-                    <h2>About Company Page</h2><br>
-                    <h4>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</h4><br>
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-                    <br><button class="btn btn-default btn-lg">Get in Touch</button>
-                </div>
-                <div class="col-sm-4">
-                    <span class="glyphicon glyphicon-signal logo"></span>
+            <div class="projects-clean">
+                <div class="container">
+                    @*<div class="intro">*@
+                        @*<h2 class="text-center">@messages("prj.list.title") </h2>*@
+                        @*<p class="text-center">@messages("prj.list.description") </p>*@
+                    @*</div>*@
+                    <nav>
+                        <ul class="pager">
+                            <li class="previous disabled"><a href="javascript:void(0);">@messages("page.prev")</a></li>
+                            <li class="next disabled"><a href="javascript:void(0);">@messages("page.next")</a></li>
+                        </ul>
+                    </nav>
+                    <div class="row drugs">
+
+                    </div>
+                    <nav>
+                        <ul class="pager">
+                            <li class="previous disabled"><a href="javascript:void(0);">@messages("page.prev")</a></li>
+                            <li class="next disabled"><a href="javascript:void(0);">@messages("page.next")</a></li>
+                        </ul>
+                    </nav>
                 </div>
             </div>
+            @*<div class="row">*@
+                @*<div class="col-sm-8">*@
+                    @*<h2>About Company Page</h2><br>*@
+                    @*<h4>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</h4><br>*@
+                    @*<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>*@
+                    @*<br><button class="btn btn-default btn-lg">Get in Touch</button>*@
+                @*</div>*@
+                @*<div class="col-sm-4">*@
+                    @*<span class="glyphicon glyphicon-signal logo"></span>*@
+                @*</div>*@
+            @*</div>*@
         </div>
 
         <div class="container-fluid bg-grey">

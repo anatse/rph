@@ -45,15 +45,15 @@ class CompanyController @Inject()(
   }
 
   def findDrugsProducts(offset:Int, pageSize:Int, sort:Option[String] = None) = silhouette.UserAwareAction.async { implicit request =>
-    drugsProductDAO.findAll(sort, offset, pageSize).map(rows => makeResult(rows, pageSize, offset))
+    drugsProductDAO.findAll(sort, offset, pageSize+1).map(rows => makeResult(rows, pageSize, offset))
   }
 
   def searchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String] = None) = silhouette.UserAwareAction.async { implicit request =>
-    drugsProductDAO.textSearch(searchText, sort, offset, pageSize).map(rows => makeResult(rows, pageSize, offset))
+    drugsProductDAO.textSearch(searchText, sort, offset, pageSize+1).map(rows => makeResult(rows, pageSize, offset))
   }
 
   def combinedSearchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String] = None) = silhouette.UserAwareAction.async { implicit request =>
-    drugsProductDAO.combinedSearch(searchText, sort, offset, pageSize).map(rows => makeResult(rows, pageSize, offset))
+    drugsProductDAO.combinedSearch(searchText, sort, offset, pageSize+1).map(rows => makeResult(rows, pageSize, offset))
   }
 
   def insertDrugsGroup(drugsGroup: DrugsGroup) = silhouette.SecuredAction.async { implicit request =>

@@ -9,6 +9,7 @@ POST        /drugs/prod                     controllers.CompanyController.findDr
 GET         /drugs/searchProd               controllers.CompanyController.searchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String])
 GET         /drugs/create                   controllers.CompanyController.create
 GET         /drugs/fuzzySearch              controllers.CompanyController.combinedSearchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String])
+POST        /drugs/fuzzySearch              controllers.CompanyController.combinedSearchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String])
 
 # Home page
 GET         /                                controllers.ApplicationController.index

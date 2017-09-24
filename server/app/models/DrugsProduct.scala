@@ -44,7 +44,8 @@ case class DrugsProduct(
 
    packaging: String,
 
-   drugGroups: Option[Array[String]] = None
+   drugGroups: Option[Array[String]] = None,
+   drugImage: Option[String] = None
 )
 
 case class DrugsGroup (id: String, groupName: String, description: String)

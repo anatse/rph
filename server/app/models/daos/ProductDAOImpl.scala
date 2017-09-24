@@ -10,7 +10,7 @@ import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.QueryOpts
 import reactivemongo.api.indexes.Index
 import reactivemongo.api.indexes.IndexType.Text
-import reactivemongo.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter, Macros, document}
+import reactivemongo.bson.{BSONDocumentReader, BSONDocumentWriter, Macros, document}
 
 import scala.concurrent.ExecutionContext
 
@@ -40,13 +40,13 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex:
         "$search" -> text,
         "$caseSensitive" -> false)
     )).options(QueryOpts().skip(offset).batchSize(pageSize))
-      .sort(document("retailPrice" -> 1))
+      .sort(document(sortField.getOrElse("retailPrice") -> 1))
       .cursor[DrugsProduct]()
       .collect[List](pageSize, handler[DrugsProduct]))
 
   override def findAll(sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(document())
     .options(QueryOpts().skip(offset).batchSize(pageSize))
-    .sort(document("retailPrice" -> 1))
+    .sort(document(sortField.getOrElse("retailPrice") -> 1))
     .cursor[DrugsProduct]()
     .collect[List](pageSize, handler[DrugsProduct]))
 
@@ -64,7 +64,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex:
   override def fuzzySearch(text: String, sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(
     document ("$where" -> s"compareString (this.drugsFullName, '${text}')"))
       .options(QueryOpts().skip(offset).batchSize(pageSize))
-      .sort(document ("retailPrice" -> 1))
+      .sort(document (sortField.getOrElse("retailPrice") -> 1))
       .cursor[DrugsProduct]()
       .collect[List](pageSize, handler[DrugsProduct]))
 

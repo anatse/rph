@@ -32,8 +32,6 @@ class UserDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex: Ex
    * @return The found user or None if no user for the given login info could be found.
    */
   def find(loginInfo: LoginInfo) = {
-    logger.info(s"loginInfoL ${loginInfo}")
-
     usersCollection.flatMap(_.find(
       document(
         "providerID" -> loginInfo.providerID,

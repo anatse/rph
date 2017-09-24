@@ -4,13 +4,15 @@ import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input
 import org.scalajs.dom.raw.{Element, XMLHttpRequest}
-import org.scalajs.jquery.{JQuery, JQueryEventObject, jQuery}
+import org.scalajs.jquery.{JQueryAjaxSettings, _}
 
 import scala.scalajs.js
 import scala.scalajs.js.JSON
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import scalatags.Text.all._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+import scala.scalajs.js.timers.SetTimeoutHandle
+import scala.util.Try
 
 @JSExportTopLevel(name = "rphApp")
 object ProjectJS {
@@ -22,41 +24,55 @@ object ProjectJS {
     }, false)
 
     // Connect to search field
-    dom.document.getElementById("search-field").addEventListener("keyup", onSearch)
+    jQuery("#search-field").keyup((event: dom.KeyboardEvent) => onSearch(event))
+    jQuery("#search-button").click(() => search())
 
     // Calling first time function
     callLoad(dom.window.location.hash)
   }
 
-  @JSExport
-  def findAll (pageSize: Int, offset: Int, csrfHeader: String, csrfValue: String, linkText: String) = {
-    val xhr = new XMLHttpRequest()
+  def dynGet[T] (dyn: js.Dynamic, name:String): Option[T] = {
+    val res = dyn.selectDynamic(name)
+    if (!js.isUndefined (res) && res != null) Some(res.asInstanceOf[T]) else None
+  }
 
-    xhr.open("POST", s"/drugs/prod?offset=$offset&pageSize=$pageSize")
+  @JSExport
+  def findAll (pageSize: Int, offset: Int, search: String, csrfHeader: String, csrfValue: String, linkText: String) = {
+    var url = if (search != null && search != "") s"/drugs/fuzzySearch?searchText=$search&offset=$offset&pageSize=$pageSize"
+    else s"/drugs/prod?offset=$offset&pageSize=$pageSize"
+
+    val xhr = new XMLHttpRequest()
+    xhr.open ("POST", url)
+
     xhr.onload = { (e: Event) =>
       if (xhr.status == 200) {
         val page = JSON.parse(xhr.responseText)
-        val offsetJS = page.selectDynamic("offset").asInstanceOf[Int]
-        val pageSizeJS = page.selectDynamic("pageSize").asInstanceOf[Int]
-        val hasMore = page.selectDynamic("hasMore").asInstanceOf[Boolean]
-        val rows = page.selectDynamic("rows").asInstanceOf[js.Array[js.Dynamic]]
+        val offsetJS:Int = dynGet[Int] (page, "offset").get
+        val pageSizeJS = dynGet[Int] (page, "pageSize").get
+        val hasMore = dynGet[Boolean] (page, "hasMore").get
+        val rows = dynGet[js.Array[js.Dynamic]] (page, "rows").get
+        val realSearch = js.Dynamic.global.applyDynamic("encodeURIComponent")(search)
 
         val htmlRow = for (prj <- rows) yield {
+          val fullName:String = dynGet[String] (prj, "drugsFullName").getOrElse("")
+          val shortName:String = dynGet[String] (prj, "drugsShortName").getOrElse("")
+          val mnn:String = dynGet[String] (prj, "MNN").getOrElse("")
+
           div (cls:="col-lg-3 col-sm-2 item")(
             div (cls:="panel panel-primary")(
-              div (cls:="panel-heading")(prj.selectDynamic("name").asInstanceOf[String]),
+              div (cls:="panel-heading")(shortName),
               div (cls:="panel-body")(
-                img (cls:="img-responsive", src:="/assets/img/desk.jpg"),
-                h4 (`class`:="memberNameLabel")(prj.selectDynamic("number").asInstanceOf[String]),
-                p (`class`:="description")(prj.selectDynamic("description").asInstanceOf[String]),
-                a (`class`:="memberNameLink", href:=s"/project/${prj.number}")(linkText)
+                img (cls:="img-responsive", src:=s"/assets/images/${dynGet[String] (prj, "drugImage").getOrElse("/nophoto.jpg")}"),
+                h4 (`class`:="memberNameLabel")(mnn),
+                p (`class`:="description")(fullName)
+                //a (`class`:="memberNameLink", href:=s"/project/${prj}")(linkText)
               ),
-              div (cls:="panel-footer")("Buy 10$")
+              div (cls:="panel-footer")(s"Цена: ${dynGet[Double] (prj, "retailPrice").getOrElse(0)}")
             )
           )
         }
 
-        dom.document.querySelector(".row.projects").innerHTML = htmlRow.map (_.render).mkString("")
+        dom.document.querySelector(".row.drugs").innerHTML = htmlRow.map (_.render).mkString("")
 
         // Set next button
         if (hasMore) {
@@ -64,7 +80,7 @@ object ProjectJS {
           for (i <- 0 until nodeList.length) {
             val elem = nodeList.item(i)
             elem.asInstanceOf[Element].classList.remove("disabled")
-            elem.firstChild.asInstanceOf[Element].setAttribute("href", s"#pageSize=$pageSizeJS,offset=${offsetJS + pageSizeJS}")
+            elem.firstChild.asInstanceOf[Element].setAttribute("href", s"#search=$realSearch,pageSize=$pageSizeJS,offset=${offsetJS + pageSizeJS}")
           }
         } else {
           val nodeList = dom.document.querySelectorAll ("li.next")
@@ -82,7 +98,7 @@ object ProjectJS {
           for (i <- 0 until nodeList.length) {
             val elem = nodeList.item(i)
             elem.asInstanceOf[Element].classList.remove("disabled")
-            elem.firstChild.asInstanceOf[Element].setAttribute("href", s"#pageSize=$pageSizeJS,offset=$realOffset")
+            elem.firstChild.asInstanceOf[Element].setAttribute("href", s"#search=$realSearch,pageSize=$pageSizeJS,offset=$realOffset")
           }
         } else {
           val nodeList = dom.document.querySelectorAll ("li.previous")
@@ -101,15 +117,17 @@ object ProjectJS {
     xhr.send()
   }
 
-  val pattern = "[#|,]([\\w|=]+=\\w*)+".r
+  val pattern = "[#|,]([\\w|=]+=[^,]*)+".r
   def parseHash (url: String): Map[String, String] = {
-    if (!url.isEmpty) (pattern findAllMatchIn url).map( m => {
-      val splits = m.group(1).split("=")
-      Map[String, String](splits(0) -> splits(1))
-    }).reduce ((a, b) => {
-      a ++ b
-    })
-    else Map.empty
+    Try (
+      if (!url.isEmpty) (pattern findAllMatchIn url).map( m => {
+        val splits = m.group(1).split("=")
+        if (splits.length == 2) Map[String, String](splits(0) -> splits(1)) else Map.empty[String, String]
+      }).reduce ((a, b) => {
+        a ++ b
+      })
+      else Map.empty[String, String]
+    ).getOrElse(Map.empty[String, String])
   }
 
   def callLoad (url: String): Unit = {
@@ -118,13 +136,29 @@ object ProjectJS {
       val params = parseHash(url)
       val offset: Int = params.getOrElse("offset", "0").toInt
       val pageSize: Int = params.getOrElse("pageSize", "4").toInt
-      js.Dynamic.global.applyDynamic("load")(pageSize, offset)
+      val search: String = params.getOrElse("search", "")
+      js.Dynamic.global.applyDynamic("load")(pageSize, offset, search)
     }
   }
 
+  var timer:SetTimeoutHandle = null
   def onSearch (event: dom.KeyboardEvent) = {
-    val stringToSearch = event.target.asInstanceOf[Input].value
-    dom.console.log(stringToSearch)
+    import scala.scalajs.js.timers._
+    import scala.concurrent.duration._
+
+    clearTimeout(timer);
+    timer = setTimeout(500 millisecond) (search)
+  }
+
+  /**
+    * Function seaches for drugs. Just changes current window hash
+    */
+  def search () = {
+    val stringToSearch = jQuery("#search-field").value.toString.trim
+    val urlEncodedString = js.Dynamic.global.applyDynamic("encodeURIComponent")(stringToSearch)
+    val params = parseHash(dom.window.location.hash)
+    val pageSize: Int = params.getOrElse("pageSize", "4").toInt
+    dom.window.location.hash = s"search=$urlEncodedString,offset=0,pageSize=$pageSize"
   }
 
   @JSExportTopLevel(name = "pwdStrong")

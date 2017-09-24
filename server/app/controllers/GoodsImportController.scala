@@ -21,23 +21,6 @@ class GoodsImportController @Inject()(
     silhouette: Silhouette[DefaultEnv],
     productDAO: ProductDAO)(implicit webJarsUtil: WebJarsUtil) extends AbstractController(components) with I18nSupport with Logger {
 
-//  def uploadNonSecured = Action(parse.multipartFormData).async { request =>
-//    Future {
-//      request.body.file("data").map { picture =>
-//        val filename = picture.filename
-//        val contentType = picture.contentType
-//
-//        println(s"file: ${picture.ref.getAbsolutePath}, realPath: ${picture.ref.path.toRealPath()}")
-//
-//        Source.fromFile(picture.ref.path.toString).foreach {
-//          print
-//        }
-//
-//        Ok("File uploaded")
-//      }.get
-//    }
-//  }
-
   val json = "[{\"RetailPrice\":\"249.42\",\"BarCode\":\"1111222333444\",\"OstFirst\":\"2\",\"TradeTech\":\"ХЗ\",\"ProducerFullName\":\"ОАО Нанофарм\",\"DrugsFullName\":\"Аспирин\",\"SupplierFullName\":\"Катрен\",\"MNN\":\"ацетилсалициловая кислота\",\"Ost\":\"1\",\"UnitFullName\":\"упаковка\",\"ProducerShortName\":\"Нанофарм\",\"DrugFullName\":\"Аспирин-С\",\"OstLast\":\"1\",\"DrugsShortName\":\"Аспирин\",\"Packaging\":\"упаковки\",\"ID\":\"10001\",\"UnitShortName\":\"упак.\"}]";
 
   def upload = silhouette.SecuredAction (parse.multipartFormData).async { request =>
@@ -69,8 +52,6 @@ class GoodsImportController @Inject()(
         )
       })
     }
-
-    println("drugsTOSave: " + drugsToSave)
 
     drugsToSave match {
       case Some(drugs) => productDAO.bulkInsert(drugs).map(_ => Ok("uploaded"))

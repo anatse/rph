@@ -52,6 +52,21 @@ db.system.js.save({
         var rusSearch = rusLayout(searchString).toLowerCase();
         var lowerText = textData.toLowerCase();
         var lowerSearchString = searchString.toLowerCase();
+        var textDataWords = lowerText.split (new RegExp("[ ,.]+"))
+
+        function isTextIn (words, word) {
+            var wordSoundex = soundex (word);
+            var arrayLength = words.length;
+            for (var i = 0; i < arrayLength; i++) {
+                // print ("testing: " + words[i] + ", " + word);
+                // print ("testing soudex: " + wordSoundex + ", " + soundex (words[i]));
+
+                if (soundex (words[i]) == wordSoundex)
+                    return true;
+            }
+
+            return false;
+        }
 
         return (
             lowerText === lowerSearchString
@@ -60,9 +75,10 @@ db.system.js.save({
             || lowerText.indexOf(rusSearch) >= 0
             || soundex(lowerText) === soundex (lowerSearchString)
             || soundex (lowerText) === soundex (rusSearch)
+            || isTextIn(textDataWords, lowerSearchString)
+            || isTextIn(textDataWords, rusSearch)
         );
     }
 });
-
 
 db.loadServerScripts();
