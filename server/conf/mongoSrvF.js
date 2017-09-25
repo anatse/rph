@@ -58,9 +58,6 @@ db.system.js.save({
             var wordSoundex = soundex (word);
             var arrayLength = words.length;
             for (var i = 0; i < arrayLength; i++) {
-                // print ("testing: " + words[i] + ", " + word);
-                // print ("testing soudex: " + wordSoundex + ", " + soundex (words[i]));
-
                 if (soundex (words[i]) == wordSoundex)
                     return true;
             }

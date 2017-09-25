@@ -1,5 +1,5 @@
 body {
-    font: 400 15px Lato, sans-serif;
+    font: 400 15px sans-serif;
     line-height: 1.8;
     color: #818181;
 }
@@ -82,7 +82,7 @@ h4 {
 }
 .panel-heading {
     color: #fff !important;
-    background-color: #f4511e !important;
+    background-color: #67a2f4 !important;
     padding: 25px;
     border-bottom: 1px solid transparent;
     border-top-left-radius: 0px;

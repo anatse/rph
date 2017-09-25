@@ -51,7 +51,7 @@ object ProjectJS {
         val pageSizeJS = dynGet[Int] (page, "pageSize").get
         val hasMore = dynGet[Boolean] (page, "hasMore").get
         val rows = dynGet[js.Array[js.Dynamic]] (page, "rows").get
-        val realSearch = js.Dynamic.global.applyDynamic("encodeURIComponent")(search)
+        val realSearch = search
 
         val htmlRow = for (prj <- rows) yield {
           val fullName:String = dynGet[String] (prj, "drugsFullName").getOrElse("")
@@ -60,10 +60,10 @@ object ProjectJS {
 
           div (cls:="col-lg-3 col-sm-2 item")(
             div (cls:="panel panel-primary")(
-              div (cls:="panel-heading")(shortName),
+              //div (cls:="panel-heading")(),
               div (cls:="panel-body")(
                 img (cls:="img-responsive", src:=s"/assets/images/${dynGet[String] (prj, "drugImage").getOrElse("/nophoto.jpg")}"),
-                h4 (`class`:="memberNameLabel")(mnn),
+                //p (`class`:="memberNameLabel")(mnn),
                 p (`class`:="description")(fullName)
                 //a (`class`:="memberNameLink", href:=s"/project/${prj}")(linkText)
               ),

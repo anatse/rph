@@ -1,4 +1,3 @@
-import models.mongo.{MongoDao, Person}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerTest
 import scala.concurrent.duration._

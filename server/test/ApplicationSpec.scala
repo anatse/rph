@@ -80,46 +80,46 @@ class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
     }
   }
 
-  "Project controller" should {
-//    "drop all tables" in {
-//      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.dropAll).withAuthenticator[DefaultEnv](li)))
+//  "Project controller" should {
+////    "drop all tables" in {
+////      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.dropAll).withAuthenticator[DefaultEnv](li)))
+////      status(result) mustBe (OK)
+////
+////      contentType(result) mustBe (Some("text/plain"))
+////      contentAsString(result) must include("dropped")
+////    }
+//
+//    "create projects table" in {
+//      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.create).withAuthenticator[DefaultEnv](li)))
 //      status(result) mustBe (OK)
 //
 //      contentType(result) mustBe (Some("text/plain"))
-//      contentAsString(result) must include("dropped")
+//      contentAsString(result) must include("created")
 //    }
-
-    "create projects table" in {
-      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.create).withAuthenticator[DefaultEnv](li)))
-      status(result) mustBe (OK)
-
-      contentType(result) mustBe (Some("text/plain"))
-      contentAsString(result) must include("created")
-    }
-
-    "throws an exception when trying to create already created projects table" in {
-      val caught = intercept[org.h2.jdbc.JdbcSQLException] {
-        var Some(result) =route(app, addCSRFToken(FakeRequest(ProjectController.create).withAuthenticator[DefaultEnv](li)))
-        status(result) must not be(OK)
-      }
-
-      caught.getMessage must include("Table \"projects\" already exists")
-    }
-
-    "add new project" in {
-      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.index).withAuthenticator[DefaultEnv](li)))
-      status(result) mustBe (OK)
-
-      contentType(result) mustBe (Some("text/plain"))
-      contentAsString(result) must include("inserted")
-    }
-
-    "list all projects" in {
-      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.findAll(None, None)).withAuthenticator[DefaultEnv](li)))
-      status(result) mustBe (OK)
-
-      contentType(result) mustBe (Some("text/html"))
-      contentAsString(result) must include("Projects list")
-    }
-  }
+//
+//    "throws an exception when trying to create already created projects table" in {
+//      val caught = intercept[org.h2.jdbc.JdbcSQLException] {
+//        var Some(result) =route(app, addCSRFToken(FakeRequest(ProjectController.create).withAuthenticator[DefaultEnv](li)))
+//        status(result) must not be(OK)
+//      }
+//
+//      caught.getMessage must include("Table \"projects\" already exists")
+//    }
+//
+//    "add new project" in {
+//      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.index).withAuthenticator[DefaultEnv](li)))
+//      status(result) mustBe (OK)
+//
+//      contentType(result) mustBe (Some("text/plain"))
+//      contentAsString(result) must include("inserted")
+//    }
+//
+//    "list all projects" in {
+//      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.findAll(None, None)).withAuthenticator[DefaultEnv](li)))
+//      status(result) mustBe (OK)
+//
+//      contentType(result) mustBe (Some("text/html"))
+//      contentAsString(result) must include("Projects list")
+//    }
+//  }
 }
