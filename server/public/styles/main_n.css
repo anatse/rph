@@ -57,6 +57,11 @@ h4 {
 .carousel-indicators li.active {
     background-color: #f4511e;
 }
+.item {
+    display: inline-block;
+    float: none;
+    vertical-align: top;
+}
 .item h4 {
     font-size: 19px;
     line-height: 1.375em;

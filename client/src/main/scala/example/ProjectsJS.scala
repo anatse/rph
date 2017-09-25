@@ -67,7 +67,7 @@ object ProjectJS {
                 p (`class`:="description")(fullName)
                 //a (`class`:="memberNameLink", href:=s"/project/${prj}")(linkText)
               ),
-              div (cls:="panel-footer")(s"Цена: ${dynGet[Double] (prj, "retailPrice").getOrElse(0)}")
+              div (cls:="panel-footer")(s"Цена: ${dynGet[Double] (prj, "retailPrice").getOrElse(0)}.00 р")
             )
           )
         }
@@ -130,12 +130,14 @@ object ProjectJS {
     ).getOrElse(Map.empty[String, String])
   }
 
-  def callLoad (url: String): Unit = {
+  private val DEFAULT_PAGE_SIZE = "8"
+
+  def callLoad(url: String): Unit = {
     val load = js.Dynamic.global.selectDynamic("load")
     if (!js.isUndefined(load)) {
       val params = parseHash(url)
       val offset: Int = params.getOrElse("offset", "0").toInt
-      val pageSize: Int = params.getOrElse("pageSize", "4").toInt
+      val pageSize: Int = params.getOrElse("pageSize", DEFAULT_PAGE_SIZE).toInt
       val search: String = params.getOrElse("search", "")
       js.Dynamic.global.applyDynamic("load")(pageSize, offset, search)
     }
@@ -157,7 +159,7 @@ object ProjectJS {
     val stringToSearch = jQuery("#search-field").value.toString.trim
     val urlEncodedString = js.Dynamic.global.applyDynamic("encodeURIComponent")(stringToSearch)
     val params = parseHash(dom.window.location.hash)
-    val pageSize: Int = params.getOrElse("pageSize", "4").toInt
+    val pageSize: Int = params.getOrElse("pageSize", DEFAULT_PAGE_SIZE).toInt
     dom.window.location.hash = s"search=$urlEncodedString,offset=0,pageSize=$pageSize"
   }
 
