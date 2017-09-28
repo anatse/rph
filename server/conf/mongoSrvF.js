@@ -1,28 +1,26 @@
 db.system.js.save ({
     _id: "soundex",
     value: function (word) {
-        var rules = [
-            [/[aehiouy]/g, ''],
-            [/[йуеёыахоэяиюьъ]/g, ''],
-            [/[с]?тч/g, 'щ'],
-            [/rl/g, 'r'],
-            [/[bfpvw]/g, '1'],
-            [/[бфпв]/g, '1'],
-            [/[cgjkqsxz]/g, '2'],
-            [/[цжкзсг]/g, '2'],
-            [/[dt]/g, '3'],
-            [/[дтщшч]/g, '3'],
-            [/[l]/g, '4'],
-            [/[л]/g, '4'],
-            [/[mn]/g, '5'],
-            [/[мн]/g, '5'],
-            [/[r]/g, '6'],
-            [/[р]/g, '6'],
-            [/([0-9])(\1{1,})/g, '$1']
+        var metaphone = [
+            [/ЙО|ИО|ЙЕ|ИЕ/g, "И"],
+            [/О|Ы|Я/g, "А"],
+            [/Е|Ё|Э/g, "И"],
+            [/Ю/g, "У"],
+            [/Б/g, "П"],
+            [/З/g, "С"],
+            [/Д/g, "Т"],
+            [/В/g, "Ф"],
+            [/Г/g, "К"],
+            [/ТС|ДС/g, "Ц"],
+            [/Н{2,}/g, "Н"],
+            [/С{2,}/g, "С"],
+            [/Р{2,}/g, "Р"],
+            [/М{2,}/g, "М"],
+            [/[УЕАЫОИЯЮЭ]{1,}$/g, ""]
         ]
 
-        var result = word.toLowerCase();
-        rules.forEach(function(rule) {
+        var result = word.toUpperCase();
+        metaphone.forEach(function(rule) {
             result = result.replace(rule[0], rule[1])
         })
         return result
@@ -52,29 +50,38 @@ db.system.js.save({
         var rusSearch = rusLayout(searchString).toLowerCase();
         var lowerText = textData.toLowerCase();
         var lowerSearchString = searchString.toLowerCase();
-        var textDataWords = lowerText.split (new RegExp("[ ,.]+"))
+        var textDataWords = lowerText.split (new RegExp("[ ,.]+"));
 
         function isTextIn (words, word) {
             var wordSoundex = soundex (word);
             var arrayLength = words.length;
             for (var i = 0; i < arrayLength; i++) {
-                if (soundex (words[i]) == wordSoundex)
+                var sndWord = soundex (words[i]);
+                if (sndWord === wordSoundex
+                    || sndWord.indexOf(wordSoundex) >= 0)
                     return true;
             }
 
             return false;
         }
 
-        return (
-            lowerText === lowerSearchString
+        if (lowerText === lowerSearchString
             || lowerText.toLowerCase() === rusSearch
             || lowerText.indexOf(lowerSearchString) >= 0
-            || lowerText.indexOf(rusSearch) >= 0
-            || soundex(lowerText) === soundex (lowerSearchString)
-            || soundex (lowerText) === soundex (rusSearch)
-            || isTextIn(textDataWords, lowerSearchString)
-            || isTextIn(textDataWords, rusSearch)
-        );
+            || lowerText.indexOf(rusSearch) >= 0)
+            return true;
+        else {
+            var sndText = soundex(lowerText);
+            var sndSearch = soundex (lowerSearchString);
+            var sndRus = soundex (rusSearch);
+
+            return (
+                sndText === sndSearch
+                || sndText === sndRus
+                || isTextIn(textDataWords, sndSearch)
+                || isTextIn(textDataWords, sndRus)
+            );
+        }
     }
 });
 
