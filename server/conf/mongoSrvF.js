@@ -30,7 +30,7 @@ db.system.js.save ({
 
 db.system.js.save ({
     _id: "rusLayout",
-    value: function (str) {
+    value: function test (str) {
         var replacer = {
             "q": "й", "w": "ц", "e": "у", "r": "к", "t": "е", "y": "н", "u": "г",
             "i": "ш", "o": "щ", "p": "з", "[": "х", "]": "ъ", "a": "ф", "s": "ы",
@@ -40,7 +40,8 @@ db.system.js.save ({
         };
 
         return str.replace(new RegExp("[A-z\\/,.;\\'\\]\\[]", "g"), function (x) {
-            return x == x.toLowerCase() ? replacer[x] : replacer[x.toLowerCase()].toUpperCase();
+            console.log (x + ", " + replacer[x] + ", " + x.toLowerCase() + ", " + replacer[x.toLowerCase()])
+            return x == x.toLowerCase() ? replacer[x] : replacer[x.toLowerCase()]; //.toUpperCase();
         });
     }
 });

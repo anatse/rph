@@ -7,6 +7,7 @@ import models.DrugsProduct
 import models.daos.ProductDAO
 import org.webjars.play.WebJarsUtil
 import play.api.i18n.I18nSupport
+import play.api.libs.json.{JsObject, Json}
 import play.api.mvc.{AbstractController, ControllerComponents}
 import utils.{JsonUtil, Logger}
 import utils.auth.DefaultEnv
@@ -15,6 +16,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.io.Source
 import scala.util.Success
+import scala.util.parsing.json.JSONObject
 
 class GoodsImportController @Inject()(
     components: ControllerComponents,
@@ -54,8 +56,13 @@ class GoodsImportController @Inject()(
     }
 
     drugsToSave match {
-      case Some(drugs) => productDAO.bulkInsert(drugs).map(_ => Ok("uploaded"))
-      case _ => Future(Ok("No drugs provided"))
+      case Some(drugs) => productDAO.bulkUpsert(drugs).flatMap(
+        results => {
+          val obj = results.foldLeft(List[String]())((obj, res) => obj :+ s"Result: ${res.ok}, Error: ${res.errmsg.getOrElse("")}").mkString ("\n")
+          Future.successful(Ok(obj))
+        }
+      )
+      case _ => Future.successful(Ok("No drugs provided"))
     }
   }
 }

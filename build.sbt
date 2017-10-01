@@ -13,7 +13,10 @@ lazy val server = (project in file("server")).settings(
   scalacOptions := Seq("-unchecked", "-deprecation", "-opt-inline-from"),
   // triggers scalaJSPipeline when using compile or continuous compilation
   compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
-  resolvers += "Atlassian Releases" at "https://maven.atlassian.com/public/",
+  resolvers ++= Seq (
+    "Atlassian Releases" at "https://maven.atlassian.com/public/",
+    "Sonatype Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/"
+  ),
   libraryDependencies ++= Seq(
     // Scala js scripts
     "com.vmunier" %% "scalajs-scripts" % "1.1.1",
