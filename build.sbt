@@ -42,7 +42,7 @@ lazy val server = (project in file("server")).settings(
     // mongoDB
     "org.reactivemongo" %% "play2-reactivemongo" % "0.12.6-play26",
     // Memcached
-    "com.github.mumoshu" %% "play2-memcached-play26" % "0.9.0",
+//    "com.github.mumoshu" %% "play2-memcached-play26" % "0.9.0",
 
     // json
     "com.fasterxml.jackson.core" % "jackson-databind" % "2.+",
@@ -54,7 +54,7 @@ lazy val server = (project in file("server")).settings(
     specs2 % Test,
 
     // Play libraries
-    //ehcache,
+    ehcache,
     guice,
     filters
   )
