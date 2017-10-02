@@ -6,6 +6,7 @@ import reactivemongo.api.collections.bson.BSONCollection
 import scala.concurrent.Future
 import javax.inject.Inject
 
+import play.api.cache.{AsyncCacheApi, NamedCache, SyncCacheApi}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.QueryOpts
 import reactivemongo.api.commands.UpdateWriteResult
@@ -16,7 +17,7 @@ import reactivemongo.bson.{BSONArray, BSONDocumentReader, BSONDocumentWriter, Ma
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex: ExecutionContext) extends MongoBaseDao with ProductDAO {
+class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("user-cache")cacheApi: SyncCacheApi, implicit val ex: ExecutionContext) extends MongoBaseDao with ProductDAO {
   private def productCollection:Future[BSONCollection] = mongoApi.database.map(_.collection("products"))
   private val regexp = "[ ,.\\+-]+"
 
@@ -43,7 +44,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex:
     * @param inpStr
     * @return soundex representation
     */
-  def soundex (inpStr: String): String = {
+  def soundex (inpStr: String): String = cacheApi.getOrElseUpdate[String](s"soundex.$inpStr"){
     List[(String, String)](
       ("ЙО|ИО|ЙЕ|ИЕ" -> "И"),
       ("О|Ы|Я" -> "А"),
@@ -78,7 +79,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex:
     drug.copy(sndWords = Some(soundexWords))
   }
 
-  def fixKeyboardLayout (str: String): String = {
+  def fixKeyboardLayout (str: String): String = cacheApi.getOrElseUpdate[String](s"ruslayout.$str"){
     val replacer = Map(
       'q' -> 'й', 'w' -> 'ц', 'e' -> 'у', 'r' -> 'к', 't' -> 'е', 'y' -> 'н', 'u' -> 'г',
       'i' -> 'ш', 'o' -> 'щ', 'p' -> 'з', '[' -> 'х', ']' -> 'ъ', 'a' -> 'ф', 's' -> 'ы',
