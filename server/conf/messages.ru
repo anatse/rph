@@ -121,3 +121,5 @@ company.name=ООО Фармрус
 company.description=Купите лекарствов пачку, сможете улечься в тачку
 
 shop.menu.item=Магазин
+goods.load.title=ЗагрузкаБ обновление товаров
+goods.load.menu=Загрузка товаров
