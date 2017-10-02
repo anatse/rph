@@ -44,14 +44,6 @@ class SignInController @Inject() (
   webJarsUtil: WebJarsUtil,
   ex: ExecutionContext) extends AbstractController(components) with I18nSupport {
 
-  /**
-   * Views the `Sign In` page.
-   *
-   * @return The result to display.
-   */
-  def view = silhouette.UnsecuredAction.async { implicit request: Request[AnyContent] =>
-    Future.successful(Ok(views.html.rph.signIn(SignInForm.form, socialProviderRegistry)))
-  }
 
   /**
    * Handles the submitted form.
@@ -62,17 +54,16 @@ class SignInController @Inject() (
     SignInForm.form.bindFromRequest.fold(
       form => {
         println (s"BadRequest: ${form}")
-        Future.successful(BadRequest(views.html.rph.signIn(form, socialProviderRegistry)))
+        Future.successful(BadRequest(""))
       },
       data => {
         val credentials = Credentials(data.email, data.password)
         println (s"credentials: $credentials")
         val auth = credentialsProvider.authenticate(credentials)
 
-
         auth.flatMap { loginInfo =>
           println (s"Credentials logininfo: ${loginInfo}")
-          val result = Redirect(routes.ApplicationController.index())
+          val result = Redirect(routes.CompanyController.view())
           userService.retrieve(loginInfo).flatMap {
             case Some(user) if !user.activated =>
               Future.successful(Ok(views.html.activateAccount(data.email)))
@@ -97,7 +88,7 @@ class SignInController @Inject() (
         }.recover {
           case ex: ProviderException =>
             ex.printStackTrace()
-            Redirect(routes.SignInController.view()).flashing("error" -> Messages("invalid.credentials"))
+            Redirect(routes.CompanyController.view()).flashing("error" -> Messages("invalid.credentials"))
         }
       })
   }

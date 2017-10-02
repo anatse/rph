@@ -4,6 +4,7 @@ import javax.inject.Inject
 
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.api.actions.SecuredRequest
+import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 import forms.SignInForm
 import models.{DrugsGroup, DrugsProduct}
 import models.daos.{DrugsGroupDAO, ProductDAO}
@@ -17,6 +18,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CompanyController @Inject()(
   components: ControllerComponents,
+  socialProviderRegistry: SocialProviderRegistry,
   silhouette: Silhouette[DefaultEnv],
   drugsProductDAO: ProductDAO,
   drugsGroupDAO: DrugsGroupDAO)(
@@ -25,7 +27,7 @@ class CompanyController @Inject()(
     ex: ExecutionContext) extends AbstractController(components) with I18nSupport  {
 
   def view = silhouette.UserAwareAction.async { implicit request =>
-    Future.successful(Ok(views.html.shop.main("Hello", request.identity)))
+    Future.successful(Ok(views.html.shop.main("Hello", SignInForm.form, socialProviderRegistry, request.identity)))
   }
 
   implicit val productWrites = Json.writes[DrugsProduct]

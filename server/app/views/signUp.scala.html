@@ -30,7 +30,7 @@
                 <div class="form-group">
                     <button id="submit" disabled class="btn btn-primary btn-block" type="submit">@messages("sign.up")</button>
                 </div>
-                <a href="@controllers.routes.SignInController.view" class="already">@messages("sign.in.now")</a>
+                <a href="@controllers.routes.CompanyController.view" class="already">@messages("sign.in.now")</a>
             }
         </div>
     </div>
@@ -57,7 +57,7 @@
     </div>
 }
 
-@rph.main(messages("sign.up.title")) {@content}
+@main(messages("sign.up.title")) {@content}
 
 @html.scripts(projectName = "client",
     name => s"/assets/$name",

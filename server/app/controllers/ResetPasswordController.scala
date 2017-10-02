@@ -48,7 +48,7 @@ class ResetPasswordController @Inject() (
   def view(token: UUID) = silhouette.UnsecuredAction.async { implicit request: Request[AnyContent] =>
     authTokenService.validate(token).map {
       case Some(_) => Ok(views.html.resetPassword(ResetPasswordForm.form, token))
-      case None => Redirect(routes.SignInController.view()).flashing("error" -> Messages("invalid.reset.link"))
+      case None => Redirect(routes.CompanyController.view()).flashing("error" -> Messages("invalid.reset.link"))
     }
   }
 
@@ -67,11 +67,11 @@ class ResetPasswordController @Inject() (
             case Some(user) if user.providerID == CredentialsProvider.ID =>
               val passwordInfo = passwordHasherRegistry.current.hash(password)
               authInfoRepository.update[PasswordInfo](LoginInfo (user.providerID.getOrElse(""), user.providerKey.getOrElse("")), passwordInfo).map { _ =>
-                Redirect(routes.SignInController.view()).flashing("success" -> Messages("password.reset"))
+                Redirect(routes.CompanyController.view()).flashing("success" -> Messages("password.reset"))
               }
-            case _ => Future.successful(Redirect(routes.SignInController.view()).flashing("error" -> Messages("invalid.reset.link")))
+            case _ => Future.successful(Redirect(routes.CompanyController.view()).flashing("error" -> Messages("invalid.reset.link")))
           })
-      case None => Future.successful(Redirect(routes.SignInController.view()).flashing("error" -> Messages("invalid.reset.link")))
+      case None => Future.successful(Redirect(routes.CompanyController.view()).flashing("error" -> Messages("invalid.reset.link")))
     }
   }
 }
