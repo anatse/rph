@@ -88,7 +88,8 @@ class SignUpController @Inject() (
               fullName = Some(data.firstName + " " + data.lastName),
               email = Some(data.email),
               avatarURL = None,
-              activated = false)
+              activated = false,
+              roles = None)
             for {
               avatar <- avatarService.retrieveURL(data.email)
               user <- userService.save(user.copy(avatarURL = avatar))

@@ -50,12 +50,12 @@
                         <li><a href="#contact">CONTACT</a></li>
                         <li>
                             @{user match {
-                                case Some(usr) => <a href="/signOut">{usr.fullName.getOrElse(usr.name.getOrElse("undefined"))} {usr.roles}</a>
+                                case Some(usr) => <a href="/signOut">{usr.fullName.getOrElse(usr.name.getOrElse("undefined"))}</a>
                                 case _ => <a data-toggle="modal" data-target="#myModal">{messages("sign.in.title")}</a>
                             }}
                         </li>
                         @{user match {
-                            case Some(usr) if (usr.roles.contains("ADMIN")) => <li><a data-toggle="modal" data-target="#loadFileModal">{messages("goods.load.menu")}</a></li>
+                            case Some(usr) if (usr.roles.getOrElse(Array()).contains("ADMIN")) => <li><a data-toggle="modal" data-target="#loadFileModal">{messages("goods.load.menu")}</a></li>
                             case _ =>
                         }}
                     </ul>

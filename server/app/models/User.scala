@@ -25,7 +25,7 @@ case class User(
   email: Option[String],
   avatarURL: Option[String],
   activated: Boolean,
-  roles: Option[Array[String]] = None) extends Identity {
+  roles: Option[Array[String]]) extends Identity {
 
   /**
    * Tries to construct a name.
