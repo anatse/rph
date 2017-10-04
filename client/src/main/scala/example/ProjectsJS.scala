@@ -59,7 +59,7 @@ object ProjectJS {
           val price:Double = dynGet[Double] (prj, "retailPrice").getOrElse(0)
 
           dynGet[String] (prj, "drugsShortName") match {
-            case Some(name) => seoDescription.append(name.split(" .,")(0)).append(":").append(price).append(",")
+            case Some(name) => seoDescription.append(name.split("[ ,.]+")(0)).append(" цена: ").append(price).append(".00р, ")
             case _ =>
           }
 
