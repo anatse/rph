@@ -103,23 +103,36 @@ email.activate.account.hello = Привет {0},
 email.activate.account.html.text = Пожалуйста перейдите <a href="{0}">этой ссылке</a> для активации учетной записи.
 email.activate.account.txt.text =  Пожалуйста перейдите ссылке для активации учетной записи: {0}
 
-projects = Проекты
 prj.list.title = Список проектов
-prj.number = Номер проекта
-prj.description = Описание
 prj.goto = Перейти к проекту
 prj.title = Проект
-prj.list.description = Здесь вы видите список проектов в которых вы когда-либо принимали участие, или будете принимать
 
 page.prev = Назад
 page.next = Вперед
 
-search.placeholder=Введите название лекарства
+search.placeholder = Введите название лекарства
 
-company.title=ООО Фармрус
-company.name=ООО Фармрус
-company.description=Купите лекарствов пачку, сможете улечься в тачку
+company.title = ООО Фармрус
+company.name = ООО Фармрус
+company.description = Добро пожаловать в магазин, г Реутов, ул Комсомольская д 10 к 1
 
-shop.menu.item=Магазин
-goods.load.title=ЗагрузкаБ обновление товаров
-goods.load.menu=Загрузка товаров
+shop.menu.item = Магазин
+contact.menu.item = Связаться с нами
+contact.message = Напишите нам, мы обязательно постараемся ответить Вам в ближайшее время
+contact.city = г. Реутов
+contact.address = ул. Комсомольская, д 10, к. 1
+contact.phone = +74994097578
+contact.phonetext = +7 (499) 409-75-78
+contact.email = ruspharm10@gmail.com
+placeholder.name = Имя
+placeholder.email = Адрес электронной почты
+placeholder.comment = Комментарий
+send.email = Отправить
+
+goods.load.title = Загрузка, обновление товаров
+goods.load.menu = Загрузка товаров
+
+#
+# SEO
+#
+main.seo.description = Поиск лекарства дешевые цены реутов

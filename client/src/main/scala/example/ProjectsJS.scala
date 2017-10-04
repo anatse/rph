@@ -52,10 +52,17 @@ object ProjectJS {
         val hasMore = dynGet[Boolean] (page, "hasMore").get
         val rows = dynGet[js.Array[js.Dynamic]] (page, "rows").get
         val realSearch = search
+        val seoDescription:StringBuffer = new StringBuffer("")
 
         val htmlRow = for (prj <- rows) yield {
           val fullName:String = dynGet[String] (prj, "drugsFullName").getOrElse("")
-          val shortName:String = dynGet[String] (prj, "drugsShortName").getOrElse("")
+          val price:Double = dynGet[Double] (prj, "retailPrice").getOrElse(0)
+
+          dynGet[String] (prj, "drugsShortName") match {
+            case Some(name) => seoDescription.append(name.split(" .,")(0)).append(":").append(price).append(",")
+            case _ =>
+          }
+
           val mnn:String = dynGet[String] (prj, "MNN").getOrElse("")
 
           div (cls:="col-lg-3 col-sm-2 item")(
@@ -67,12 +74,13 @@ object ProjectJS {
                 p (`class`:="description")(fullName)
                 //a (`class`:="memberNameLink", href:=s"/project/${prj}")(linkText)
               ),
-              div (cls:="panel-footer")(s"Цена: ${dynGet[Double] (prj, "retailPrice").getOrElse(0)}.00 р")
+              div (cls:="panel-footer")(s"Цена: ${price}.00 р")
             )
           )
         }
 
         dom.document.querySelector(".row.drugs").innerHTML = htmlRow.map (_.render).mkString("")
+        jQuery("meta[name=description]").attr("content", seoDescription.toString)
 
         // Set next button
         if (hasMore) {
