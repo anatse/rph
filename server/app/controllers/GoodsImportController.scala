@@ -31,6 +31,8 @@ class GoodsImportController @Inject()(
       val contentType = picture.contentType
       val fileText = Source.fromFile(picture.ref.path.toString).mkString
 
+      if (fileText.length == 0) throw (new RuntimeException(s"Empty file: $filename $fileText"))
+
       val mapValues = JsonUtil.fromJson[List[Map[String, Option[String]]]](fileText);
       mapValues.map (v => {
         DrugsProduct (
