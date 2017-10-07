@@ -78,7 +78,7 @@ object ProjectJS {
                 s"Цена: ${price}.00 р",
                 button (
                   cls:="btn",
-                  style:="float: right",
+                  style:="float: right; margin: 0",
                   role:="button"
                 )("В корзину")
               )
