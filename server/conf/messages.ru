@@ -103,6 +103,10 @@ email.activate.account.hello = Привет {0},
 email.activate.account.html.text = Пожалуйста перейдите <a href="{0}">этой ссылке</a> для активации учетной записи.
 email.activate.account.txt.text =  Пожалуйста перейдите ссылке для активации учетной записи: {0}
 
+message.agree = Я согласен с обработкой 
+message.license = персональных данных
+modal.agreement=Согласие с обработкой персональных данных
+
 prj.list.title = Список проектов
 prj.goto = Перейти к проекту
 prj.title = Проект
