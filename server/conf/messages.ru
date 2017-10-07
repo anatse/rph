@@ -116,21 +116,32 @@ company.title = ООО Фармрус
 company.name = ООО Фармрус
 company.description = Добро пожаловать в магазин, г Реутов, ул Комсомольская д 10 к 1
 
-shop.menu.item = Магазин
-contact.menu.item = Связаться с нами
+# Menu items in navigation bar
+shop.menu.item = Лекарства
+shop.page.title = Витрина аптеки ООО Фармрус
+
+cosmo.menu.item = Косметика
+contact.menu.item = Контакты
+articles.menu.item = Статьи
+goods.load.menu = Загрузка товаров
+short_cart.menu = Корзина
+
 contact.message = Напишите нам, мы обязательно постараемся ответить Вам в ближайшее время
+contact.address.title = Адрес: 
+contact.phone.title = Телефон:
+contact.email.title = Электронная почта
+
 contact.city = г. Реутов
 contact.address = ул. Комсомольская, д 10, к. 1
 contact.phone = +74994097578
 contact.phonetext = +7 (499) 409-75-78
 contact.email = ruspharm10@gmail.com
+
 placeholder.name = Имя
 placeholder.email = Адрес электронной почты
 placeholder.comment = Комментарий
 send.email = Отправить
-
 goods.load.title = Загрузка, обновление товаров
-goods.load.menu = Загрузка товаров
 
 #
 # SEO

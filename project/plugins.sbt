@@ -6,6 +6,7 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 
 // The Play plugin
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.5")
+addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.1.2")
 
 //addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "4.18.0")
 

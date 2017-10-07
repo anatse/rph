@@ -22,11 +22,12 @@ h4 {
     background-image: url("../images/bk/flea.jpg");
     background-color: #456df4;
     color: #fff;
-    padding: 100px 25px;
+    padding: 60px 0px;
     font-family: Montserrat, sans-serif;
+    margin-bottom: 1px !important;
 }
 .container-fluid {
-    padding: 60px 50px;
+
 }
 .bg-grey {
     background-color: #f6f6f6;
@@ -48,16 +49,6 @@ h4 {
     width: 100%;
     height: 100%;
     margin-bottom: 10px;
-}
-.carousel-control.right, .carousel-control.left {
-    background-image: none;
-    color: #f4511e;
-}
-.carousel-indicators li {
-    border-color: #f4511e;
-}
-.carousel-indicators li.active {
-    background-color: #f4511e;
 }
 .item {
     display: inline-block;
@@ -117,11 +108,13 @@ h4 {
     background-color: #1f5085;
     z-index: 9999;
     border: 0;
-    font-size: 12px !important;
+    font-size: 14px !important;
     line-height: 1.42857143 !important;
-    letter-spacing: 4px;
+    /*letter-spacing: 4px;*/
     border-radius: 0;
-    font-family: Montserrat, sans-serif;
+    letter-spacing: 2px;
+    font-family: Arial, sans-serif;
+    /*font-family: Montserrat, sans-serif;*/
 }
 .navbar li a, .navbar .navbar-brand {
     color: rgb(255, 255, 255) !important;
@@ -136,8 +129,8 @@ h4 {
 }
 footer .glyphicon {
     font-size: 20px;
-    margin-bottom: 20px;
-    color: #f4511e;
+    color: #1f5085;
+    line-height: 0.5;
 }
 .slideanim {visibility:hidden;}
 .slide {
@@ -188,12 +181,10 @@ footer .glyphicon {
     }
 }
 .modal-dialog{
-
       /* now you must set a margin left under zero - value is a half width your window */
       /* this same situation is with height - example */
 
     top: 20px;
-
 }
 
 .provider {
@@ -216,4 +207,98 @@ footer .glyphicon {
 .not-a-member {
     text-align: center;
     margin-top: 20px;
+}
+
+.description {
+    font-size: 90%;
+    font-family: Arial;
+}
+
+.badge {
+    background-color: #f4511e;
+}
+
+.register-photo {
+  background:#f1f7fc;
+  padding:80px 0;
+}
+
+.register-photo .image-holder {
+  display:table-cell;
+  width:auto;
+  background:url('/assets/img/meeting.jpg');
+  background-size:cover;
+}
+
+.register-photo .form-container {
+  display:table;
+  max-width:900px;
+  width:90%;
+  margin:0 auto;
+  box-shadow:1px 1px 5px rgba(0,0,0,0.1);
+}
+
+.register-photo form {
+  display:table-cell;
+  width:400px;
+  background-color:#ffffff;
+  padding:40px 60px;
+  color:#505e6c;
+}
+
+@media (max-width:991px) {
+  .register-photo form {
+    padding:40px;
+  }
+}
+
+.register-photo form h2 {
+  font-size:24px;
+  line-height:1.5;
+  margin-bottom:30px;
+}
+
+.register-photo form .form-control {
+  background:#f7f9fc;
+  border:none;
+  border-bottom:1px solid #dfe7f1;
+  border-radius:0;
+  box-shadow:none;
+  outline:none;
+  color:inherit;
+  text-indent:6px;
+  height:40px;
+}
+
+.register-photo form .checkbox {
+  font-size:13px;
+  line-height:20px;
+}
+
+.register-photo form .btn-primary {
+  background:#f4476b;
+  border:none;
+  border-radius:4px;
+  padding:11px;
+  box-shadow:none;
+  margin-top:35px;
+  text-shadow:none;
+  outline:none !important;
+}
+
+.register-photo form .btn-primary:hover, .register-photo form .btn-primary:active {
+  background:#eb3b60;
+}
+
+.register-photo form .btn-primary:active {
+  transform:translateY(1px);
+}
+
+.register-photo form .already {
+  display:block;
+  text-align:center;
+  font-size:12px;
+  color:#6f7a85;
+  opacity:0.9;
+  text-decoration:none;
 }

@@ -10,6 +10,8 @@ lazy val server = (project in file("server")).settings(
   scalaJSProjects := Seq(client),
   pipelineStages in Assets := Seq(scalaJSPipeline),
   pipelineStages := Seq(digest, gzip),
+  LessKeys.compress in Assets := true,
+  includeFilter in (Assets, LessKeys.less) := "*.less",
   scalacOptions := Seq("-unchecked", "-deprecation", "-opt-inline-from"),
   // triggers scalaJSPipeline when using compile or continuous compilation
   compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
@@ -44,6 +46,9 @@ lazy val server = (project in file("server")).settings(
     // Memcached
 //    "com.github.mumoshu" %% "play2-memcached-play26" % "0.9.0",
 
+    // Sendgrid
+    "com.sendgrid" % "sendgrid-java" % "4.+",
+
     // json
     "com.fasterxml.jackson.core" % "jackson-databind" % "2.+",
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.+",
@@ -58,7 +63,7 @@ lazy val server = (project in file("server")).settings(
     guice,
     filters
   )
-).enablePlugins(PlayScala).
+).enablePlugins(PlayScala, SbtWeb).
   aggregate(client).
   dependsOn(sharedJvm)
 

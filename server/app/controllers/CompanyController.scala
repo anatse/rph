@@ -6,10 +6,10 @@ import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.api.actions.SecuredRequest
 import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 import forms.SignInForm
-import models.{DrugsGroup, DrugsProduct}
+import models.{DrugsGroup, DrugsProduct, ShopCart}
 import models.daos.{DrugsGroupDAO, ProductDAO}
 import org.webjars.play.WebJarsUtil
-import play.api.i18n.I18nSupport
+import play.api.i18n.{I18nSupport, Messages}
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, AnyContent, ControllerComponents, Request}
 import utils.auth.DefaultEnv
@@ -27,7 +27,8 @@ class CompanyController @Inject()(
     ex: ExecutionContext) extends AbstractController(components) with I18nSupport  {
 
   def view = silhouette.UserAwareAction.async { implicit request =>
-    Future.successful(Ok(views.html.shop.main("Hello", SignInForm.form, socialProviderRegistry, request.identity)))
+    val shopCart = ShopCart ("test", null)
+    Future.successful(Ok(views.html.shop.shop(SignInForm.form, socialProviderRegistry, request.identity, Some(shopCart))))
   }
 
   implicit val productWrites = Json.writes[DrugsProduct]

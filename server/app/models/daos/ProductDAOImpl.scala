@@ -92,15 +92,37 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
   }
 
   def textSearch (text: String, sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(
-      document("$text" -> document (
-        "$search" -> text,
-        "$caseSensitive" -> false)
-    )).options(QueryOpts().skip(offset).batchSize(pageSize))
+    document ("$and" ->
+      BSONArray (
+        document("$text" -> document (
+          "$search" -> text,
+          "$caseSensitive" -> false)
+        ),
+        document ("ost" -> document("$gt" -> 0))
+    ))).options(QueryOpts().skip(offset).batchSize(pageSize))
       .sort(document(sortField.getOrElse("retailPrice") -> 1))
       .cursor[DrugsProduct]()
       .collect[List](pageSize, handler[DrugsProduct]))
 
-  override def findAll(sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(document())
+  override def fuzzySearch(text: String, sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap (col => {
+    val words = text.split(regexp).map(soundex(_))
+    // Add fixed layout strings to find
+    val allWords = words ++ fixKeyboardLayout(text).split(regexp).map(soundex(_))
+
+    col.find(
+      document ("$and" ->
+        BSONArray (
+          document ("sndWords" -> document("$in" -> allWords)),
+          document ("ost" -> document("$gt" -> 0))
+        )
+      )
+    ).options(QueryOpts().skip(offset).batchSize(pageSize))
+      .sort(document (sortField.getOrElse("retailPrice") -> 1))
+      .cursor[DrugsProduct]()
+      .collect[List](pageSize, handler[DrugsProduct])
+  })
+
+  override def findAll(sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(document ("ost" -> document("$gt" -> 0)))
     .options(QueryOpts().skip(offset).batchSize(pageSize))
     .sort(document(sortField.getOrElse("retailPrice") -> 1))
     .cursor[DrugsProduct]()
@@ -110,9 +132,42 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
   override def save(product: DrugsProduct) = productCollection.flatMap(_.update(document("_id" -> product.id), product, upsert = true).map(_.upserted.map(ups => product).head))
   override def remove(id: String) = productCollection.flatMap(_.remove(document("_id" -> id)).map(r => {}))
 
+  /**
+    * Function updates or inserts given products. Only part of the drug attributes wil be changes. Suck additional attribues as
+    * groups, seo tags and so on not changes by bulk upserts. Its can be changed manually only
+    * @param entities
+    * @return list of statuss of the operatiions
+    */
   override def bulkUpsert (entities: List[DrugsProduct]): Future[Seq[UpdateWriteResult]] = Future.sequence (
     entities.map(prepareDrug(_)).map (entity => {
-        val res = productCollection.flatMap(_.update(document("_id" -> entity.id), entity, upsert = true))
+        val res = productCollection.flatMap(_.update(
+          document(
+            "_id" -> entity.id),
+            document (
+              "$set" -> document (
+                "_id" -> entity.id,
+                "barCode" -> entity.barCode,
+                "drugsFullName" -> entity.drugsFullName,
+                "drugFullName" -> entity.drugFullName,
+                "drugsShortName" -> entity.drugsShortName,
+                "ost" -> entity.ost,
+                "ostFirst" -> entity.ostFirst,
+                "ostLast" -> entity.ostLast,
+                "retailPrice" -> entity.retailPrice,
+                "tradeTech" -> entity.tradeTech,
+                "producerFullName" -> entity.producerFullName,
+                "producerShortName" -> entity.producerShortName,
+                "supplierFullName" -> entity.supplierFullName,
+                "MNN" -> entity.MNN,
+                "unitFullName" -> entity.unitFullName,
+                "unitShortName" -> entity.unitShortName,
+                "packaging" -> entity.packaging,
+                "sndWords" -> entity.sndWords
+              )
+            ),
+            upsert = true
+          )
+        )
         res.onComplete {
           case Failure(e) => e.printStackTrace()
           case Success(writeResult) => {}
@@ -130,26 +185,6 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
       }
     ).map(_ => {})
 
-  override def fuzzySearch(text: String, sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap (col => {
-    val words = text.split(regexp).map(soundex(_))
-    // Add fixed layout strings to find
-    val allWords = words ++ fixKeyboardLayout(text).split(regexp).map(soundex(_))
-
-    col.find(
-      document ("sndWords" -> document("$in" -> allWords))
-    ).options(QueryOpts().skip(offset).batchSize(pageSize))
-      .sort(document (sortField.getOrElse("retailPrice") -> 1))
-      .cursor[DrugsProduct]()
-      .collect[List](pageSize, handler[DrugsProduct])
-  })
-
-  def fuzzySearchOld(text: String, sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(
-    document ("$where" -> s"compareString (this.drugsFullName, '${text}')"))
-    .options(QueryOpts().skip(offset).batchSize(pageSize))
-    .sort(document (sortField.getOrElse("retailPrice") -> 1))
-    .cursor[DrugsProduct]()
-    .collect[List](pageSize, handler[DrugsProduct]))
-
   override def combinedSearch(text: String, sortField: Option[String], offset: Int, pageSize: Int) = textSearch(text, sortField, offset, pageSize).flatMap(
     result =>
       // If not found then trying to fuzzy search
@@ -158,4 +193,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
       else
         Future(result)
   )
+
+  override def addImage(id: String, imageUrl: String) = ???
+  override def setGroups(id: String, groups: Array[String]) = ???
 }

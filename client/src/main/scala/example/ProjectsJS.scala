@@ -74,7 +74,14 @@ object ProjectJS {
                 p (`class`:="description")(fullName)
                 //a (`class`:="memberNameLink", href:=s"/project/${prj}")(linkText)
               ),
-              div (cls:="panel-footer")(s"Цена: ${price}.00 р")
+              div (cls:="panel-footer")(
+                s"Цена: ${price}.00 р",
+                button (
+                  cls:="btn",
+                  style:="float: right",
+                  role:="button"
+                )("В корзину")
+              )
             )
           )
         }

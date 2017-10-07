@@ -3,10 +3,16 @@
 @import play.api.mvc.RequestHeader
 @import org.webjars.play.WebJarsUtil
 @import forms.SignUpForm.Data
+@import forms.SignInForm.{Data => SignInData}
 @import b3.inline.fieldConstructor
 @import scalajs._
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 
-@(signUpForm: Form[Data])(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
+@(
+    signUpForm: Form[Data],
+    signInForm: Form[SignInData],
+    socialProviders: SocialProviderRegistry
+)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
 
 @content = {
     <div class="register-photo">
@@ -57,10 +63,13 @@
     </div>
 }
 
-@main(messages("sign.up.title")) {@content}
+@shop.main(messages("sign.up.title"), signInForm, socialProviders) {@content}
 
 @html.scripts(projectName = "client",
     name => s"/assets/$name",
     name => getClass.getResource(s"/public/$name") != null)
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.2.0/zxcvbn.js"></script>
+<script src="@controllers.routes.Assets.at("javascripts/zxcvbnShim.js")"></script>
 
 <script>pwdStrong();</script>

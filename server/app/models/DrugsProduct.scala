@@ -48,8 +48,11 @@ case class DrugsProduct(
 
    sndWords: Option[Array[String]] = None,
 
+   // Additional attributes for manual adding
    drugGroups: Option[Array[String]] = None,
-   drugImage: Option[String] = None
+   drugImage: Option[String] = None,
+   shortName: Option[String] = None,
+   seoTags: Option[Array[String]] = None
 )
 
 case class DrugsGroup (id: String, groupName: String, description: String)
