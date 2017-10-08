@@ -177,24 +177,4 @@ object ProductJS {
     val pageSize: Int = params.getOrElse("pageSize", DEFAULT_PAGE_SIZE).toInt
     dom.window.location.hash = s"search=$urlEncodedString,offset=0,pageSize=$pageSize"
   }
-
-  @JSExportTopLevel(name = "pwdStrong")
-  def pwdStrong () = {
-    import org.scalajs.jquery.jQuery
-
-    val password = jQuery("""[data-pwd="true"]""")
-    if (password != null) {
-      val meter = jQuery("#password-strength-meter")
-      val msg = jQuery("#password-strength-text")
-
-      password.change(e => showFeedback(e));
-      password.keyup(e => showFeedback(e));
-    }
-  }
-
-  def showFeedback(event:JQueryEventObject) = {
-    val pwd = event.target.asInstanceOf[Input].value
-    val result = js.Dynamic.global.applyDynamic("zxcvbn")(pwd)
-    jQuery("#password-strength-meter").value(result.selectDynamic("score").toString);
-  }
 }

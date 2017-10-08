@@ -7,7 +7,7 @@ val silhouetteVersion = "5.+"
 
 lazy val server = (project in file("server")).settings(
   scalaVersion := scalaV,
-  scalaJSProjects := Seq(client),
+  scalaJSProjects := Seq(client, clientAdmin),
   pipelineStages in Assets := Seq(scalaJSPipeline),
   pipelineStages := Seq(digest, gzip),
   LessKeys.compress in Assets := true,
@@ -43,11 +43,6 @@ lazy val server = (project in file("server")).settings(
 
     // mongoDB
     "org.reactivemongo" %% "play2-reactivemongo" % "0.12.6-play26",
-    // Memcached
-//    "com.github.mumoshu" %% "play2-memcached-play26" % "0.9.0",
-
-    // Sendgrid
-//    "com.sendgrid" % "sendgrid-java" % "4.+",
 
     // json
     "com.fasterxml.jackson.core" % "jackson-databind" % "2.+",
@@ -55,7 +50,6 @@ lazy val server = (project in file("server")).settings(
 
     "com.mohiva" %% "play-silhouette-testkit" % silhouetteVersion % "test",
     "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.1" % "test",
-//    "com.h2database" % "h2" % "1.4.196" % "test",
     specs2 % Test,
 
     // Play libraries
@@ -64,7 +58,7 @@ lazy val server = (project in file("server")).settings(
     filters
   )
 ).enablePlugins(PlayScala, SbtWeb).
-  aggregate(client).
+  aggregate(client, clientAdmin).
   dependsOn(sharedJvm)
 
 lazy val client = (project in file("client")).settings(
@@ -72,6 +66,19 @@ lazy val client = (project in file("client")).settings(
   scalaJSUseMainModuleInitializer := true,
   coverageEnabled := false,
   mainClass in Compile := Some("phr.ProductJS"),
+  libraryDependencies ++= Seq(
+    "org.scala-js" %%% "scalajs-dom" % "0.9.+",
+    "com.lihaoyi" %%% "scalatags" % "0.6.+",
+    "be.doeraene" %%% "scalajs-jquery" % "0.9.+"
+  )
+).enablePlugins(ScalaJSPlugin, ScalaJSWeb).
+  dependsOn(sharedJs)
+
+lazy val clientAdmin = (project in file("clientAdmin")).settings(
+  scalaVersion := scalaV,
+  scalaJSUseMainModuleInitializer := true,
+  coverageEnabled := false,
+  mainClass in Compile := Some("phr.AdminJS"),
   libraryDependencies ++= Seq(
     "org.scala-js" %%% "scalajs-dom" % "0.9.+",
     "com.lihaoyi" %%% "scalatags" % "0.6.+",
