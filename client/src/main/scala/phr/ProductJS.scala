@@ -1,4 +1,4 @@
-package example
+package phr
 
 import org.scalajs.dom
 import org.scalajs.dom.Event
@@ -15,7 +15,7 @@ import scala.scalajs.js.timers.SetTimeoutHandle
 import scala.util.Try
 
 @JSExportTopLevel(name = "rphApp")
-object ProjectJS {
+object ProductJS {
   @JSExport
   def main: Unit = {
     dom.window.addEventListener("hashchange", { (event: dom.HashChangeEvent) =>

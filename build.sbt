@@ -47,7 +47,7 @@ lazy val server = (project in file("server")).settings(
 //    "com.github.mumoshu" %% "play2-memcached-play26" % "0.9.0",
 
     // Sendgrid
-    "com.sendgrid" % "sendgrid-java" % "4.+",
+//    "com.sendgrid" % "sendgrid-java" % "4.+",
 
     // json
     "com.fasterxml.jackson.core" % "jackson-databind" % "2.+",
@@ -55,7 +55,7 @@ lazy val server = (project in file("server")).settings(
 
     "com.mohiva" %% "play-silhouette-testkit" % silhouetteVersion % "test",
     "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.1" % "test",
-    "com.h2database" % "h2" % "1.4.196" % "test",
+//    "com.h2database" % "h2" % "1.4.196" % "test",
     specs2 % Test,
 
     // Play libraries
@@ -71,7 +71,7 @@ lazy val client = (project in file("client")).settings(
   scalaVersion := scalaV,
   scalaJSUseMainModuleInitializer := true,
   coverageEnabled := false,
-  mainClass in Compile := Some("example.ProjectJS"),
+  mainClass in Compile := Some("phr.ProductJS"),
   libraryDependencies ++= Seq(
     "org.scala-js" %%% "scalajs-dom" % "0.9.+",
     "com.lihaoyi" %%% "scalatags" % "0.6.+",
