@@ -76,7 +76,7 @@ yahoo = Yahoo
 # Emails
 ##########
 
-email.from = rph <noreply@mohiva.com>
+email.from = PharmRus <noreply@pharmrus.ru>
 
 # Sign Up
 email.sign.up.subject = Welcome

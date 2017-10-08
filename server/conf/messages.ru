@@ -77,7 +77,7 @@ yahoo = Yahoo
 # Emails
 ##########
 
-email.from = mes-solutions <noreply@mes-solutions.com>
+email.from = PharmRus <noreply@pharmrus.ru>
 
 # Sign Up
 email.sign.up.subject = Здравствуйте
