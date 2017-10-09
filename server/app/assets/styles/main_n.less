@@ -169,21 +169,24 @@ footer .glyphicon {
         width: 100%;
         margin-bottom: 35px;
     }
-    .modal-dialog {
-        left: 50%;
-        right: auto;
-        width: 624px;
-    }
 }
 @media screen and (max-width: 480px) {
     .logo {
         font-size: 150px;
     }
 }
+
+.navbar {
+  z-index: 9998 !important;
+}
+
+.modal {
+  z-index: 9999 !important;
+}
+
 .modal-dialog{
       /* now you must set a margin left under zero - value is a half width your window */
       /* this same situation is with height - example */
-
     top: 20px;
 }
 

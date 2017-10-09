@@ -2,10 +2,14 @@
 @import play.api.mvc.RequestHeader
 @import play.twirl.api.Html
 @import org.webjars.play.WebJarsUtil
+@import forms.SignInForm.{Data => SignInData}
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 
-@(email: String)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
+@(email: String,
+    signInForm: Form[SignInData],
+    socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
 
-@main(messages("activate.account.title")) {
+@shop.main(messages("activate.account.title"), signInForm, socialProviders) {
     <fieldset class="col-md-6 col-md-offset-3">
         <legend>@messages("activate.account")</legend>
         <div class="info">
