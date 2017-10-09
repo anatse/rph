@@ -57,6 +57,7 @@ object ProductJS {
         val htmlRow = for (prj <- rows) yield {
           val fullName:String = dynGet[String] (prj, "drugsFullName").getOrElse("")
           val price:Double = dynGet[Double] (prj, "retailPrice").getOrElse(0)
+          val producerShortName:String = dynGet[String] (prj, "producerShortName").getOrElse("")
 
           dynGet[String] (prj, "drugsShortName") match {
             case Some(name) => seoDescription.append(name.split("[ ,.]+")(0)).append(" цена: ").append(price).append(".00р, ")
@@ -70,8 +71,8 @@ object ProductJS {
               //div (cls:="panel-heading")(),
               div (cls:="panel-body")(
                 img (cls:="img-responsive", src:=s"/assets/images/${dynGet[String] (prj, "drugImage").getOrElse("/nophoto.jpg")}"),
-                //p (`class`:="memberNameLabel")(mnn),
-                p (`class`:="description")(fullName)
+                p (`class`:="description")(fullName),
+                p (`class`:="description")(producerShortName)
                 //a (`class`:="memberNameLink", href:=s"/project/${prj}")(linkText)
               ),
               div (cls:="panel-footer")(
