@@ -1,5 +1,6 @@
 package controllers
 
+import java.net.URLEncoder
 import javax.inject.Inject
 
 import com.mohiva.play.silhouette.api.Authenticator.Implicits._
@@ -53,17 +54,15 @@ class SignInController @Inject() (
   def submit = silhouette.UnsecuredAction.async { implicit request: Request[AnyContent] =>
     SignInForm.form.bindFromRequest.fold(
       form => {
-        println (s"BadRequest: ${form}")
         Future.successful(BadRequest(""))
       },
       data => {
         val credentials = Credentials(data.email, data.password)
-        println (s"credentials: $credentials")
         val auth = credentialsProvider.authenticate(credentials)
+        val redirectUrl = data.redirectUrl
 
         auth.flatMap { loginInfo =>
-          println (s"Credentials logininfo: ${loginInfo}")
-          val result = Redirect(routes.CompanyController.view())
+          val result = Redirect(redirectUrl)
           userService.retrieve(loginInfo).flatMap {
             case Some(user) if !user.activated =>
               Future.successful(Ok(views.html.activateAccount(data.email, SignInForm.form, socialProviderRegistry)))
@@ -88,7 +87,7 @@ class SignInController @Inject() (
         }.recover {
           case ex: ProviderException =>
             ex.printStackTrace()
-            Redirect(routes.CompanyController.view()).flashing("error" -> Messages("invalid.credentials"))
+            Redirect(redirectUrl).flashing("error" -> Messages("invalid.credentials"))
         }
       })
   }

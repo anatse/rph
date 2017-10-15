@@ -91,6 +91,36 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     str.toLowerCase.map(c => replacer.getOrElse(c, c))
   }
 
+  /**
+    * Function find drugs by drusFullName only but user regexp search
+    * @param text String to search
+    * @param sortField sorting field
+    * @param offset offset
+    * @param pageSize pageSize
+    * @return list of the found drugs
+    */
+  def searchbyDrugName (text: String, sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(
+    document ("$and" ->
+      BSONArray (
+        document("$or" -> BSONArray (
+            document("drugsFullName" -> document("$regex" -> s".*${text}.*", "$options" -> "i")),
+            document("drugsFullName" -> document("$regex" -> s".*${fixKeyboardLayout(text)}.*", "$options" -> "i"))
+          )
+        ),
+        document ("ost" -> document("$gt" -> 0))
+      ))).options(QueryOpts().skip(offset).batchSize(pageSize))
+    .sort(document(sortField.getOrElse("retailPrice") -> 1))
+    .cursor[DrugsProduct]()
+    .collect[List](pageSize, handler[DrugsProduct]))
+
+  /**
+    * Function searches drugs using mongo text index. This text index custructs from name and description and producer of drugs
+    * @param text text to search
+    * @param sortField field to sroting result set
+    * @param offset offset
+    * @param pageSize page size
+    * @return list of found drugs
+    */
   def textSearch (text: String, sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(
     document ("$and" ->
       BSONArray (
@@ -104,6 +134,16 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
       .cursor[DrugsProduct]()
       .collect[List](pageSize, handler[DrugsProduct]))
 
+  /**
+    * Function searchs drugs using soundex function. This function prepares array of words and stored its within drugs object.
+    * Eache text string will be splitted by words and next these words converts to sondex form. After mongo searchs intersects between
+    * thwo words arrays - stored in database and computed from search string
+    * @param text text toi search
+    * @param sortField sort field
+    * @param offset offset
+    * @param pageSize page size
+    * @return list of found drugs
+    */
   override def fuzzySearch(text: String, sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap (col => {
     val words = text.split(regexp).map(soundex(_))
     // Add fixed layout strings to find
@@ -122,6 +162,13 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
       .collect[List](pageSize, handler[DrugsProduct])
   })
 
+  /**
+    * Function retrieves all drugs from database using sorting and paging
+    * @param sortField sort
+    * @param offset offset
+    * @param pageSize page size
+    * @return list of found drugs
+    */
   override def findAll(sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(document ("ost" -> document("$gt" -> 0)))
     .options(QueryOpts().skip(offset).batchSize(pageSize))
     .sort(document(sortField.getOrElse("retailPrice") -> 1))
@@ -136,7 +183,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     * Function updates or inserts given products. Only part of the drug attributes wil be changes. Suck additional attribues as
     * groups, seo tags and so on not changes by bulk upserts. Its can be changed manually only
     * @param entities
-    * @return list of statuss of the operatiions
+    * @return list of status of the operatiions
     */
   override def bulkUpsert (entities: List[DrugsProduct]): Future[Seq[UpdateWriteResult]] = Future.sequence (
     entities.map(prepareDrug(_)).map (entity => {
@@ -185,15 +232,76 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
       }
     ).map(_ => {})
 
-  override def combinedSearch(text: String, sortField: Option[String], offset: Int, pageSize: Int) = textSearch(text, sortField, offset, pageSize).flatMap(
-    result =>
-      // If not found then trying to fuzzy search
-      if (result.size == 0)
-        fuzzySearch (text, sortField, offset, pageSize)
+  /**
+    * Function combines all types of search drugs in the following order <br/>
+    * Next search algorithm will be used only if the previous search found no results
+    * <ul>
+    *   <li>Find by name</li>
+    *   <li>Text search</li>
+    *   <li>Fuzzy search</li>
+    * </ul>
+    *
+    * @param text test to search
+    * @param sortField sorting
+    * @param offset offset
+    * @param pageSize page size
+    * @return list of found drugs
+    */
+  override def combinedSearch (text: String, sortField: Option[String], offset: Int, pageSize: Int) = searchbyDrugName(text, sortField, offset, pageSize).flatMap(
+    res =>
+      // If not found then trying to text search
+      if (res.size == 0)
+        textSearch(text, sortField, offset, pageSize).flatMap(
+          result =>
+            // If not found then trying to fuzzy search
+            if (result.size == 0)
+              fuzzySearch (text, sortField, offset, pageSize)
+            else
+              Future.successful(result)
+        )
       else
-        Future(result)
+        Future.successful(res)
   )
 
-  override def addImage(id: String, imageUrl: String) = ???
-  override def setGroups(id: String, groups: Array[String]) = ???
+  /**
+    * Not used because andThen not working as I imagined.
+    * TODO fix my imagination
+    * @param text
+    * @param sortField
+    * @param offset
+    * @param pageSize
+    * @return
+    */
+  @Deprecated
+  def _notWorkingCombinedSearch (text: String, sortField: Option[String], offset: Int, pageSize: Int) =
+    searchbyDrugName(text, sortField, offset, pageSize) andThen {
+      case Success(res) if (res.size == 0) =>
+        textSearch(text, sortField, offset, pageSize) andThen {
+          case Success(result) if (result.size == 0) => fuzzySearch (text, sortField, offset, pageSize)
+        }
+    }
+
+  /**
+    * Function set image to desired drug
+    * @param id
+    * @param imageUrl
+    * @return changed drug
+    */
+  override def addImage(id: String, imageUrl: String) = productCollection.flatMap(_.findAndUpdate(
+      document("_id" -> id),
+      document("$set" -> document ( "drugImage" -> imageUrl)),
+      fetchNewObject = true
+    ).map(r => r.result[DrugsProduct]))
+
+  /**
+    * Function set image to desired drug
+    * @param id
+    * @param groups
+    * @return changed drug
+    */
+  override def setGroups (id: String, groups: Array[String]) = productCollection.flatMap(_.findAndUpdate(
+      document("_id" -> id),
+      document("$set" -> document ( "drugGroups" -> groups)),
+      fetchNewObject = true
+    ).map(r => r.result[DrugsProduct]))
 }

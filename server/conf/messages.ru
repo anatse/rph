@@ -115,6 +115,7 @@ page.prev = Назад
 page.next = Вперед
 
 search.placeholder = Введите название лекарства
+search.label = Поиск
 
 company.title = ООО Фармрус
 company.name = ООО Фармрус
@@ -150,4 +151,9 @@ goods.load.title = Загрузка, обновление товаров
 #
 # SEO
 #
-main.seo.description = Поиск лекарства дешевые цены реутов
+main.seo.description = Поиск лекарства дешевые цены Реутов Москва
+
+drug.name=Название
+drug.producer=Производитель
+drug.quentity=Количество
+btn.save=Сохранить

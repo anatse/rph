@@ -19,7 +19,7 @@ object ProductJS {
   @JSExport
   def main: Unit = {
     dom.window.addEventListener("hashchange", { (event: dom.HashChangeEvent) =>
-      callLoad(event.newURL)
+      callLoad(dom.window.location.hash)
       event.preventDefault()
     }, false)
 
@@ -29,6 +29,8 @@ object ProductJS {
 
     // Calling first time function
     callLoad(dom.window.location.hash)
+
+    modalSetLocation ("#myModal", "#backRedirect")
   }
 
   def dynGet[T] (dyn: js.Dynamic, name:String): Option[T] = {
@@ -133,17 +135,25 @@ object ProductJS {
     xhr.send()
   }
 
-  val pattern = "[#|,]([\\w|=]+=[^,]*)+".r
+//  val pattern = "[#|,]([\\w|=]+=[^,]*)+".r
+  val pattern = raw"#search=(.*),offset=(\d+),pageSize=(\d+)".r
+
   def parseHash (url: String): Map[String, String] = {
-    Try (
-      if (!url.isEmpty) (pattern findAllMatchIn url).map( m => {
-        val splits = m.group(1).split("=")
-        if (splits.length == 2) Map[String, String](splits(0) -> splits(1)) else Map.empty[String, String]
-      }).reduce ((a, b) => {
-        a ++ b
-      })
-      else Map.empty[String, String]
-    ).getOrElse(Map.empty[String, String])
+    url match {
+      case pattern(search, offset, pageSize) => Map("search" -> search, "offset" -> offset, "pageSize" -> pageSize)
+      case _ => Map.empty
+    }
+
+//    Try (
+//      if (!url.isEmpty) (pattern findAllMatchIn url).map( m => {
+//        dom.console.log(m.group(1))
+//        val splits = m.group(1).split("=")
+//        if (splits.length == 2) Map[String, String](splits(0) -> splits(1)) else Map.empty[String, String]
+//      }).reduce ((a, b) => {
+//        a ++ b
+//      })
+//      else Map.empty[String, String]
+//    ).getOrElse(Map.empty[String, String])
   }
 
   private val DEFAULT_PAGE_SIZE = "8"
@@ -177,5 +187,13 @@ object ProductJS {
     val params = parseHash(dom.window.location.hash)
     val pageSize: Int = params.getOrElse("pageSize", DEFAULT_PAGE_SIZE).toInt
     dom.window.location.hash = s"search=$urlEncodedString,offset=0,pageSize=$pageSize"
+  }
+
+  @JSExport
+  def modalSetLocation (modal: String, field: String) = {
+    jQuery(modal).bind("show.bs.modal", (event: Event) => {
+      val url = s"${dom.window.location.pathname}${dom.window.location.hash}"
+      jQuery(s"$modal $field").value(s"$url")
+    })
   }
 }

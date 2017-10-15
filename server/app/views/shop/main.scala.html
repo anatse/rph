@@ -25,11 +25,10 @@
         <title>@title</title>
         <link rel="stylesheet" href="@webJarsUtil.url("bootstrap.min.css")">
         <link rel="stylesheet" href="@controllers.routes.Assets.at("styles/main_n.min.css")">
-
     </head>
 
-    <body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="60" >
-        <nav class="navbar navbar-default navbar-fixed-top">
+    <body>
+        <nav class="navbar navbar-default">
             <div class="container">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
@@ -73,69 +72,89 @@
             case Some(usr) if (usr.roles.getOrElse(Array()).contains("ADMIN")) => true
             case _ => false}
         ) {
-        <div id="loadFileModal" class="modal fade" role="dialog">
-            <div class="modal-dialog modal-sm">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">@messages("goods.load.title")</h4>
-                    </div>
-                    <div class="modal-body">
-                    @helper.form(action = routes.GoodsImportController.upload, 'enctype -> "multipart/form-data") {
-                        @helper.CSRF.formField
-                        <input type="file" name="data">
-                        <p>
-                            <input type="submit">
-                        </p>
-                    }
-                    </div>
-                    <div class="modal-footer">
+            <div id="loadFileModal" class="modal fade" role="dialog">
+                <div class="modal-dialog modal-sm">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">@messages("goods.load.title")</h4>
+                        </div>
+                        <div class="modal-body">
+                        @helper.form(action = routes.GoodsImportController.upload, 'enctype -> "multipart/form-data") {
+                            @helper.CSRF.formField
+                            <input type="file" name="data">
+                            <p>
+                                <input type="submit">
+                            </p>
+                        }
+                        </div>
+                        <div class="modal-footer">
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
         }
 
         @if(!user.isDefined) {
-        <div id="myModal" class="modal fade" role="dialog">
-            <div class="modal-dialog modal-sm">
-                @*Modal content*@
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">@messages("sign.in.credentials")</h4>
-                    </div>
-                    <div class="modal-body">
-                        @helper.form(action = controllers.routes.SignInController.submit(), 'role -> "form") {
-                            @helper.CSRF.formField
-                            @b3.email(signInForm("email"), '_hiddenLabel -> messages("email"), 'placeholder -> messages("email"), 'class -> "form-control input-lg")
-                            @b3.password(signInForm("password"), '_hiddenLabel -> messages("password"), 'placeholder -> messages("password"), 'class -> "form-control input-lg")
-                            @b3.checkbox(signInForm("rememberMe"), '_text -> messages("remember.me"), 'checked -> true)
-                            <div class="form-group">
-                                <div>
-                                    <button id="submit" type="submit" value="submit" class="btn btn-lg btn-primary btn-block">@messages("sign.in")</button>
+            <div id="myModal" class="modal fade" role="dialog">
+                <div class="modal-dialog modal-sm">
+                    @*Modal content*@
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">@messages("sign.in.credentials")</h4>
+                        </div>
+                        <div class="modal-body">
+                            @helper.form(action = controllers.routes.SignInController.submit(), 'role -> "form") {
+                                @helper.CSRF.formField
+                                @b3.email(signInForm("email"), '_hiddenLabel -> messages("email"), 'placeholder -> messages("email"), 'class -> "form-control input-lg")
+                                @b3.password(signInForm("password"), '_hiddenLabel -> messages("password"), 'placeholder -> messages("password"), 'class -> "form-control input-lg")
+                                @b3.checkbox(signInForm("rememberMe"), '_text -> messages("remember.me"), 'checked -> true)
+                                <div class="form-group">
+                                    <div>
+                                        <button id="submit" type="submit" value="submit" class="btn btn-lg btn-primary btn-block">@messages("sign.in")</button>
+                                    </div>
                                 </div>
-                            </div>
-                        }
-                    </div>
-                    <div class="modal-footer">
-                        @if(socialProviders.providers.nonEmpty) {
-                            <div class="social-providers">
-                                <p>@messages("or.use.social")</p>
-                                <div>
-                                @for(p <- socialProviders.providers) {
-                                    <a href="@controllers.routes.SocialAuthController.authenticate(p.id)" class="provider @p.id" title="@messages(p.id)"><img src="@controllers.routes.Assets.at(s"images/providers/${p.id}.png")" width="24px" height="24px" alt="@messages(p.id)"></a>
-                                }
+                                @b3.hidden(signInForm("redirectUrl"), 'id -> "backRedirect")
+                            }
+                        </div>
+                        <div class="modal-footer">
+                            @if(socialProviders.providers.nonEmpty) {
+                                <div class="social-providers">
+                                    <p>@messages("or.use.social")</p>
+                                    <div>
+                                    @for(p <- socialProviders.providers) {
+                                        <a href="@controllers.routes.SocialAuthController.authenticate(p.id)" class="provider @p.id" title="@messages(p.id)"><img src="@controllers.routes.Assets.at(s"images/providers/${p.id}.png")" width="24px" height="24px" alt="@messages(p.id)"></a>
+                                    }
+                                    </div>
                                 </div>
-                            </div>
-                        }
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
         }
         <script type="text/javascript" src="@webJarsUtil.url("jquery.min.js")"></script>
         <script type="text/javascript" src="@webJarsUtil.url("bootstrap.min.js")"></script>
+
+        @request.flash.get("error").map { msg =>
+            <div class="col-md-6 col-md-offset-3 alert alert-danger">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <strong>@messages("error")</strong> @msg
+            </div>
+        }
+        @request.flash.get("info").map { msg =>
+            <div class="col-md-6 col-md-offset-3 alert alert-info">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <strong>@messages("info")</strong> @msg
+            </div>
+        }
+        @request.flash.get("success").map { msg =>
+            <div class="col-md-6 col-md-offset-3 alert alert-success">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <strong>@messages("success")</strong> @msg
+            </div>
+        }
         @content
         <footer class="bg-grey">
             <p><span class="glyphicon glyphicon-map-marker"></span>@messages("contact.city"), @messages("contact.address")</p>

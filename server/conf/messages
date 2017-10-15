@@ -114,3 +114,46 @@ prj.list.description = Here you can see list of projects in which you whenever p
 # Pages
 page.prev = Older
 page.next = Newer
+
+search.placeholder = Enter drug name for searchng
+search.label = Search
+
+company.title = Pharmrus Company
+company.name = Pharmrus
+company.description = Welcome to our shop, Reutov city, Komsomolskaya st 10/1
+
+# Menu items in navigation bar
+shop.menu.item = Drugs
+shop.page.title = Showcase for Pharmrus pharmacy
+
+cosmo.menu.item = Cosmetics
+contact.menu.item = Contacts
+articles.menu.item = Articles
+goods.load.menu = Goods upload
+short_cart.menu = Cart
+
+contact.message = Write to us, we will surely answer you soon
+contact.address.title = Address: 
+contact.phone.title = Phone:
+contact.email.title = Email:
+
+contact.city = Reutov city
+contact.address = Komsomolskaya st 10/1
+contact.phone = +74994097578
+contact.phonetext = +7 (499) 409-75-78
+contact.email = ruspharm10@gmail.com
+
+placeholder.name = Name
+placeholder.email = Email
+placeholder.comment = Comment
+send.email = Send
+goods.load.title = Upload goods
+
+#
+# SEO
+#
+main.seo.description = Finding a medicine cheap prices Reutov Moscow
+drug.name=Name
+drug.producer=Producer
+drug.quentity=Quentity
+btn.save=Save
