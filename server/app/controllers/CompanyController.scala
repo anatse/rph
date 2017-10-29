@@ -57,6 +57,10 @@ class CompanyController @Inject()(
     drugsGroupDAO.findAll(None, 0, 0).map(rows => Ok(Json.obj("rows" -> rows)))
   }
 
+  def findByGroup (group: String, searchText:Option[String], offset:Int, pageSize:Int, sort:Option[String] = None) = silhouette.UserAwareAction.async { implicit request =>
+    drugsProductDAO.findByGroup(group, searchText, sort, offset, pageSize+1).map(rows => makeResult(rows, pageSize, offset))
+  }
+
   def findDrugsProducts(offset:Int, pageSize:Int, sort:Option[String] = None) = silhouette.UserAwareAction.async { implicit request =>
     drugsProductDAO.findAll(sort, offset, pageSize+1).map(rows => makeResult(rows, pageSize, offset))
   }

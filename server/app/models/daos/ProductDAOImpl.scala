@@ -12,7 +12,7 @@ import reactivemongo.api.QueryOpts
 import reactivemongo.api.commands.UpdateWriteResult
 import reactivemongo.api.indexes.Index
 import reactivemongo.api.indexes.IndexType.Text
-import reactivemongo.bson.{BSONArray, BSONDocumentReader, BSONDocumentWriter, Macros, document}
+import reactivemongo.bson.{BSONArray, BSONDocumentReader, BSONDocumentWriter, BSONElement, Macros, document}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -161,6 +161,26 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
       .cursor[DrugsProduct]()
       .collect[List](pageSize, handler[DrugsProduct])
   })
+
+  def findByGroup (group: String, text: Option[String], sortField: Option[String], offset: Int, pageSize: Int): Future[List[DrugsProduct]] =
+    productCollection.flatMap (col => {
+      val arr = BSONArray(document("drugGroups" -> document("$in" -> group)))
+      text match {
+        case Some(txt) => val words = txt.split(regexp).map(soundex(_))
+          val allWords = words ++ fixKeyboardLayout(txt).split(regexp).map(soundex(_))
+          arr.add (document("sndWords" -> document("$in" -> allWords)))
+        case _ =>
+      }
+
+      arr.add(document("ost" -> document("$gt" -> 0)))
+
+      col.find(
+        document (BSONElement.provided("$and" -> arr))
+      ).options(QueryOpts().skip(offset).batchSize(pageSize))
+        .sort(document (sortField.getOrElse("retailPrice") -> 1))
+        .cursor[DrugsProduct]()
+        .collect[List](pageSize, handler[DrugsProduct])
+    })
 
   /**
     * Function retrieves all drugs from database using sorting and paging
