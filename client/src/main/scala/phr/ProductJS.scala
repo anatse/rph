@@ -135,25 +135,28 @@ object ProductJS {
     xhr.send()
   }
 
-//  val pattern = "[#|,]([\\w|=]+=[^,]*)+".r
-  val pattern = raw"#search=(.*),offset=(\d+),pageSize=(\d+)".r
+  val pattern = "[#|,]([\\w|=]+=[^,]*)+".r
+//  lazy val pattern = raw"#search=(.*),offset=(\d+),pageSize=(\d+)".r
 
   def parseHash (url: String): Map[String, String] = {
-    url match {
-      case pattern(search, offset, pageSize) => Map("search" -> search, "offset" -> offset, "pageSize" -> pageSize)
-      case _ => Map.empty
-    }
+//    val pattern = raw"#search=(.*),offset=(\d+),pageSize=(\d+)".r
+//    url match {
+//      case pattern(search, offset, pageSize) => dom.console.log(s"search: ${search}, $offset, $pageSize, $url")
+//        Map("search" -> search, "offset" -> offset, "pageSize" -> pageSize)
+//      case _ => dom.console.log(s"not matched $url")
+//        Map.empty
+//    }
 
-//    Try (
-//      if (!url.isEmpty) (pattern findAllMatchIn url).map( m => {
+    Try (
+      if (!url.isEmpty) (pattern findAllMatchIn url).map( m => {
 //        dom.console.log(m.group(1))
-//        val splits = m.group(1).split("=")
-//        if (splits.length == 2) Map[String, String](splits(0) -> splits(1)) else Map.empty[String, String]
-//      }).reduce ((a, b) => {
-//        a ++ b
-//      })
-//      else Map.empty[String, String]
-//    ).getOrElse(Map.empty[String, String])
+        val splits = m.group(1).split("=")
+        if (splits.length == 2) Map[String, String](splits(0) -> splits(1)) else Map.empty[String, String]
+      }).reduce ((a, b) => {
+        a ++ b
+      })
+      else Map.empty[String, String]
+    ).getOrElse(Map.empty[String, String])
   }
 
   private val DEFAULT_PAGE_SIZE = "8"
@@ -190,10 +193,8 @@ object ProductJS {
   }
 
   @JSExport
-  def modalSetLocation (modal: String, field: String) = {
-    jQuery(modal).bind("show.bs.modal", (event: Event) => {
-      val url = s"${dom.window.location.pathname}${dom.window.location.hash}"
-      jQuery(s"$modal $field").value(s"$url")
-    })
-  }
+  def modalSetLocation (modal: String, field: String) = jQuery(modal).bind("show.bs.modal", (event: Event) => {
+    val url = s"${dom.window.location.pathname}${dom.window.location.hash}"
+    jQuery(s"$modal $field").value(s"$url")
+  })
 }
