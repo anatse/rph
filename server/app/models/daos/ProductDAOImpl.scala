@@ -44,7 +44,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     * @param inpStr
     * @return soundex representation
     */
-  def soundex (inpStr: String): String = cacheApi.getOrElseUpdate[String](s"soundex.$inpStr"){
+  private def soundex (inpStr: String): String = cacheApi.getOrElseUpdate[String](s"soundex.$inpStr"){
     List[(String, String)](
       ("ЙО|ИО|ЙЕ|ИЕ" -> "И"),
       ("О|Ы|Я" -> "А"),
@@ -69,7 +69,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     * @param drug
     * @return new drug product with soundex words
     */
-  def prepareDrug (drug: DrugsProduct): DrugsProduct = {
+  private def prepareDrug (drug: DrugsProduct): DrugsProduct = {
     val soundexWords = drug.drugsFullName.split(regexp).map(soundex(_)).foldLeft (drug.MNN.split(regexp).map(soundex(_))) (
       (arr, item) => {
         if (item == "" || arr.contains(item)) arr else arr :+ item
@@ -79,7 +79,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     drug.copy(sndWords = Some(soundexWords))
   }
 
-  def fixKeyboardLayout (str: String): String = cacheApi.getOrElseUpdate[String](s"ruslayout.$str"){
+  private def fixKeyboardLayout (str: String): String = cacheApi.getOrElseUpdate[String](s"ruslayout.$str"){
     val replacer = Map(
       'q' -> 'й', 'w' -> 'ц', 'e' -> 'у', 'r' -> 'к', 't' -> 'е', 'y' -> 'н', 'u' -> 'г',
       'i' -> 'ш', 'o' -> 'щ', 'p' -> 'з', '[' -> 'х', ']' -> 'ъ', 'a' -> 'ф', 's' -> 'ы',
@@ -90,6 +90,30 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
 
     str.toLowerCase.map(c => replacer.getOrElse(c, c))
   }
+
+  private lazy val projection = document (
+    "barCode" -> 1,
+    "id" -> 1,
+    "drugsFullName" -> 1,
+    "drugFullName" -> 1,
+    "drugsShortName" -> 1,
+    "ost" -> 1,
+    "ostFirst" -> 1,
+    "ostLast" -> 1,
+    "retailPrice" -> 1,
+    "MNN" -> 1,
+    "tradeTech" -> 1,
+    "producerFullName" -> 1,
+    "producerShortName" -> 1,
+    "supplierFullName" -> 1,
+    "unitFullName" -> 1,
+    "unitShortName" -> 1,
+    "packaging" -> 1,
+    "drugGroups" -> 1,
+    "shortName" -> 1,
+    "drugImage" -> 1,
+    "seoTags" -> 1
+  )
 
   /**
     * Function find drugs by drusFullName only but user regexp search
@@ -129,7 +153,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
           "$caseSensitive" -> false)
         ),
         document ("ost" -> document("$gt" -> 0))
-    ))).options(QueryOpts().skip(offset).batchSize(pageSize))
+    ))).projection(projection).options(QueryOpts().skip(offset).batchSize(pageSize))
       .sort(document(sortField.getOrElse("retailPrice") -> 1))
       .cursor[DrugsProduct]()
       .collect[List](pageSize, handler[DrugsProduct]))
@@ -156,13 +180,13 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
           document ("ost" -> document("$gt" -> 0))
         )
       )
-    ).options(QueryOpts().skip(offset).batchSize(pageSize))
+    ).projection(projection).options(QueryOpts().skip(offset).batchSize(pageSize))
       .sort(document (sortField.getOrElse("retailPrice") -> 1))
       .cursor[DrugsProduct]()
       .collect[List](pageSize, handler[DrugsProduct])
   })
 
-  def findByGroup (group: String, text: Option[String], sortField: Option[String], offset: Int, pageSize: Int): Future[List[DrugsProduct]] =
+  override def findByGroup (group: Array[String], text: Option[String], sortField: Option[String], offset: Int, pageSize: Int): Future[List[DrugsProduct]] =
     productCollection.flatMap (col => {
       val arr = BSONArray(document("drugGroups" -> document("$in" -> group)))
       text match {
@@ -175,8 +199,8 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
       arr.add(document("ost" -> document("$gt" -> 0)))
 
       col.find(
-        document (BSONElement.provided("$and" -> arr))
-      ).options(QueryOpts().skip(offset).batchSize(pageSize))
+        document ("$and" -> arr)
+      ).projection(projection).options(QueryOpts().skip(offset).batchSize(pageSize))
         .sort(document (sortField.getOrElse("retailPrice") -> 1))
         .cursor[DrugsProduct]()
         .collect[List](pageSize, handler[DrugsProduct])
@@ -195,7 +219,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     .cursor[DrugsProduct]()
     .collect[List](pageSize, handler[DrugsProduct]))
 
-  override def findById(id: String) = productCollection.flatMap(_.find(document("_id" -> id)).one[DrugsProduct])
+  override def findById(id: String) = productCollection.flatMap(_.find(document("_id" -> id)).projection(projection).one[DrugsProduct])
   override def save(product: DrugsProduct) = productCollection.flatMap(_.update(document("_id" -> product.id), product, upsert = true).map(_.upserted.map(ups => product).head))
   override def remove(id: String) = productCollection.flatMap(_.remove(document("_id" -> id)).map(r => {}))
 

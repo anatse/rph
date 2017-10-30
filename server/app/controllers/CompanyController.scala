@@ -8,7 +8,7 @@ import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.api.actions.SecuredRequest
 import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 import forms.SignInForm
-import models.{DrugsGroup, DrugsProduct, ShopCart}
+import models.{DrugsFindRq, DrugsGroup, DrugsProduct, ShopCart}
 import models.daos.{DrugsGroupDAO, ProductDAO}
 import org.webjars.play.WebJarsUtil
 import play.api.Environment
@@ -43,6 +43,8 @@ class CompanyController @Inject()(
 
   implicit val productWrites = Json.writes[DrugsProduct]
   implicit val groupWrites = Json.writes[DrugsGroup]
+  implicit val groupReads = Json.reads[DrugsGroup]
+  implicit val drugsFindRqReads = Json.reads[DrugsFindRq]
 
   protected def makeResult (rows:List[DrugsProduct], realPageSize:Int, offset:Int) = {
     val filterredRows = if (rows.length > realPageSize) rows.dropRight(1) else rows
@@ -57,8 +59,14 @@ class CompanyController @Inject()(
     drugsGroupDAO.findAll(None, 0, 0).map(rows => Ok(Json.obj("rows" -> rows)))
   }
 
-  def findByGroup (group: String, searchText:Option[String], offset:Int, pageSize:Int, sort:Option[String] = None) = silhouette.UserAwareAction.async { implicit request =>
-    drugsProductDAO.findByGroup(group, searchText, sort, offset, pageSize+1).map(rows => makeResult(rows, pageSize, offset))
+  def findByGroup = silhouette.UserAwareAction(parse.json[DrugsFindRq]).async { implicit request =>
+    val findRq: DrugsFindRq = request.body
+    drugsProductDAO.findByGroup(
+      group = findRq.groups.getOrElse(Array[String]()),
+      text = findRq.text,
+      sortField = findRq.sorts,
+      offset = findRq.offset,
+      pageSize = findRq.pageSize + 1).map(rows => makeResult(rows, findRq.pageSize, findRq.offset))
   }
 
   def findDrugsProducts(offset:Int, pageSize:Int, sort:Option[String] = None) = silhouette.UserAwareAction.async { implicit request =>
@@ -69,7 +77,8 @@ class CompanyController @Inject()(
     drugsProductDAO.combinedSearch(searchText, sort, offset, pageSize+1).map(rows => makeResult(rows, pageSize, offset))
   }
 
-  def insertDrugsGroup(drugsGroup: DrugsGroup) = silhouette.SecuredAction.async { implicit request =>
+  def insertDrugsGroup = silhouette.SecuredAction(parse.json[DrugsGroup]).async { implicit request =>
+    val drugsGroup: DrugsGroup = request.body
     drugsGroupDAO.save(drugsGroup).map(rows => Ok(Json.obj("rows" -> rows)))
   }
 

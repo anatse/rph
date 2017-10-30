@@ -4,7 +4,7 @@
 
 # GET         /new                            controllers.CompanyController.view
 GET         /drugs/group                    controllers.CompanyController.findDrugsGroups
-GET         /drugs/groupProd                controllers.CompanyController.findByGroup(group: String, searchText:Option[String], offset:Int, pageSize:Int, sort:Option[String])
+POST        /drugs/groupProd                controllers.CompanyController.findByGroup
 GET         /drugs/prod                     controllers.CompanyController.findDrugsProducts(offset: Int, pageSize: Int, sort: Option[String])
 POST        /drugs/prod                     controllers.CompanyController.findDrugsProducts(offset: Int, pageSize: Int, sort: Option[String])
 GET         /drugs/create                   controllers.CompanyController.create
@@ -12,6 +12,7 @@ GET         /drugs/fuzzySearch              controllers.CompanyController.combin
 POST        /drugs/fuzzySearch              controllers.CompanyController.combinedSearchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String])
 GET         /images                         controllers.CompanyController.setImageView
 POST        /drugs/setImage                 controllers.CompanyController.setImageToDrug
+POST        /drigs/group                    controllers.CompanyController.insertDrugsGroup
 
 # Home page
 GET         /                                controllers.CompanyController.view
