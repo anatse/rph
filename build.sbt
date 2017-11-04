@@ -2,7 +2,7 @@ import sbt.Keys.resolvers
 
 name := """rph"""
 
-val scalaV = "2.12.3"
+val scalaV = "2.12.4"
 val silhouetteVersion = "5.+"
 
 lazy val server = (project in file("server")).settings(
@@ -21,7 +21,7 @@ lazy val server = (project in file("server")).settings(
   ),
   libraryDependencies ++= Seq(
     // Scala js scripts
-    "com.vmunier" %% "scalajs-scripts" % "1.1.1",
+    "com.vmunier" %% "scalajs-scripts" % "1.+",
 
     "com.mohiva" %% "play-silhouette" % silhouetteVersion exclude ("com.atlassian.jwt", "jwt-api") exclude ("com.atlassian.jwt", "jwt-core"),
     "com.mohiva" %% "play-silhouette-password-bcrypt" % silhouetteVersion,
