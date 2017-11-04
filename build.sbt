@@ -51,12 +51,14 @@ lazy val server = (project in file("server")).settings(
     "com.mohiva" %% "play-silhouette-testkit" % silhouetteVersion % "test",
     "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.1" % "test",
     specs2 % Test,
+    "de.flapdoodle.embed" % "de.flapdoodle.embed.mongo" % "2.0.0" % Test,
 
     // Play libraries
     ehcache,
     guice,
     filters
-  )
+  ),
+  javaOptions in Test += "-Dlogger.file=conf/logback.xml"
 ).enablePlugins(PlayScala, SbtWeb).
   aggregate(client, clientAdmin).
   dependsOn(sharedJvm)

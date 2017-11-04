@@ -15,7 +15,7 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
  * Give access to the user object.
  */
-class UserDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex: ExecutionContext) extends UserDAO with MongoBaseDao with Logger {
+class UserDAOImpl @Inject() (val mongoApi: ReactiveMongoApi)(implicit val ex: ExecutionContext) extends UserDAO with MongoBaseDao with Logger {
   /**
     * Create users table/collection
     * @return users mongodb collections
