@@ -1,4 +1,4 @@
-[<img src="https://travis-ci.org/anatse/rph.svg?branch=estima"/>](https://travis-ci.org/anatse/rph/)  [![codecov](https://codecov.io/gh/anatse/rph/branch/estima/graph/badge.svg)](https://codecov.io/gh/anatse/rph)
+[<img src="https://travis-ci.org/anatse/rph.svg?branch=master"/>](https://travis-ci.org/anatse/rph/)  [![codecov](https://codecov.io/gh/anatse/rph/branch/master/graph/badge.svg)](https://codecov.io/gh/anatse/rph)
 
 # Приложение для аптечного сайта
 
