@@ -60,7 +60,7 @@
                         }}
 
                         @{user match {
-                            case Some(usr) if (usr.roles.getOrElse(Array()).contains("ADMIN")) => <li><a data-toggle="modal" data-target="#loadFileModal">{messages("goods.load.menu")}</a></li>
+                            case Some(usr) if usr.roles.getOrElse(Array()).contains("ADMIN") => <li><a data-toggle="modal" data-target="#loadFileModal">{messages("goods.load.menu")}</a></li>
                             case _ =>
                         }}
                     </ul>
@@ -69,7 +69,7 @@
         </nav>
 
         @if(user match {
-            case Some(usr) if (usr.roles.getOrElse(Array()).contains("ADMIN")) => true
+            case Some(usr) if usr.roles.getOrElse(Array()).contains("ADMIN") => true
             case _ => false}
         ) {
             <div id="loadFileModal" class="modal fade" role="dialog">
@@ -95,7 +95,7 @@
             </div>
         }
 
-        @if(!user.isDefined) {
+        @if(user.isEmpty) {
             <div id="myModal" class="modal fade" role="dialog">
                 <div class="modal-dialog modal-sm">
                     @*Modal content*@

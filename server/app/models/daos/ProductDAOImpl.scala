@@ -124,15 +124,15 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     * @return list of the found drugs
     */
   def searchbyDrugName (text: String, sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(
-    document ("$and" ->
-      BSONArray (
-        document("$or" -> BSONArray (
+    document (BSONElement.provided("$and" ->
+      BSONArray(
+        document("$or" -> BSONArray(
             document("drugsFullName" -> document("$regex" -> s".*${text}.*", "$options" -> "i")),
             document("drugsFullName" -> document("$regex" -> s".*${fixKeyboardLayout(text)}.*", "$options" -> "i"))
           )
         ),
-        document ("ost" -> document("$gt" -> 0))
-      ))).options(QueryOpts().skip(offset).batchSize(pageSize))
+        document("ost" -> document("$gt" -> 0))
+      )))).options(QueryOpts().skip(offset).batchSize(pageSize))
     .sort(document(sortField.getOrElse("retailPrice") -> 1))
     .cursor[DrugsProduct]()
     .collect[List](pageSize, handler[DrugsProduct]))
@@ -146,14 +146,14 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     * @return list of found drugs
     */
   def textSearch (text: String, sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(
-    document ("$and" ->
-      BSONArray (
-        document("$text" -> document (
+    document (BSONElement.provided("$and" ->
+      BSONArray(
+        document("$text" -> document(
           "$search" -> text,
           "$caseSensitive" -> false)
         ),
-        document ("ost" -> document("$gt" -> 0))
-    ))).projection(projection).options(QueryOpts().skip(offset).batchSize(pageSize))
+        document("ost" -> document("$gt" -> 0))
+      )))).projection(projection).options(QueryOpts().skip(offset).batchSize(pageSize))
       .sort(document(sortField.getOrElse("retailPrice") -> 1))
       .cursor[DrugsProduct]()
       .collect[List](pageSize, handler[DrugsProduct]))
@@ -174,11 +174,11 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     val allWords = words ++ fixKeyboardLayout(text).split(regexp).map(soundex(_))
 
     col.find(
-      document ("$and" ->
-        BSONArray (
-          document ("sndWords" -> document("$in" -> allWords)),
-          document ("ost" -> document("$gt" -> 0))
-        )
+      document (BSONElement.provided("$and" ->
+        BSONArray(
+          document("sndWords" -> document("$in" -> allWords)),
+          document("ost" -> document("$gt" -> 0))
+        ))
       )
     ).projection(projection).options(QueryOpts().skip(offset).batchSize(pageSize))
       .sort(document (sortField.getOrElse("retailPrice") -> 1))
