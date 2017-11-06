@@ -38,8 +38,6 @@ class CompanyController @Inject()(
     * @return sesion uuid
     */
   private def sessionId (session: Session):String = {
-    System.out.println(s"session_uuid: ${session.get("uuid")}, session: $session")
-
     session.get("uuid").getOrElse {
       java.util.UUID.randomUUID.toString
     }
