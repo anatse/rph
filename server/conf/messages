@@ -155,5 +155,19 @@ goods.load.title = Upload goods
 main.seo.description = Finding a medicine cheap prices Reutov Moscow
 drug.name=Name
 drug.producer=Producer
-drug.quentity=Quentity
+drug.quantity=Quantity
+drug.count=Count
+drug.price=Price
+drug.sum=Sum
+drug.update.btn=Update
+
 btn.save=Save
+
+cart.page.title=Shop Cart
+cart.description=Cart
+cart.request=Make an order
+cart.clear=Clear all
+cart.total=Total
+
+email.order.title=Order from website pharmrus24
+email.order.perform=anatolse@yandex.ru

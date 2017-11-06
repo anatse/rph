@@ -39,7 +39,7 @@ object ProductJS {
     if (!js.isUndefined (res) && res != null) Some(res.asInstanceOf[T]) else None
   }
 
-  def addItem (csrfHeader: String, csrfValue: String, shopCartItem: ShopCartItem) = {
+  def addItem (csrfHeader: String, csrfValue: String, shopCartItem: ShopCartItem, reload: Boolean = false) = {
     var url = "/drugs/cart/item"
     val xhr = new XMLHttpRequest()
     xhr.open ("POST", url)
@@ -49,7 +49,16 @@ object ProductJS {
         val resp = JSON.parse(xhr.responseText)
         val cart = dynGet[js.Dynamic] (resp, "cart").get
         val rows = dynGet[js.Array[js.Dynamic]] (cart, "items").get
+
+        val badge = jQuery("#cart-badge")
+        if (badge.length == 0)
+          dom.window.location.reload(true)
+
         jQuery("#cart-badge").text(s"${rows.length}")
+
+        if (reload) {
+          dom.window.location.reload(true)
+        }
       }
     }}
 
@@ -219,4 +228,10 @@ object ProductJS {
     val url = s"${dom.window.location.pathname}${dom.window.location.hash}"
     jQuery(s"$modal $field").value(s"$url")
   })
+
+  @JSExport
+  def updateCartItem (csrfHeader: String, csrfValue: String, event: Event, drugId: String): Unit = {
+    val num = jQuery(s"#num_$drugId").value.asInstanceOf[String]
+    addItem(csrfHeader, csrfValue, ShopCartItem(drugId, "", num.toInt, 0), true)
+  }
 }

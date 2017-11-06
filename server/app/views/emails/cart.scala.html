@@ -1,0 +1,40 @@
+@import play.api.i18n.Messages
+@import models.ShopCart
+
+@(cart: ShopCart)(implicit messages: Messages)
+
+<html>
+  <body>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>@{messages("drug.name")}</th>
+          <th>@{messages("drug.count")}</th>
+          <th>@{messages("drug.price")}</th>
+          <th>@{messages("drug.sum")}</th>
+          <th data-visible="false"></th>
+        </tr>
+      </thead>
+      <tbody>
+      @for(item <- cart.items) {
+        <tr>
+          <td>@{item.drugName}</td>
+          <td><input type="number" class="form-control" id="num_@{item.drugId}" value="@{item.num}"></td>
+          <td>@{item.price}</td>
+          <td>@{item.price * item.num}</td>
+          <td><button type="button" class="btn btn-primary" onclick="updateItem(event, '@{item.drugId}');">@{messages("drug.update.btn")}</button></td>
+        </tr>
+      }
+      </tbody>
+
+      <tfoot>
+        <tr>
+          <td></td>
+          <td></td>
+          <td>@{messages("cart.total")}</td>
+          <th><span class="totalStars">@{cart.items.foldLeft(0.0)((a, item) => {a + item.price * item.num})}</span></th>
+        </tr>
+      </tfoot>
+    </table>
+  </body>
+</html>

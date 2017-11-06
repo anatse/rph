@@ -13,6 +13,7 @@ import org.webjars.play.WebJarsUtil
 import play.api.Environment
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.libs.json.Json
+import play.api.libs.mailer.{Email, MailerClient}
 import play.api.mvc._
 import utils.JsonUtil
 import utils.auth.DefaultEnv
@@ -27,6 +28,7 @@ class CompanyController @Inject()(
   drugsProductDAO: ProductDAO,
   drugsGroupDAO: DrugsGroupDAO,
   cartDAO: CartDAO,
+  mailerClient: MailerClient,
   env: Environment)(
   implicit
     webJarsUtil: WebJarsUtil,
@@ -59,6 +61,24 @@ class CompanyController @Inject()(
       Ok(views.html.shop.shop(SignInForm.form, socialProviderRegistry, request.identity, Await.result(cart, 1 second))).
         withSession(request.session + ("uuid" -> sid))
     )
+  }
+
+  def cartView = silhouette.UserAwareAction.async { implicit request =>
+    val sid = sessionId(request2session)
+    val cart = request.identity match {
+      case Some(user) => cartDAO.findById(user.userID.toString)
+      case None => cartDAO.findById(sid)
+    }
+
+    Await.result(cart, 1 second) match {
+      case Some(cart) => Future.successful(
+        Ok(views.html.shop.cart(SignInForm.form, socialProviderRegistry, request.identity, cart)).withSession(request.session + ("uuid" -> sid))
+      )
+
+      case  _ => Future.successful(
+        Redirect(routes.CompanyController.view)
+      )
+    }
   }
 
   def setImageView = silhouette.UserAwareAction.async { implicit request =>
@@ -142,5 +162,25 @@ class CompanyController @Inject()(
     }
 
     cartDAO.saveItem(cart, item).map(sc => Ok(Json.obj("cart" -> sc)))
+  }
+
+  def cartSend = silhouette.UserAwareAction.async { implicit request =>
+    val cart = request.identity match {
+      case Some(user:User) => ShopCart (Some(user.userID.toString), "", Array[ShopCartItem]())
+      case _ => ShopCart (None, sessionId(request2session), Array[ShopCartItem]())
+    }
+
+    val email = request.body.asFormUrlEncoded.get("email").head
+
+    cartDAO.findById(cart.userId.getOrElse(cart.sessionId)).flatMap(
+      sc => Future (
+        mailerClient.send(Email(
+          subject = Messages("email.order.title"),
+          from = email,
+          to = Seq(Messages("email.order.perform")),
+          bodyText = Some(views.txt.emails.cart(sc.get).body),
+          bodyHtml = Some(views.html.emails.cart(sc.get).body)))
+      )
+    ).map(_ => Redirect(routes.CompanyController.view))
   }
 }

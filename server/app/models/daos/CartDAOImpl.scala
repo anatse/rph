@@ -78,7 +78,19 @@ class CartDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex: Ex
         val newCart = res.copy(items = items :+ shopCartItem)
         updateItems(res, newCart.items)
       } else {
-        Future.successful(Some(res))
+        if (found.get.num != shopCartItem.num) {
+          val items = res.items.filter(_.drugId != shopCartItem.drugId)
+          if (shopCartItem.num > 0 ) {
+            var ni = res.items.map(r => if (r.drugId == shopCartItem.drugId) r.copy(num = shopCartItem.num) else r)
+            val newCart = res.copy(items = ni)
+            updateItems(res, newCart.items)
+          } else {
+            val newCart = res.copy(items = items)
+            updateItems(res, newCart.items)
+          }
+        }
+        else
+          Future.successful(Some(res))
       }
     }
   )

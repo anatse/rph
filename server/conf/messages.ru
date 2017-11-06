@@ -155,5 +155,19 @@ main.seo.description = Поиск лекарства дешевые цены Р�
 
 drug.name=Название
 drug.producer=Производитель
-drug.quentity=Количество
+drug.quantity=Количество
+drug.count=Количество
+drug.price=Цена, р
+drug.sum=Сумма, р
+drug.update.btn=Обновить
+
 btn.save=Сохранить
+
+cart.page.title=Фармрус корзина покупателя
+cart.description=Корзина
+cart.request=Оформить
+cart.clear=Удалить все товары
+cart.total=Итого
+
+email.order.title=Заказ с сайта pharmrus24
+email.order.perform=anatolse@yandex.ru
