@@ -13,6 +13,7 @@ POST        /drugs/fuzzySearch              controllers.CompanyController.combin
 GET         /images                         controllers.CompanyController.setImageView
 POST        /drugs/setImage                 controllers.CompanyController.setImageToDrug
 POST        /drigs/group                    controllers.CompanyController.insertDrugsGroup
+POST        /drugs/cart/item                controllers.CompanyController.addItemToCart
 
 # Home page
 GET         /                                controllers.CompanyController.view

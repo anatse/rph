@@ -28,7 +28,7 @@
     </head>
 
     <body>
-        <nav class="navbar navbar-default">
+        <nav class="navbar navbar-default navbar-fixed-top">
             <div class="container">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
@@ -55,7 +55,7 @@
                         }
 
                         @{cart match {
-                            case Some(c) => <li><a href="#">{messages("short_cart.menu")}<span class="badge">5</span></a></li>
+                            case Some(c) => <li><a href="#">{messages("short_cart.menu")}:<span id="cart-badge" class="badge">{c.items.length}</span></a></li>
                             case _ =>
                         }}
 

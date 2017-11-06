@@ -15,5 +15,6 @@ class ShopModule extends AbstractModule with ScalaModule {
   def configure(): Unit = {
     bind[ProductDAO].to[ProductDAOImpl]
     bind[DrugsGroupDAO].to[DrugsGroupDAOImpl]
+    bind[CartDAO].to[CartDAOImpl]
   }
 }

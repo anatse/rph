@@ -4,21 +4,21 @@ import java.io.File
 import java.nio.file.{CopyOption, Files, Paths, StandardCopyOption}
 import javax.inject.Inject
 
-import com.mohiva.play.silhouette.api.Silhouette
-import com.mohiva.play.silhouette.api.actions.SecuredRequest
+import com.mohiva.play.silhouette.api.{LoginInfo, Silhouette}
 import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 import forms.SignInForm
-import models.{DrugsFindRq, DrugsGroup, DrugsProduct, ShopCart}
-import models.daos.{DrugsGroupDAO, ProductDAO}
+import models._
+import models.daos.{CartDAO, DrugsGroupDAO, ProductDAO}
 import org.webjars.play.WebJarsUtil
 import play.api.Environment
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.libs.json.Json
-import play.api.mvc.{AbstractController, AnyContent, ControllerComponents, Request}
+import play.api.mvc._
+import utils.JsonUtil
 import utils.auth.DefaultEnv
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.io.Source
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration._
 
 class CompanyController @Inject()(
   components: ControllerComponents,
@@ -26,25 +26,62 @@ class CompanyController @Inject()(
   silhouette: Silhouette[DefaultEnv],
   drugsProductDAO: ProductDAO,
   drugsGroupDAO: DrugsGroupDAO,
+  cartDAO: CartDAO,
   env: Environment)(
   implicit
     webJarsUtil: WebJarsUtil,
     ex: ExecutionContext) extends AbstractController(components) with I18nSupport  {
 
+  /**
+    * Function generate session UUID if it does not exists or return ones
+    * @param session session
+    * @return sesion uuid
+    */
+  private def sessionId (session: Session):String = {
+    System.out.println(s"session_uuid: ${session.get("uuid")}, session: $session")
+
+    session.get("uuid").getOrElse {
+      java.util.UUID.randomUUID.toString
+    }
+  }
+
+  /**
+    * Function builds main view (shop view)
+    * @return
+    */
   def view = silhouette.UserAwareAction.async { implicit request =>
-    val shopCart = ShopCart ("test", null)
-    Future.successful(Ok(views.html.shop.shop(SignInForm.form, socialProviderRegistry, request.identity, Some(shopCart))))
+    val sid = sessionId(request2session)
+    val cart = request.identity match {
+      case Some(user) => cartDAO.findById(user.userID.toString)
+      case None => cartDAO.findById(sid)
+    }
+
+    // Add session uuid to current session. This operation performs only in view request
+    Future.successful(
+      Ok(views.html.shop.shop(SignInForm.form, socialProviderRegistry, request.identity, Await.result(cart, 1 second))).
+        withSession(request.session + ("uuid" -> sid))
+    )
   }
 
   def setImageView = silhouette.UserAwareAction.async { implicit request =>
-    val shopCart = ShopCart ("test", null)
-    Future.successful(Ok(views.html.shop.image(SignInForm.form, socialProviderRegistry, request.identity, None)))
+    val cart = request.identity match {
+      case Some(user) => cartDAO.findById(user.userID.toString)
+      case None => cartDAO.findById(sessionId(request2session))
+    }
+
+    Future.successful(Ok(views.html.shop.image(SignInForm.form, socialProviderRegistry, request.identity, Await.result(cart, 1 second))))
   }
 
   implicit val productWrites = Json.writes[DrugsProduct]
   implicit val groupWrites = Json.writes[DrugsGroup]
   implicit val groupReads = Json.reads[DrugsGroup]
   implicit val drugsFindRqReads = Json.reads[DrugsFindRq]
+
+  implicit val scitemsWrites = Json.writes[ShopCartItem]
+  implicit val scitemsReads = Json.reads[ShopCartItem]
+
+  implicit val cartWrites = Json.writes[ShopCart]
+  implicit val cartReads = Json.reads[ShopCart]
 
   protected def makeResult (rows:List[DrugsProduct], realPageSize:Int, offset:Int) = {
     val filterredRows = if (rows.length > realPageSize) rows.dropRight(1) else rows
@@ -96,5 +133,16 @@ class CompanyController @Inject()(
 
       case _ => Future.successful(Ok("Error loading file. File is empty"))
     }
+  }
+
+  def addItemToCart = silhouette.UserAwareAction.async { implicit request =>
+    val item: ShopCartItem = JsonUtil.fromJson[ShopCartItem](request.body.asText.getOrElse("{}"))
+
+    val cart = request.identity match {
+      case Some(user:User) => ShopCart (Some(user.userID.toString), "", Array[ShopCartItem]())
+      case _ => ShopCart (None, sessionId(request2session), Array[ShopCartItem]())
+    }
+
+    cartDAO.saveItem(cart, item).map(sc => Ok(Json.obj("cart" -> sc)))
   }
 }

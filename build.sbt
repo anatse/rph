@@ -87,7 +87,8 @@ lazy val clientAdmin = (project in file("clientAdmin")).settings(
     "be.doeraene" %%% "scalajs-jquery" % "0.9.+"
   )
 ).enablePlugins(ScalaJSPlugin, ScalaJSWeb).
-  dependsOn(sharedJs)
+  dependsOn(sharedJs).
+  dependsOn(sharedJvm)
 
 lazy val shared = (crossProject.crossType(CrossType.Pure) in file("shared")).
   settings(scalaVersion := scalaV).

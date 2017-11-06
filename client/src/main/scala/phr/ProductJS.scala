@@ -5,10 +5,11 @@ import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input
 import org.scalajs.dom.raw.{Element, XMLHttpRequest}
 import org.scalajs.jquery.{JQueryAjaxSettings, _}
+import shared.ShopCartItem
 
 import scala.scalajs.js
 import scala.scalajs.js.JSON
-import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
+import scala.scalajs.js.annotation.{JSExport, JSExportAll, JSExportTopLevel}
 import scalatags.Text.all._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 import scala.scalajs.js.timers.SetTimeoutHandle
@@ -38,6 +39,28 @@ object ProductJS {
     if (!js.isUndefined (res) && res != null) Some(res.asInstanceOf[T]) else None
   }
 
+  def addItem (csrfHeader: String, csrfValue: String, shopCartItem: ShopCartItem) = {
+    var url = "/drugs/cart/item"
+    val xhr = new XMLHttpRequest()
+    xhr.open ("POST", url)
+    xhr.setRequestHeader(csrfHeader, csrfValue)
+    xhr.onload = {(e:Event) => {
+      if (xhr.status == 200) {
+        val resp = JSON.parse(xhr.responseText)
+        val cart = dynGet[js.Dynamic] (resp, "cart").get
+        val rows = dynGet[js.Array[js.Dynamic]] (cart, "items").get
+        jQuery("#cart-badge").text(s"${rows.length}")
+      }
+    }}
+
+    xhr.send(JSON.stringify(js.Dynamic.literal(
+      drugId = shopCartItem.drugId,
+      drugName = shopCartItem.drugName,
+      num = shopCartItem.num,
+      price = shopCartItem.price
+    )))
+  }
+
   @JSExport
   def findAll (pageSize: Int, offset: Int, search: String, csrfHeader: String, csrfValue: String, linkText: String) = {
     var url = if (search != null && search != "") s"/drugs/fuzzySearch?searchText=$search&offset=$offset&pageSize=$pageSize"
@@ -60,6 +83,7 @@ object ProductJS {
           val fullName:String = dynGet[String] (prj, "drugsFullName").getOrElse("")
           val price:Double = dynGet[Double] (prj, "retailPrice").getOrElse(0)
           val producerShortName:String = dynGet[String] (prj, "producerShortName").getOrElse("")
+          val drugId:String = dynGet[String] (prj, "id").getOrElse("")
 
           dynGet[String] (prj, "drugsShortName") match {
             case Some(name) => seoDescription.append(name.split("[ ,.]+")(0)).append(" цена: ").append(price).append(".00р, ")
@@ -70,19 +94,20 @@ object ProductJS {
 
           div (cls:="col-lg-3 col-sm-2 item")(
             div (cls:="panel panel-primary")(
-              //div (cls:="panel-heading")(),
               div (cls:="panel-body")(
-                img (cls:="img-responsive", src:=s"/assets/images/${dynGet[String] (prj, "drugImage").getOrElse("/nophoto.jpg")}"),
+                img (cls:="img-responsive", src:=s"/assets/images/${dynGet[String] (prj, "drugImage").getOrElse("nophoto.png")}"),
                 p (`class`:="description")(fullName),
-                p (`class`:="description")(producerShortName)
-                //a (`class`:="memberNameLink", href:=s"/project/${prj}")(linkText)
+                p (`class`:="producer")(producerShortName)
               ),
               div (cls:="panel-footer")(
                 s"Цена: ${price}.00 р",
                 button (
-                  cls:="btn",
-                  style:="float: right; margin: 0",
-                  role:="button"
+                  id := drugId,
+                  attr("price") := price,
+                  name := fullName,
+                  cls := "btn",
+                  style := "float: right; margin: 0",
+                  role := "button"
                 )("В корзину")
               )
             )
@@ -91,6 +116,14 @@ object ProductJS {
 
         dom.document.querySelector(".row.drugs").innerHTML = htmlRow.map (_.render).mkString("")
         jQuery("meta[name=description]").attr("content", seoDescription.toString)
+
+        rows.toList.foreach(prj => {
+          val drugId:String = dynGet[String] (prj, "id").getOrElse("")
+          val find = s"#${drugId}"
+          val fullName:String = dynGet[String] (prj, "drugsFullName").getOrElse("")
+          val price:Double = dynGet[Double] (prj, "retailPrice").getOrElse(0)
+          jQuery(find).click((event: Event) => addItem(csrfHeader, csrfValue, ShopCartItem(drugId, fullName, 1, price)))
+        })
 
         // Set next button
         if (hasMore) {
@@ -136,20 +169,9 @@ object ProductJS {
   }
 
   val pattern = "[#|,]([\\w|=]+=[^,]*)+".r
-//  lazy val pattern = raw"#search=(.*),offset=(\d+),pageSize=(\d+)".r
-
   def parseHash (url: String): Map[String, String] = {
-//    val pattern = raw"#search=(.*),offset=(\d+),pageSize=(\d+)".r
-//    url match {
-//      case pattern(search, offset, pageSize) => dom.console.log(s"search: ${search}, $offset, $pageSize, $url")
-//        Map("search" -> search, "offset" -> offset, "pageSize" -> pageSize)
-//      case _ => dom.console.log(s"not matched $url")
-//        Map.empty
-//    }
-
     Try (
       if (!url.isEmpty) (pattern findAllMatchIn url).map( m => {
-//        dom.console.log(m.group(1))
         val splits = m.group(1).split("=")
         if (splits.length == 2) Map[String, String](splits(0) -> splits(1)) else Map.empty[String, String]
       }).reduce ((a, b) => {
