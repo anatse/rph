@@ -54,15 +54,19 @@
       </tfoot>
     </table>
 
-    <form action="/cart" method="post">
+    @helper.form(action = controllers.routes.CompanyController.cartSend(), 'role -> "form") {
       @helper.CSRF.formField
       <label for="email">@messages("email") *</label>
-      <input type="email" class="form-control" name="email" id="email" required value="@{user match {
-        case Some(usr) => usr.email
-        case _ =>
-      }}">
-      <button type="submit" class="btn btn-primary">@{messages("cart.request")}</button>
-    </form>
+      <div class="input-group">
+        <input type="email" class="form-control" name="email"  placeholder="user@@example.com" id="email" required value="@{user match {
+          case Some(usr) => usr.email
+          case _ =>
+        }}">
+        <span id="email-btn" class="input-group-btn">
+          <button type="submit" class="btn btn-default">@{messages("cart.request")}</button>
+        </span>
+      </div>
+    }
 
     <p>
       <button type="button" class="btn btn-primary">@{messages("cart.clear")}</button>
