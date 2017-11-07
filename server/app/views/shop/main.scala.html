@@ -41,9 +41,9 @@
                 <div class="collapse navbar-collapse" id="myNavbar">
                     <ul class="nav navbar-nav navbar-left">
                         <li class="@{if (request.uri == routes.CompanyController.view.url) "active" else ""}"><a href="@{if (request.uri == routes.CompanyController.view.url) "javascript:void();" else routes.CompanyController.view }">@messages("shop.menu.item")</a></li>
-                        <li><a href="javascript:void">@messages("cosmo.menu.item")</a></li>
-                        <li><a href="javascript:void">@messages("contact.menu.item")</a></li>
-                        <li><a href="javascript:void">@messages("articles.menu.item")</a></li>
+                        @*<li><a href="javascript:void">@messages("cosmo.menu.item")</a></li>*@
+                        @*<li><a href="javascript:void">@messages("contact.menu.item")</a></li>*@
+                        @*<li><a href="javascript:void">@messages("articles.menu.item")</a></li>*@
                     </ul>
 
                     <ul class="nav navbar-nav navbar-right">

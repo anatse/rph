@@ -56,14 +56,17 @@
 
     <form action="/cart" method="post">
       @helper.CSRF.formField
-      <input type="email" class="form-control" name="email" required value="@{user match {
+      <label for="email">@messages("email") *</label>
+      <input type="email" class="form-control" name="email" id="email" required value="@{user match {
         case Some(usr) => usr.email
         case _ =>
       }}">
       <button type="submit" class="btn btn-primary">@{messages("cart.request")}</button>
     </form>
 
-    <button type="button" class="btn btn-primary">@{messages("cart.clear")}</button>
+    <p>
+      <button type="button" class="btn btn-primary">@{messages("cart.clear")}</button>
+    </p>
   </div>
 
   @html.scripts(projectName = "client",
