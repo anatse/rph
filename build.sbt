@@ -59,7 +59,7 @@ lazy val server = (project in file("server")).settings(
     filters
   ),
   javaOptions in Test += "-Dlogger.file=conf/logback.xml"
-).enablePlugins(PlayScala, SbtWeb).
+).enablePlugins(PlayScala, PlayAkkaHttp2Support, SbtWeb).
   aggregate(client, clientAdmin).
   dependsOn(sharedJvm)
 
