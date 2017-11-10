@@ -46,18 +46,26 @@ object ProductJS {
     xhr.setRequestHeader(csrfHeader, csrfValue)
     xhr.onload = {(e:Event) => {
       if (xhr.status == 200) {
+        val msg = jQuery("#messages")
+        val priceMsg = msg.attr("price-msg")
+        val putInCart = msg.attr("put-in-cart")
+        val inCart = msg.attr("in-cart")
+
         val resp = JSON.parse(xhr.responseText)
         val cart = dynGet[js.Dynamic] (resp, "cart").get
         val rows = dynGet[js.Array[js.Dynamic]] (cart, "items").get
 
         val badge = jQuery("#cart-badge")
-        if (badge.length == 0)
+        if (badge.length == 0) {
           dom.window.location.reload(true)
+        }
 
         jQuery("#cart-badge").text(s"${rows.length}")
 
         if (reload) {
           dom.window.location.reload(true)
+        } else {
+          jQuery("#")
         }
       }
     }}
@@ -85,39 +93,49 @@ object ProductJS {
         val pageSizeJS = dynGet[Int] (page, "pageSize").get
         val hasMore = dynGet[Boolean] (page, "hasMore").get
         val rows = dynGet[js.Array[js.Dynamic]] (page, "rows").get
+
         val realSearch = search
         val seoDescription:StringBuffer = new StringBuffer("")
 
-        val htmlRow = for (prj <- rows) yield {
-          val fullName:String = dynGet[String] (prj, "drugsFullName").getOrElse("")
-          val price:Double = dynGet[Double] (prj, "retailPrice").getOrElse(0)
-          val producerShortName:String = dynGet[String] (prj, "producerShortName").getOrElse("")
-          val drugId:String = dynGet[String] (prj, "id").getOrElse("")
+        val msg = jQuery("#messages")
+        val priceMsg = msg.attr("price-msg")
+        val putInCart = msg.attr("put-in-cart")
+        val inCart = msg.attr("in-cart")
 
-          dynGet[String] (prj, "drugsShortName") match {
+        val htmlRow = for (drugRs <- rows) yield {
+          val countInCart = dynGet[Int] (drugRs, "countInCart").getOrElse(0)
+          val drug = drugRs.selectDynamic("dp")
+
+          val fullName:String = dynGet[String] (drug, "drugsFullName").getOrElse("")
+          val price:Double = dynGet[Double] (drug, "retailPrice").getOrElse(0)
+          val producerShortName:String = dynGet[String] (drug, "producerShortName").getOrElse("")
+          val drugId:String = dynGet[String] (drug, "id").getOrElse("")
+
+          dynGet[String] (drug, "drugsShortName") match {
             case Some(name) => seoDescription.append(name.split("[ ,.]+")(0)).append(" цена: ").append(price).append(".00р, ")
             case _ =>
           }
 
-          val mnn:String = dynGet[String] (prj, "MNN").getOrElse("")
+          val mnn:String = dynGet[String] (drug, "MNN").getOrElse("")
 
           div (cls:="col-lg-3 col-sm-2 item")(
             div (cls:="panel panel-primary")(
               div (cls:="panel-body")(
-                img (cls:="img-responsive", src:=s"/assets/images/${dynGet[String] (prj, "drugImage").getOrElse("nophoto.png")}"),
+                img (cls:="img-responsive", src:=s"/assets/images/${dynGet[String] (drug, "drugImage").getOrElse("nophoto.png")}"),
                 p (`class`:="description")(fullName),
                 p (`class`:="producer")(producerShortName)
               ),
               div (cls:="panel-footer")(
-                s"Цена: ${price}.00 р",
+                s"$priceMsg: ${price}.00 р",
+
                 button (
                   id := drugId,
                   attr("price") := price,
                   name := fullName,
-                  cls := "btn",
+                  cls := s"btn ${if (countInCart > 0) "incart"}",
                   style := "float: right; margin: 0",
                   role := "button"
-                )("В корзину")
+                )(if (countInCart == 0) s"$putInCart" else s"$inCart $countInCart")
               )
             )
           )
@@ -126,11 +144,12 @@ object ProductJS {
         dom.document.querySelector(".row.drugs").innerHTML = htmlRow.map (_.render).mkString("")
         jQuery("meta[name=description]").attr("content", seoDescription.toString)
 
-        rows.toList.foreach(prj => {
-          val drugId:String = dynGet[String] (prj, "id").getOrElse("")
+        rows.toList.foreach(drugRs => {
+          val drug = drugRs.selectDynamic("dp")
+          val drugId:String = dynGet[String] (drug, "id").getOrElse("")
           val find = s"#${drugId}"
-          val fullName:String = dynGet[String] (prj, "drugsFullName").getOrElse("")
-          val price:Double = dynGet[Double] (prj, "retailPrice").getOrElse(0)
+          val fullName:String = dynGet[String] (drug, "drugsFullName").getOrElse("")
+          val price:Double = dynGet[Double] (drug, "retailPrice").getOrElse(0)
           jQuery(find).click((event: Event) => addItem(csrfHeader, csrfValue, ShopCartItem(drugId, fullName, 1, price)))
         })
 

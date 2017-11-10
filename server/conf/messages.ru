@@ -171,3 +171,7 @@ cart.total=Итого
 
 email.order.title=Заказ с сайта pharmrus24
 email.order.perform=anatolse@yandex.ru
+
+put-in-cart=В корзину
+in-cart=Обновить
+price=Цена

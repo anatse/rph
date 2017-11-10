@@ -1,6 +1,6 @@
 package models
 
-import reactivemongo.bson.Macros.Annotations.Key
+import reactivemongo.bson.Macros.Annotations.{Ignore, Key}
 
 /**
   * Class stores information about product. Uses to transfer data from "m-apteka plus" database
@@ -45,7 +45,6 @@ case class DrugsProduct(
    unitShortName: String,
 
    packaging: String,
-
    sndWords: Option[Array[String]] = None,
 
    // Additional attributes for manual adding

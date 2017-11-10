@@ -2,36 +2,48 @@ package models.daos
 
 import javax.inject.Inject
 
-import models.{DrugsProduct, MongoBaseDao, ShopCart, ShopCartItem}
+import models.{MongoBaseDao, ShopCart, ShopCartItem}
+import play.api.cache.AsyncCacheApi
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.collections.bson.BSONCollection
-import reactivemongo.api.commands.UpdateWriteResult
 import reactivemongo.bson.{BSONArray, BSONDocumentReader, BSONDocumentWriter, Macros, document}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CartDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex: ExecutionContext) extends MongoBaseDao with CartDAO {
-  private def cartCollection:Future[BSONCollection] = mongoApi.database.map(_.collection("cart"))
+class CartDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, cacheApi: AsyncCacheApi, implicit val ex: ExecutionContext) extends MongoBaseDao with CartDAO {
+  private def cartCollection: Future[BSONCollection] = mongoApi.database.map(_.collection("cart"))
 
   implicit def cartItemWriter: BSONDocumentWriter[ShopCartItem] = Macros.writer[ShopCartItem]
   implicit def cartItemReader: BSONDocumentReader[ShopCartItem] = Macros.reader[ShopCartItem]
-
   implicit def cartWriter: BSONDocumentWriter[ShopCart] = Macros.writer[ShopCart]
   implicit def cartReader: BSONDocumentReader[ShopCart] = Macros.reader[ShopCart]
 
-  override def findById(id: String) = cartCollection.flatMap(_.find(
-    document("$or" -> BSONArray(
-        document("userId" -> id),
-        document("sessionId" -> id)
-      )
-    )).one[ShopCart])
+  override def findById(id: String) = ???
 
-  def findOrInsert (cart: ShopCart): Future[ShopCart] = findById(cart.userId.getOrElse(cart.sessionId)).flatMap(
-    res => res match {
-      case Some(c) => Future.successful(c)
-      case None => save (cart)
-    }
-  )
+  def find(cart: ShopCart) = /*cacheApi.getOrElseUpdate[Option[ShopCart]](cart.userId.getOrElse(cart.sessionId))*/ {
+    cartCollection.flatMap(_.find(
+      if (!cart.userId.isEmpty) {
+        document("$or" -> BSONArray(
+          document("userId" -> cart.userId.get),
+          document("sessionId" -> cart.sessionId)
+        ))
+      } else {
+        document("sessionId" -> cart.sessionId)
+      }).one[ShopCart])
+  }
+
+  def findOrInsert(cart: ShopCart): Future[ShopCart] = /*cacheApi.getOrElseUpdate[ShopCart](cart.userId.getOrElse(cart.sessionId))*/ {
+    find(cart).flatMap(
+      res => res match {
+        case Some(c) => if (c.userId != cart.userId && !cart.userId.isEmpty)
+          save(cart.copy(userId = cart.userId))
+        else
+          Future.successful(c)
+
+        case None => save(cart)
+      }
+    )
+  }
 
   override def save(entity: ShopCart) = cartCollection.flatMap(
     _.update(
@@ -70,7 +82,8 @@ class CartDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex: Ex
     fetchNewObject = true
   ).map(r => r.result[ShopCart]))
 
-  override def saveItem(cart: ShopCart, shopCartItem: ShopCartItem) = findOrInsert(cart).flatMap(
+  override def saveItem(cart: ShopCart, shopCartItem: ShopCartItem) = //cacheApi.remove(cart.userId.getOrElse(cart.sessionId)).flatMap(_ =>
+    findOrInsert(cart).flatMap(
     res => {
       val found = res.items.find(_.drugId == shopCartItem.drugId)
       if (found.isEmpty) {
@@ -95,7 +108,8 @@ class CartDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex: Ex
     }
   )
 
-  override def removeItem(cart: ShopCart, shopCartItem: ShopCartItem) = findOrInsert(cart).flatMap(
+  override def removeItem(cart: ShopCart, shopCartItem: ShopCartItem) = //cacheApi.remove(cart.userId.getOrElse(cart.sessionId)).flatMap(_ =>
+   findOrInsert(cart).flatMap(
     res => {
       val items = res.items.filter(_.drugId != shopCartItem.drugId)
       updateItems(res, items)

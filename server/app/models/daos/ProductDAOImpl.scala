@@ -132,7 +132,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
           )
         ),
         document("ost" -> document("$gt" -> 0))
-      )))).options(QueryOpts().skip(offset).batchSize(pageSize))
+      )))).projection(projection).options(QueryOpts().skip(offset).batchSize(pageSize))
     .sort(document(sortField.getOrElse("retailPrice") -> 1))
     .cursor[DrugsProduct]()
     .collect[List](pageSize, handler[DrugsProduct]))
@@ -214,6 +214,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     * @return list of found drugs
     */
   override def findAll(sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(document ("ost" -> document("$gt" -> 0)))
+    .projection(projection)
     .options(QueryOpts().skip(offset).batchSize(pageSize))
     .sort(document(sortField.getOrElse("retailPrice") -> 1))
     .cursor[DrugsProduct]()
