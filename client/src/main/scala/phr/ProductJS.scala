@@ -63,29 +63,44 @@ object ProductJS {
             dom.window.location.reload(true)
           }
           else {
-            val foundDrugs = for (row <- rows) yield {
-              val drugId = dynGet[String](row, "drugId").get
-              val num = dynGet[Int](row, "num").get
-              val foundBtn = jQuery(s"#$drugId")
-
-              if (foundBtn.length == 1) {
+            // If cart is empty
+            if (rows.length == 0) {
+              dom.console.log("cart is empty")
+              val incarts = jQuery(s"div.$incartClass")
+              for (index <- 0 to incarts.length) {
+                val id = jQuery(incarts.get(index)).attr("id")
+                if (id != js.undefined) {
+                  val finp = jQuery(incarts.get(index))
+                  removeClass(id.asInstanceOf[String])
+                  jQuery(s"#$id input").value("0")
+                }
+              }
+            } else {
+              // cart is not empty, trying to find and select items in cart on current screen
+              val foundDrugs = for (row <- rows) yield {
+                val drugId = dynGet[String](row, "drugId").get
                 val num = dynGet[Int](row, "num").get
+                val foundBtn = jQuery(s"#$drugId")
 
-                if (num > 0)
-                  addClass(drugId)
+                if (foundBtn.length == 1) {
+                  val num = dynGet[Int](row, "num").get
 
-                jQuery(s"#$drugId input").value(s"$num")
-                drugId
-              } else null
-            }.filter(id => id != null)
+                  if (num > 0)
+                    addClass(drugId)
 
-            val incarts = jQuery(s"div.$incartClass")
-            for (index <- 0 to incarts.length) {
-              val id = jQuery(incarts.get(index)).attr("id")
-              if (id != js.undefined && !foundDrugs.contains(id.asInstanceOf[String])) {
-                val finp = jQuery(incarts.get(index))
-                removeClass(id.asInstanceOf[String])
-                jQuery(s"#$id input").value("0")
+                  jQuery(s"#$drugId input").value(s"$num")
+                  drugId
+                } else null
+              }.filter(id => id != null)
+
+              val incarts = jQuery(s"div.$incartClass")
+              for (index <- 0 to incarts.length - 1) {
+                val id = jQuery(incarts.get(index)).attr("id")
+                if (id != js.undefined && !foundDrugs.contains(id.asInstanceOf[String])) {
+                  val drugId = id.asInstanceOf[String]
+                  removeClass(drugId)
+                  jQuery(s"#$drugId input").value("0")
+                }
               }
             }
           }
@@ -116,7 +131,7 @@ object ProductJS {
   }
 
   def cartButon(drugId: String, num: Int) = {
-    div(cls:="col-lg-1 input-group input-group-sm", style:="float:right", id:=drugId)(
+    div(cls:=s"col-lg-1 input-group input-group-sm ${if (num > 0) incartClass else ""}", style:="float:right", id:=drugId)(
       span(cls:=s"input-group-addon btn ${if (num > 0) incartClass else "hide"}")("-"),
       input(`type`:="text", readonly:=true, cls:=s"form-control cart-btn ${if (num > 0) incartClass else ""}", value:=s"$num"),
       span(cls:=s"input-group-addon btn ${if (num > 0) incartClass else ""}")("+")
