@@ -39,43 +39,88 @@ object ProductJS {
     if (!js.isUndefined (res) && res != null) Some(res.asInstanceOf[T]) else None
   }
 
-  def addItem (csrfHeader: String, csrfValue: String, shopCartItem: ShopCartItem, reload: Boolean = false) = {
+  private val incartClass = "incart"
+
+  def addItem(csrfHeader: String, csrfValue: String, inp:JQuery, shopCartItem: ShopCartItem, reload: Boolean = false) = {
     var url = "/drugs/cart/item"
     val xhr = new XMLHttpRequest()
     xhr.open ("POST", url)
     xhr.setRequestHeader(csrfHeader, csrfValue)
     xhr.onload = {(e:Event) => {
       if (xhr.status == 200) {
-        val msg = jQuery("#messages")
-        val priceMsg = msg.attr("price-msg")
-        val putInCart = msg.attr("put-in-cart")
-        val inCart = msg.attr("in-cart")
-
         val resp = JSON.parse(xhr.responseText)
-        val cart = dynGet[js.Dynamic] (resp, "cart").get
-        val rows = dynGet[js.Array[js.Dynamic]] (cart, "items").get
+        val cart = dynGet[js.Dynamic](resp, "cart").get
+        val rows = dynGet[js.Array[js.Dynamic]](cart, "items").get
 
         val badge = jQuery("#cart-badge")
         if (badge.length == 0) {
           dom.window.location.reload(true)
         }
+        else {
+          jQuery("#cart-badge").text(s"${rows.length}")
 
-        jQuery("#cart-badge").text(s"${rows.length}")
+          if (reload) {
+            dom.window.location.reload(true)
+          }
+          else {
+            val foundDrugs = for (row <- rows) yield {
+              val drugId = dynGet[String](row, "drugId").get
+              val num = dynGet[Int](row, "num").get
+              val foundBtn = jQuery(s"#$drugId")
 
-        if (reload) {
-          dom.window.location.reload(true)
-        } else {
-          jQuery("#")
+              if (foundBtn.length == 1) {
+                val num = dynGet[Int](row, "num").get
+
+                if (num > 0)
+                  addClass(drugId)
+
+                jQuery(s"#$drugId input").value(s"$num")
+                drugId
+              } else null
+            }.filter(id => id != null)
+
+            val incarts = jQuery(s"div.$incartClass")
+            for (index <- 0 to incarts.length) {
+              val id = jQuery(incarts.get(index)).attr("id")
+              if (id != js.undefined && !foundDrugs.contains(id.asInstanceOf[String])) {
+                val finp = jQuery(incarts.get(index))
+                removeClass(id.asInstanceOf[String])
+                jQuery(s"#$id input").value("0")
+              }
+            }
+          }
         }
       }
     }}
 
+    val num = shopCartItem.num + (if (inp != null) inp.value().asInstanceOf[String].toInt else 0)
     xhr.send(JSON.stringify(js.Dynamic.literal(
       drugId = shopCartItem.drugId,
       drugName = shopCartItem.drugName,
-      num = shopCartItem.num,
+      num = (if (num < 0) 0 else num),
       price = shopCartItem.price
     )))
+  }
+
+  def addClass (drugId: String) = {
+    jQuery(s"#$drugId").addClass(incartClass)
+    jQuery(s"#$drugId span:contains('+')").addClass(incartClass)
+    jQuery(s"#$drugId span:contains('-')").addClass(incartClass)
+    jQuery(s"#$drugId span:contains('-')").removeClass("hide")
+  }
+
+  def removeClass (drugId: String) = {
+    jQuery(s"#$drugId").removeClass(incartClass)
+    jQuery(s"#$drugId span:contains('+')").removeClass(incartClass)
+    jQuery(s"#$drugId span:contains('-')").addClass("hide")
+  }
+
+  def cartButon(drugId: String, num: Int) = {
+    div(cls:="col-lg-1 input-group input-group-sm", style:="float:right", id:=drugId)(
+      span(cls:=s"input-group-addon btn ${if (num > 0) incartClass else "hide"}")("-"),
+      input(`type`:="text", readonly:=true, cls:=s"form-control cart-btn ${if (num > 0) incartClass else ""}", value:=s"$num"),
+      span(cls:=s"input-group-addon btn ${if (num > 0) incartClass else ""}")("+")
+    )
   }
 
   @JSExport
@@ -112,7 +157,7 @@ object ProductJS {
           val drugId:String = dynGet[String] (drug, "id").getOrElse("")
 
           dynGet[String] (drug, "drugsShortName") match {
-            case Some(name) => seoDescription.append(name.split("[ ,.]+")(0)).append(" цена: ").append(price).append(".00р, ")
+            case Some(name) => seoDescription.append(name.split("[ ,.]+")(0)).append(s" $priceMsg: ").append(price).append(".00р, ")
             case _ =>
           }
 
@@ -127,15 +172,7 @@ object ProductJS {
               ),
               div (cls:="panel-footer")(
                 s"$priceMsg: ${price}.00 р",
-
-                button (
-                  id := drugId,
-                  attr("price") := price,
-                  name := fullName,
-                  cls := s"btn ${if (countInCart > 0) "incart"}",
-                  style := "float: right; margin: 0",
-                  role := "button"
-                )(if (countInCart == 0) s"$putInCart" else s"$inCart $countInCart")
+                cartButon(drugId, countInCart)
               )
             )
           )
@@ -150,7 +187,10 @@ object ProductJS {
           val find = s"#${drugId}"
           val fullName:String = dynGet[String] (drug, "drugsFullName").getOrElse("")
           val price:Double = dynGet[Double] (drug, "retailPrice").getOrElse(0)
-          jQuery(find).click((event: Event) => addItem(csrfHeader, csrfValue, ShopCartItem(drugId, fullName, 1, price)))
+
+          val inp = jQuery(s"#$drugId input")
+          jQuery(s"#$drugId span:contains('-')").click((event: Event) => addItem(csrfHeader, csrfValue, inp, ShopCartItem(drugId, fullName, -1, price)))
+          jQuery(s"#$drugId span:contains('+')").click((event: Event) => addItem(csrfHeader, csrfValue, inp, ShopCartItem(drugId, fullName, 1, price)))
         })
 
         // Set next button
@@ -251,6 +291,6 @@ object ProductJS {
   @JSExport
   def updateCartItem (csrfHeader: String, csrfValue: String, event: Event, drugId: String): Unit = {
     val num = jQuery(s"#num_$drugId").value.asInstanceOf[String]
-    addItem(csrfHeader, csrfValue, ShopCartItem(drugId, "", num.toInt, 0), true)
+    addItem(csrfHeader, csrfValue, null, ShopCartItem(drugId, "", num.toInt, 0), true)
   }
 }
