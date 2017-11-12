@@ -38,18 +38,23 @@ class AdminController @Inject()(
   implicit val groupReads = Json.reads[DrugsGroup]
   implicit val productWrites = Json.writes[DrugsProduct]
 
-  def adminView = silhouette.UserAwareAction.async { implicit request =>
+  def adminView = silhouette.SecuredAction.async { implicit request =>
     val sid = sessionId(request2session)
-    val cart = cartDAO.find(getCart(sid, request.identity))
+    val cart = cartDAO.find(getCart(sid, Some(request.identity)))
 
-    Future.successful(Ok(views.html.shop.admin(SignInForm.form, socialProviderRegistry, request.identity, Await.result(cart, 1 second))))
+    if (request.identity.roles.getOrElse(Array()).contains("ADMIN")) {
+      Future.successful(Ok(views.html.shop.admin(SignInForm.form, socialProviderRegistry, Some(request.identity), Await.result(cart, 1 second))))
+    }
+    else  {
+      Future.successful(Redirect(routes.CompanyController.shopView()).flashing("error" -> Messages("insufficient_prifilegies")))
+    }
   }
 
-  def setImageView = silhouette.UserAwareAction.async { implicit request =>
+  def setImageView = silhouette.SecuredAction.async { implicit request =>
     val sid = sessionId(request2session)
-    val cart = cartDAO.find(getCart(sid, request.identity))
+    val cart = cartDAO.find(getCart(sid, Some(request.identity)))
 
-    Future.successful(Ok(views.html.shop.image(SignInForm.form, socialProviderRegistry, request.identity, Await.result(cart, 1 second))))
+    Future.successful(Ok(views.html.shop.image(SignInForm.form, socialProviderRegistry, Some(request.identity), Await.result(cart, 1 second))))
   }
 
   def insertDrugsGroup = silhouette.SecuredAction(parse.json[DrugsGroup]).async { implicit request =>

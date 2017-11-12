@@ -45,6 +45,7 @@ change.password = Изменить пароль
 activate.account = Активировать учетную запись
 current.password = Текущий пароль
 new.password = Новый пароль
+insufficient_prifilegies = Недостаточно привилегий
 
 remember.me = Запомнить меня на этом компьютере
 or.use.social = Используйте свою учетную запись или один из следующих сервисов для входа:

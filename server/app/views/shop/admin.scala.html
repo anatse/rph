@@ -17,27 +17,33 @@
       function updateItem (event, drugId) {rphApp.updateCartItem ('Csrf-Token', '@helper.CSRF.getToken.value', event, drugId);}
   </script>
 
+  <div class="jumbotron text-center">
+    <p>@{messages("admin.description")}</p>
+  </div>
+
   <div class="container">
     <ul class="nav nav-tabs">
-      <li class="active"><a data-toggle="tab" href="#home"> </a></li>
-      <li><a data-toggle="tab" href="#menu1">Menu 1</a></li>
-      <li><a data-toggle="tab" href="#menu2">Menu 2</a></li>
-      <li><a data-toggle="tab" href="#menu3">Menu 3</a></li>
+      <li class="active"><a data-toggle="tab" href="#goods">@messages("goods.title")</a></li>
+      <li><a data-toggle="tab" href="#groups">@messages("goods.groups.title")</a></li>
     </ul>
 
-    @helper.form(action = controllers.routes.CompanyController.cartSend(), 'role -> "form") {
-      @helper.CSRF.formField
-      <label for="email">@messages("email") *</label>
-      <div class="input-group">
-        <input type="email" class="form-control" name="email"  placeholder="user@@example.com" id="email" required value="@{user match {
-          case Some(usr) => usr.email
-          case _ =>
-        }}">
-        <span id="email-btn" class="input-group-btn">
-          <button type="submit" class="btn btn-default">@{messages("cart.request")}</button>
-        </span>
+    <div class="tab-content">
+      <div id="goods" class="tab-pane fade in active">
+        <h3>HOME</h3>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        @helper.form(action = routes.GoodsImportController.upload, 'enctype -> "multipart/form-data") {
+          @helper.CSRF.formField
+          <input type="file" name="data">
+          <p>
+            <input type="submit">
+          </p>
+        }
       </div>
-    }
+      <div id="groups" class="tab-pane fade">
+        <h3>@messages("goods.groups.title")</h3>
+        <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+      </div>
+    </div>
   </div>
 
   @html.scripts(projectName = "clientAdmin",
