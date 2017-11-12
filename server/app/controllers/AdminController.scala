@@ -9,6 +9,7 @@ import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 import forms.SignInForm
 import models.{ShopCart, _}
 import models.daos.{CartDAO, DrugsGroupDAO, ProductDAO}
+import models.services.WithRoles
 import org.webjars.play.WebJarsUtil
 import play.api.Environment
 import play.api.i18n.{I18nSupport, Messages}
@@ -38,16 +39,11 @@ class AdminController @Inject()(
   implicit val groupReads = Json.reads[DrugsGroup]
   implicit val productWrites = Json.writes[DrugsProduct]
 
-  def adminView = silhouette.SecuredAction.async { implicit request =>
+  def adminView = silhouette.SecuredAction(WithRoles("ADMIN")).async { implicit request =>
     val sid = sessionId(request2session)
     val cart = cartDAO.find(getCart(sid, Some(request.identity)))
 
-    if (request.identity.roles.getOrElse(Array()).contains("ADMIN")) {
-      Future.successful(Ok(views.html.shop.admin(SignInForm.form, socialProviderRegistry, Some(request.identity), Await.result(cart, 1 second))))
-    }
-    else  {
-      Future.successful(Redirect(routes.CompanyController.shopView()).flashing("error" -> Messages("insufficient_prifilegies")))
-    }
+    Future.successful(Ok(views.html.shop.admin(SignInForm.form, socialProviderRegistry, Some(request.identity), Await.result(cart, 1 second))))
   }
 
   def setImageView = silhouette.SecuredAction.async { implicit request =>

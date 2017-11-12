@@ -41,18 +41,25 @@ h4 {
 .navbar li a, .navbar .navbar-brand {
   color: white !important;
 }
+
 .navbar-nav li a:hover, .navbar-nav li.active a {
   color: @nav-bkcolor !important;
   background-color: white !important;
 }
+
 .navbar-default .navbar-toggle {
   border-color: transparent;
   color: #fff !important;
 }
+
+.alert {
+  z-index: 9999;
+}
+
 .navbar {
   margin-bottom: 0;
   background-color: @nav-bkcolor;
-  z-index: 9999;
+  z-index: 9990;
   border: 0;
   font-size: 14px !important;
   line-height: 1.42857143 !important;
@@ -218,12 +225,8 @@ footer .glyphicon {
     }
 }
 
-.navbar {
-  z-index: 9998 !important;
-}
-
 .modal {
-  z-index: 9999 !important;
+  z-index: 9998;
 }
 
 .modal-dialog{
