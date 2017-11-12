@@ -41,7 +41,7 @@
                 </div>
                 <div class="collapse navbar-collapse" id="myNavbar">
                     <ul class="nav navbar-nav navbar-left">
-                        <li class="@{if (request.uri == routes.CompanyController.view.url) "active" else ""}"><a href="@{if (request.uri == routes.CompanyController.view.url) "javascript:void();" else routes.CompanyController.view }">@messages("shop.menu.item")</a></li>
+                        <li class="@{if (request.uri == routes.CompanyController.shopView.url) "active" else ""}"><a href="@{if (request.uri == routes.CompanyController.shopView.url) "javascript:void();" else routes.CompanyController.shopView }">@messages("shop.menu.item")</a></li>
                         @*<li><a href="javascript:void">@messages("cosmo.menu.item")</a></li>*@
                         @*<li><a href="javascript:void">@messages("contact.menu.item")</a></li>*@
                         @*<li><a href="javascript:void">@messages("articles.menu.item")</a></li>*@
@@ -61,7 +61,7 @@
                         }}
 
                         @{user match {
-                            case Some(usr) if usr.roles.getOrElse(Array()).contains("ADMIN") => <li><a data-toggle="modal" data-target="#loadFileModal">{messages("goods.load.menu")}</a></li>
+                            case Some(usr) if usr.roles.getOrElse(Array()).contains("ADMIN") => <li><a href="/admin">{messages("goods.load.menu")}</a></li>
                             case _ =>
                         }}
                     </ul>

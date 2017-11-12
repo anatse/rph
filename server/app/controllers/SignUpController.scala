@@ -69,7 +69,7 @@ class SignUpController @Inject() (
         val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
         userService.retrieve(loginInfo).flatMap {
           case Some(user) =>
-            val url = routes.CompanyController.view().absoluteURL()
+            val url = routes.CompanyController.shopView().absoluteURL()
             mailerClient.send(Email(
               subject = Messages("email.already.signed.up.subject"),
               from = Messages("email.from"),

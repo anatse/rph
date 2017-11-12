@@ -1,7 +1,5 @@
 package controllers
 
-import java.io.File
-import java.nio.file.{CopyOption, Files, Paths, StandardCopyOption}
 import javax.inject.Inject
 
 import com.mohiva.play.silhouette.api.Silhouette
@@ -39,7 +37,7 @@ class CompanyController @Inject()(
     * Function builds main view (shop view)
     * @return
     */
-  def view = silhouette.UserAwareAction.async { implicit request =>
+  def shopView = silhouette.UserAwareAction.async { implicit request =>
     val sid = sessionId(request2session)
     val cart = cartDAO.find(getCart(sid, request.identity))
 
@@ -60,16 +58,9 @@ class CompanyController @Inject()(
       )
 
       case  _ => Future.successful(
-        Redirect(routes.CompanyController.view)
+        Redirect(routes.CompanyController.shopView)
       )
     }
-  }
-
-  def setImageView = silhouette.UserAwareAction.async { implicit request =>
-    val sid = sessionId(request2session)
-    val cart = cartDAO.find(getCart(sid, request.identity))
-
-    Future.successful(Ok(views.html.shop.image(SignInForm.form, socialProviderRegistry, request.identity, Await.result(cart, 1 second))))
   }
 
   implicit val productWrites = Json.writes[DrugsProduct]
@@ -93,10 +84,6 @@ class CompanyController @Inject()(
   protected def makeResultRS (rows:List[DrugsProdRs], realPageSize:Int, offset:Int) = {
     val filterredRows = if (rows.length > realPageSize) rows.dropRight(1) else rows
     Ok(Json.obj("rows" -> filterredRows, "pageSize" -> realPageSize, "offset" -> offset, "hasMore" -> (rows.length > realPageSize)))
-  }
-
-  def create = silhouette.SecuredAction.async { implicit request =>
-    drugsProductDAO.createTextIndex().map(_ => Ok("OK"))
   }
 
   def findDrugsGroups = silhouette.UserAwareAction.async { implicit request =>
@@ -143,27 +130,6 @@ class CompanyController @Inject()(
     )
   }
 
-  def insertDrugsGroup = silhouette.SecuredAction(parse.json[DrugsGroup]).async { implicit request =>
-    val drugsGroup: DrugsGroup = request.body
-    drugsGroupDAO.save(drugsGroup).map(rows => Ok(Json.obj("rows" -> rows)))
-  }
-
-  def setImageToDrug = silhouette.SecuredAction (parse.multipartFormData).async { request =>
-    val image = request.body.file("image")
-    val id = request.body.dataParts("id")(0)
-    image match {
-      case Some(file) =>
-        val folderPath = env.getFile("/public/images");
-        val imagePath = s"${folderPath.getAbsolutePath}/${id}.jpg"
-        val imageName = s"${id}.jpg"
-        val fp = new File (imagePath)
-        Files.copy(file.ref.path, fp.toPath, StandardCopyOption.REPLACE_EXISTING)
-        drugsProductDAO.addImage(id, imageName).map (row => Ok(Json.obj("res" -> row)))
-
-      case _ => Future.successful(Ok("Error loading file. File is empty"))
-    }
-  }
-
   def addItemToCart = silhouette.UserAwareAction.async { implicit request =>
     val item: ShopCartItem = JsonUtil.fromJson[ShopCartItem](request.body.asText.getOrElse("{}"))
     val cart = getCart(sessionId(request2session), request.identity)
@@ -192,6 +158,6 @@ class CompanyController @Inject()(
           bodyText = Some(views.txt.emails.cart(sc.get).body),
           bodyHtml = Some(views.html.emails.cart(sc.get).body)))
       }
-    ).map(_ => Redirect(routes.CompanyController.view))
+    ).map(_ => Redirect(routes.CompanyController.shopView))
   }
 }

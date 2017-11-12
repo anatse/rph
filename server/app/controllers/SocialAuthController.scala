@@ -53,7 +53,7 @@ class SocialAuthController @Inject() (
             value <- silhouette.env.authenticatorService.init(authenticator)
 //          JWT Implementation
 //            result <- silhouette.env.authenticatorService.embed(value, Ok(Json.obj("token" -> value)))
-            result <- silhouette.env.authenticatorService.embed(value, Redirect(sourceUrl.getOrElse(routes.CompanyController.view().url)).withHeaders("X-Auth-Token" -> s"$value"))
+            result <- silhouette.env.authenticatorService.embed(value, Redirect(sourceUrl.getOrElse(routes.CompanyController.shopView().url)).withHeaders("X-Auth-Token" -> s"$value"))
           } yield {
             //println (s"profile: ${profile}\nuser: ${user}\nauthInfo: ${authInfo}\nauthenticator: ${authenticator}\nvallue: ${value}\nresult: ${result}")
             silhouette.env.eventBus.publish(LoginEvent(user, request))
@@ -64,7 +64,7 @@ class SocialAuthController @Inject() (
     }).recover {
       case e: ProviderException =>
         logger.error("Unexpected provider error", e)
-        Redirect(routes.CompanyController.view()).flashing("error" -> Messages("could.not.authenticate"))
+        Redirect(routes.CompanyController.shopView()).flashing("error" -> Messages("could.not.authenticate"))
     }
   }
 }

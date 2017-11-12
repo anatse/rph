@@ -25,7 +25,7 @@ class CustomSecuredErrorHandler @Inject() (val messagesApi: MessagesApi) extends
    * @return The result to send to the client.
    */
   override def onNotAuthenticated(implicit request: RequestHeader): Future[Result] = {
-    Future.successful(Redirect(controllers.routes.CompanyController.view()).withSession("sourceUrl" -> request.uri))
+    Future.successful(Redirect(controllers.routes.CompanyController.shopView()).withSession("sourceUrl" -> request.uri))
   }
 
   /**
@@ -37,6 +37,6 @@ class CustomSecuredErrorHandler @Inject() (val messagesApi: MessagesApi) extends
    * @return The result to send to the client.
    */
   override def onNotAuthorized(implicit request: RequestHeader): Future[Result] = {
-    Future.successful(Redirect(controllers.routes.CompanyController.view()).flashing("error" -> Messages("access.denied")))
+    Future.successful(Redirect(controllers.routes.CompanyController.shopView()).flashing("error" -> Messages("access.denied")))
   }
 }

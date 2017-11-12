@@ -106,10 +106,8 @@ class MongoDaoSpec extends PlaySpec with GuiceOneAppPerTest {
       savedUser.providerKey mustBe identity.providerKey
       savedUser.userID mustBe identity.userID
     }
-
-
   }
 
   // Stop embedded mongo
-  // mongoServer.stop
+//  mongoServer.stop
 }

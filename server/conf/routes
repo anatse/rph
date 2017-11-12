@@ -7,18 +7,14 @@ GET         /drugs/group                    controllers.CompanyController.findDr
 POST        /drugs/groupProd                controllers.CompanyController.findByGroup
 GET         /drugs/prod                     controllers.CompanyController.findDrugsProducts(offset: Int, pageSize: Int, sort: Option[String])
 POST        /drugs/prod                     controllers.CompanyController.findDrugsProducts(offset: Int, pageSize: Int, sort: Option[String])
-GET         /drugs/create                   controllers.CompanyController.create
 GET         /drugs/fuzzySearch              controllers.CompanyController.combinedSearchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String])
 POST        /drugs/fuzzySearch              controllers.CompanyController.combinedSearchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String])
-POST        /drugs/setImage                 controllers.CompanyController.setImageToDrug
-POST        /drigs/group                    controllers.CompanyController.insertDrugsGroup
 POST        /drugs/cart/item                controllers.CompanyController.addItemToCart
 
 # Home page
-GET         /                               controllers.CompanyController.view
+GET         /                               controllers.CompanyController.shopView
 GET         /cart                           controllers.CompanyController.cartView
 POST        /cart                           controllers.CompanyController.cartSend
-GET         /images                         controllers.CompanyController.setImageView
 GET         /signOut                        controllers.ApplicationController.signOut
 GET         /authenticate/:provider         controllers.SocialAuthController.authenticate(provider)
 POST        /authenticate/:provider         controllers.SocialAuthController.authenticate(provider)
@@ -37,6 +33,13 @@ POST        /password/change                controllers.ChangePasswordController
 
 GET         /account/email/:email           controllers.ActivateAccountController.send(email: String)
 GET         /account/activate/:token        controllers.ActivateAccountController.activate(token: java.util.UUID)
+
+# Admin functions
+GET         /admin                          controllers.AdminController.adminView
+GET         /images                         controllers.AdminController.setImageView
+GET         /drugs/create                   controllers.AdminController.create
+POST        /drugs/setImage                 controllers.AdminController.setImageToDrug
+POST        /drigs/group                    controllers.AdminController.insertDrugsGroup
 
 #GET         /projects                        controllers.ProjectController.index
 #GET         /projects/create                 controllers.ProjectController.create
