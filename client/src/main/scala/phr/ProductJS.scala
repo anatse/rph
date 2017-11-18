@@ -131,7 +131,7 @@ object ProductJS {
   }
 
   def cartButon(drugId: String, num: Int) = {
-    div(cls:=s"col-lg-1 input-group input-group-sm ${if (num > 0) incartClass else ""}", style:="float:right", id:=drugId)(
+    div(cls:=s"form-inline input-group input-group-sm ${if (num > 0) incartClass else ""}", style:="float:right", id:=drugId)(
       span(cls:=s"input-group-addon btn ${if (num > 0) incartClass else "hide"}")("-"),
       input(`type`:="text", readonly:=true, cls:=s"form-control cart-btn ${if (num > 0) incartClass else ""}", value:=s"$num"),
       span(cls:=s"input-group-addon btn ${if (num > 0) incartClass else ""}")("+")

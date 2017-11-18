@@ -40,6 +40,7 @@ GET         /images                         controllers.AdminController.setImage
 GET         /drugs/create                   controllers.AdminController.create
 POST        /drugs/setImage                 controllers.AdminController.setImageToDrug
 POST        /drigs/group                    controllers.AdminController.insertDrugsGroup
+POST        /druigs/filter                  controllers.AdminController.filterProducts
 
 #GET         /projects                        controllers.ProjectController.index
 #GET         /projects/create                 controllers.ProjectController.create

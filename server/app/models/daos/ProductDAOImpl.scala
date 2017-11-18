@@ -1,6 +1,6 @@
 package models.daos
 
-import models.{DrugsGroup, DrugsProduct, MongoBaseDao}
+import models.{DrugsFindRq, DrugsGroup, DrugsProduct, MongoBaseDao}
 import reactivemongo.api.collections.bson.BSONCollection
 
 import scala.concurrent.Future
@@ -349,4 +349,38 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
       document("$set" -> document ( "drugGroups" -> groups)),
       fetchNewObject = true
     ).map(r => r.result[DrugsProduct]))
+
+
+  /**
+    * Filter by fields in request
+    * @param filter
+    * @return
+    */
+  override def filter(filter: DrugsFindRq) = productCollection.flatMap (col => {
+    val arr = BSONArray()
+
+    filter.groups match {
+      case Some(grps) => arr.add (document("drugGroups" -> document("$in" -> grps)))
+      case _ =>
+    }
+
+    filter.text match {
+      case Some(txt) => val words = txt.split(regexp).map(soundex(_))
+        val allWords = words ++ fixKeyboardLayout(txt).split(regexp).map(soundex(_))
+        arr.add (document("sndWords" -> document("$in" -> allWords)))
+      case _ =>
+    }
+
+    filter.drugImage match {
+      case Some(txt) => arr.add (document("drugImage" -> document("$in" -> txt)))
+      case _ =>
+    }
+
+    col.find(
+      document ("$and" -> arr)
+    ).projection(projection).options(QueryOpts().skip(filter.offset).batchSize(filter.pageSize))
+      .sort(document (filter.sorts.getOrElse("drugsFullName") -> 1))
+      .cursor[DrugsProduct]()
+      .collect[List](filter.pageSize, handler[DrugsProduct])
+  })
 }
