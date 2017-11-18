@@ -31,17 +31,38 @@
     <div class="tab-content">
       @* Upload goods *@
       <div id="goods-upload" class="tab-pane fade in active">
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-        @helper.form(action = routes.GoodsImportController.upload, 'enctype -> "multipart/form-data") {
+        @helper.form(action = routes.GoodsImportController.upload, 'enctype -> "multipart/form-data", 'name -> "fileinfo") {
           @helper.CSRF.formField
-          <input type="file" name="data">
-          <p>
-            <input type="submit">
-          </p>
+          <input type="file" name="fileinfo" class="fileuploader">
+          <button type="submit" class="btn btn-primary">@messages("goods.upload.button")</button>
         }
+
+        <div class="form-group">
+          <label for="comment">@messages("upload.result")</label>
+          <textarea class="form-control" rows="5" id="upload-res"></textarea>
+        </div>
+
+        <script>
+            var form = document.forms.namedItem("fileinfo");
+            form.addEventListener('submit', function(ev) {
+              var oData = new FormData(form);
+              var oReq = new XMLHttpRequest();
+              oReq.open(form.method, form.action, true);
+              oReq.onload = function(oEvent) {
+                if (oReq.status == 200) {
+                  $("textarea#upload-res").val(oReq.responseText);
+                } else {
+                  $("textarea#upload-res").val(oReq.status + "\n" + oReq.responseText);
+                }
+              };
+
+              oReq.send(oData);
+              ev.preventDefault();
+            }, false);
+        </script>
       </div>
 
-      <div id="goods" class="tab-pane fade in active">
+      <div id="goods" class="tab-pane fade">
         <h3>HOME</h3>
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
       </div>

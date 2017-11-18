@@ -181,3 +181,5 @@ admin.description = Алминистрирование сайта
 goods.load.title = Загрузка, обновление товаров
 goods.title = Товары
 goods.groups.title = Группы товаров
+goods.upload.button = Загрузить
+upload.result = Результат загрузки
