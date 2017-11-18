@@ -23,13 +23,14 @@
 
   <div class="container">
     <ul class="nav nav-tabs">
-      <li class="active"><a data-toggle="tab" href="#goods">@messages("goods.title")</a></li>
+      <li class="active"><a data-toggle="tab" href="#goods-upload">@messages("goods.load.title")</a></li>
+      <li><a data-toggle="tab" href="#goods">@messages("goods.title")</a></li>
       <li><a data-toggle="tab" href="#groups">@messages("goods.groups.title")</a></li>
     </ul>
 
     <div class="tab-content">
-      <div id="goods" class="tab-pane fade in active">
-        <h3>HOME</h3>
+      @* Upload goods *@
+      <div id="goods-upload" class="tab-pane fade in active">
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
         @helper.form(action = routes.GoodsImportController.upload, 'enctype -> "multipart/form-data") {
           @helper.CSRF.formField
@@ -39,6 +40,12 @@
           </p>
         }
       </div>
+
+      <div id="goods" class="tab-pane fade in active">
+        <h3>HOME</h3>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      </div>
+
       <div id="groups" class="tab-pane fade">
         <h3>@messages("goods.groups.title")</h3>
         <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>

@@ -1,6 +1,7 @@
 package models.daos
 
-import models.MongoBaseDao
+import models.{MongoBaseDao}
+
 import scala.concurrent.Future
 
 trait BaseDAO[T] extends MongoBaseDao {

@@ -6,6 +6,7 @@
 GET         /drugs/group                    controllers.CompanyController.findDrugsGroups
 POST        /drugs/groupProd                controllers.CompanyController.findByGroup
 GET         /drugs/prod                     controllers.CompanyController.findDrugsProducts(offset: Int, pageSize: Int, sort: Option[String])
+GET         /drugs/recom                    controllers.CompanyController.findRecommended(offset: Int, pageSize: Int)
 POST        /drugs/prod                     controllers.CompanyController.findDrugsProducts(offset: Int, pageSize: Int, sort: Option[String])
 GET         /drugs/fuzzySearch              controllers.CompanyController.combinedSearchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String])
 POST        /drugs/fuzzySearch              controllers.CompanyController.combinedSearchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String])
@@ -38,9 +39,13 @@ GET         /account/activate/:token        controllers.ActivateAccountControlle
 GET         /admin                          controllers.AdminController.adminView
 GET         /images                         controllers.AdminController.setImageView
 GET         /drugs/create                   controllers.AdminController.create
+GET         /drugs/rcmd/add                 controllers.AdminController.addRecommended(drugId: String, orderNum: Int)
+GET         /drugs/rcmd/rm                  controllers.AdminController.removeRecommended(drugId: String)
+
 POST        /drugs/setImage                 controllers.AdminController.setImageToDrug
 POST        /drigs/group                    controllers.AdminController.insertDrugsGroup
 POST        /druigs/filter                  controllers.AdminController.filterProducts
+
 
 #GET         /projects                        controllers.ProjectController.index
 #GET         /projects/create                 controllers.ProjectController.create

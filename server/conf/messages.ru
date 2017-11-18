@@ -147,7 +147,6 @@ placeholder.name = Имя
 placeholder.email = Адрес электронной почты
 placeholder.comment = Комментарий
 send.email = Отправить
-goods.load.title = Загрузка, обновление товаров
 
 #
 # SEO
@@ -176,3 +175,9 @@ email.order.perform=anatolse@yandex.ru
 put-in-cart=В корзину
 in-cart=Обновить
 price=Цена
+
+admin.menu=Администрирование
+admin.description = Алминистрирование сайта
+goods.load.title = Загрузка, обновление товаров
+goods.title = Товары
+goods.groups.title = Группы товаров

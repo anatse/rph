@@ -7,11 +7,8 @@ import reactivemongo.bson.Macros.Annotations.{Ignore, Key}
   * @param id
   * @param barCode
   * @param drugsFullName
-  * @param drugFullName
   * @param drugsShortName
   * @param ost
-  * @param ostFirst
-  * @param ostLast
   * @param retailPrice
   * @param tradeTech
   * @param producerFullName
@@ -27,12 +24,9 @@ case class DrugsProduct(
    barCode: String,
 
    drugsFullName: String,
-   drugFullName: String,
    drugsShortName: String,
 
    ost: Double,
-   ostFirst: Double,
-   ostLast: Double,
    retailPrice: Double,
 
    tradeTech: String,
@@ -54,4 +48,17 @@ case class DrugsProduct(
    seoTags: Option[Array[String]] = None
 )
 
+/**
+  * class represents drugs group
+  * @param id
+  * @param groupName
+  * @param description
+  */
 case class DrugsGroup (id: String, groupName: String, description: String)
+
+/**
+  * Class represents recopmended drugs
+  * @param drugProductId
+  * @param orderNum
+  */
+case class RecommendedDrugs (@Key ("_id") drugProductId: String, orderNum: Int)

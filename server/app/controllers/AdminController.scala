@@ -40,6 +40,11 @@ class AdminController @Inject()(
   implicit val productWrites = Json.writes[DrugsProduct]
   implicit val dfrReads = Json.reads[DrugsFindRq]
 
+  private def makeResult (rows:List[DrugsProduct], realPageSize:Int, offset:Int) = {
+    val filterredRows = if (rows.length > realPageSize) rows.dropRight(1) else rows
+    Ok(Json.obj("rows" -> filterredRows, "pageSize" -> realPageSize, "offset" -> offset, "hasMore" -> (rows.length > realPageSize)))
+  }
+
   def adminView = silhouette.SecuredAction(WithRoles("ADMIN")).async { implicit request =>
     val sid = sessionId(request2session)
     val cart = cartDAO.find(getCart(sid, Some(request.identity)))
@@ -79,13 +84,16 @@ class AdminController @Inject()(
     }
   }
 
-  private def makeResult (rows:List[DrugsProduct], realPageSize:Int, offset:Int) = {
-    val filterredRows = if (rows.length > realPageSize) rows.dropRight(1) else rows
-    Ok(Json.obj("rows" -> filterredRows, "pageSize" -> realPageSize, "offset" -> offset, "hasMore" -> (rows.length > realPageSize)))
-  }
-
   def filterProducts = silhouette.SecuredAction(parse.json[DrugsFindRq]).async { implicit request =>
     val drugsFindRq: DrugsFindRq = request.body
     drugsProductDAO.filter(drugsFindRq.copy(pageSize = drugsFindRq.pageSize + 1)).map(rows => makeResult(rows, drugsFindRq.pageSize, drugsFindRq.offset))
+  }
+
+  def addRecommended (drugId: String, orderNum: Int) = silhouette.SecuredAction(WithRoles("ADMIN")).async {
+    request => drugsProductDAO.addRecommended(drugId, orderNum).map(_ => Ok("OK"))
+  }
+
+  def removeRecommended (drugId: String) = silhouette.SecuredAction(WithRoles("ADMIN")).async {
+    request => drugsProductDAO.removeRecommended(drugId).map(_ => Ok("OK"))
   }
 }

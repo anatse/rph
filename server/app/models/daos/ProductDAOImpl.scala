@@ -1,6 +1,6 @@
 package models.daos
 
-import models.{DrugsFindRq, DrugsGroup, DrugsProduct, MongoBaseDao}
+import models._
 import reactivemongo.api.collections.bson.BSONCollection
 
 import scala.concurrent.Future
@@ -19,10 +19,15 @@ import scala.util.{Failure, Success}
 
 class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("user-cache")cacheApi: SyncCacheApi, implicit val ex: ExecutionContext) extends MongoBaseDao with ProductDAO {
   private def productCollection:Future[BSONCollection] = mongoApi.database.map(_.collection("products"))
+  private def recommendedCollection:Future[BSONCollection] = mongoApi.database.map(_.collection("selectprods"))
+
   private val regexp = "[ ,.\\+-]+"
 
   implicit def productWriter: BSONDocumentWriter[DrugsProduct] = Macros.writer[DrugsProduct]
   implicit def productReader: BSONDocumentReader[DrugsProduct] = Macros.reader[DrugsProduct]
+
+  implicit def recProductWriter: BSONDocumentWriter[RecommendedDrugs] = Macros.writer[RecommendedDrugs]
+  implicit def recPproductReader: BSONDocumentReader[RecommendedDrugs] = Macros.reader[RecommendedDrugs]
 
   def createTextIndex () = productCollection.flatMap(
     collection => collection.indexesManager.create(Index(
@@ -95,11 +100,8 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     "barCode" -> 1,
     "id" -> 1,
     "drugsFullName" -> 1,
-    "drugFullName" -> 1,
     "drugsShortName" -> 1,
     "ost" -> 1,
-    "ostFirst" -> 1,
-    "ostLast" -> 1,
     "retailPrice" -> 1,
     "MNN" -> 1,
     "tradeTech" -> 1,
@@ -207,20 +209,46 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     })
 
   /**
-    * Function retrieves all drugs from database using sorting and paging
+    * Function retrieves recommended drugs from database using sorting and paging
     * @param sortField sort
     * @param offset offset
     * @param pageSize page size
     * @return list of found drugs
     */
-  override def findAll(sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(document ("ost" -> document("$gt" -> 0)))
-    .projection(projection)
-    .options(QueryOpts().skip(offset).batchSize(pageSize))
-    .sort(document(sortField.getOrElse("retailPrice") -> 1))
-    .cursor[DrugsProduct]()
-    .collect[List](pageSize, handler[DrugsProduct]))
+  override def findAll(sortField: Option[String], offset: Int, pageSize: Int) = recommendedCollection.flatMap (
+    _.find(document()).options(QueryOpts().skip(offset).batchSize(pageSize))
+      .sort (document("orderNum" -> 1))
+      .cursor[RecommendedDrugs]()
+      .collect[List](pageSize, handler[RecommendedDrugs])
+  ).flatMap(rd => {
+    printf(s"found recommended: ${rd}")
 
-  override def findById(id: String) = productCollection.flatMap(_.find(document("_id" -> id)).projection(projection).one[DrugsProduct])
+    Future.sequence(
+      rd.map(
+        r => findById(r.drugProductId).map (dp => {
+          dp.getOrElse(null)
+        })
+      )
+    ).map(r => r.filter(drugs => drugs != null))
+  })
+
+  override def findRecommended (offset: Int, pageSize: Int) = recommendedCollection.flatMap (
+    _.find(document()).options(QueryOpts().skip(offset).batchSize(pageSize))
+      .sort (document("orderNum" -> 1))
+      .cursor[RecommendedDrugs]()
+      .collect[List](pageSize, handler[RecommendedDrugs])
+  )
+
+  override def addRecommended (drugId: String, orderNum: Int): Future[Unit] = recommendedCollection.flatMap(
+    _.update(document ("_id" -> drugId), RecommendedDrugs(drugId, orderNum), upsert = true)
+  ).map(r => {printf(s"r: ${r}\n")})
+
+  override def removeRecommended (drugId: String) = recommendedCollection.flatMap(_.remove(document("_id" -> drugId))).map(r => {})
+
+  override def findById(id: String) = {
+    printf (s"findbyId: $id")
+    productCollection.flatMap(_.find(document("_id" -> id)).projection(projection).one[DrugsProduct])
+  }
   override def save(product: DrugsProduct) = productCollection.flatMap(_.update(document("_id" -> product.id), product, upsert = true).map(_.upserted.map(ups => product).head))
   override def remove(id: String) = productCollection.flatMap(_.remove(document("_id" -> id)).map(r => {}))
 
@@ -240,11 +268,11 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
                 "_id" -> entity.id,
                 "barCode" -> entity.barCode,
                 "drugsFullName" -> entity.drugsFullName,
-                "drugFullName" -> entity.drugFullName,
+//                "drugFullName" -> entity.drugFullName,
                 "drugsShortName" -> entity.drugsShortName,
                 "ost" -> entity.ost,
-                "ostFirst" -> entity.ostFirst,
-                "ostLast" -> entity.ostLast,
+//                "ostFirst" -> entity.ostFirst,
+//                "ostLast" -> entity.ostLast,
                 "retailPrice" -> entity.retailPrice,
                 "tradeTech" -> entity.tradeTech,
                 "producerFullName" -> entity.producerFullName,

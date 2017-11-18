@@ -1,7 +1,7 @@
 package models.daos
 
 import reactivemongo.api.commands.{UpdateWriteResult, WriteResult}
-import models.{DrugsFindRq, DrugsProduct}
+import models.{DrugsFindRq, DrugsProduct, RecommendedDrugs}
 
 import scala.concurrent.Future
 
@@ -21,4 +21,7 @@ trait ProductDAO extends BaseDAO[DrugsProduct] {
   def addImage (id: String, imageUrl: String):Future[Option[DrugsProduct]]
   def setGroups (id: String, groups: Array[String]):Future[Option[DrugsProduct]]
 
+  def findRecommended (offset: Int, pageSize: Int): Future[List[RecommendedDrugs]]
+  def addRecommended (drugId: String, orderNum: Int): Future[Unit]
+  def removeRecommended (drugId: String): Future[Unit]
 }

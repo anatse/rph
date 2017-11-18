@@ -76,6 +76,9 @@ class CompanyController @Inject()(
   implicit val cartWrites = Json.writes[ShopCart]
   implicit val cartReads = Json.reads[ShopCart]
 
+  implicit val recProductReads = Json.reads[RecommendedDrugs]
+  implicit val recProductWrites = Json.writes[RecommendedDrugs]
+
   protected def makeResult (rows:List[DrugsProduct], realPageSize:Int, offset:Int) = {
     val filterredRows = if (rows.length > realPageSize) rows.dropRight(1) else rows
     Ok(Json.obj("rows" -> filterredRows, "pageSize" -> realPageSize, "offset" -> offset, "hasMore" -> (rows.length > realPageSize)))
@@ -121,6 +124,10 @@ class CompanyController @Inject()(
     addCartInfo (drugsProductDAO.findAll(sort, offset, pageSize+1))(cart).map(
       rows => makeResultRS(rows, pageSize, offset)
     )
+  }
+
+  def findRecommended(offset:Int, pageSize:Int) = silhouette.UserAwareAction.async { implicit request =>
+    drugsProductDAO.findRecommended(offset, pageSize).map(rows => Ok(Json.obj("rows" -> rows)))
   }
 
   def combinedSearchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String] = None) = silhouette.UserAwareAction.async { implicit request =>

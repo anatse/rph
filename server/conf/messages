@@ -148,7 +148,6 @@ placeholder.name = Name
 placeholder.email = Email
 placeholder.comment = Comment
 send.email = Send
-goods.load.title = Upload goods
 
 #
 # SEO
@@ -176,3 +175,9 @@ email.order.perform=anatolse@yandex.ru
 put-in-cart=To cart
 in-cart=Refresh
 price=Price
+
+admin.menu=Administration
+admin.description = Site admin
+goods.load.title = Upload goods
+goods.title= Goods management
+goods.groups.title = Groops management

@@ -28,14 +28,14 @@
         <link rel="stylesheet" href="@controllers.routes.Assets.at("styles/main_n.min.css")">
 
         <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-109837457-1"></script>
-        <script>
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
+        @*<script async src="https://www.googletagmanager.com/gtag/js?id=UA-109837457-1"></script>*@
+        @*<script>*@
+                @*window.dataLayer = window.dataLayer || [];*@
+                @*function gtag(){dataLayer.push(arguments);}*@
+                @*gtag('js', new Date());*@
 
-                gtag('config', 'UA-109837457-1');
-        </script>
+                @*gtag('config', 'UA-109837457-1');*@
+        @*</script>*@
 
     </head>
 
@@ -67,12 +67,12 @@
                         }
 
                         @{cart match {
-                            case Some(c) => <li><a href="/cart">{messages("short_cart.menu")}:<span id="cart-badge" class="badge">{c.items.length}</span></a></li>
+                            case Some(c) => <li class={if(request.uri == routes.CompanyController.cartView.url) "active" else ""}><a href="/cart">{messages("short_cart.menu")}:<span id="cart-badge" class="badge">{c.items.length}</span></a></li>
                             case _ =>
                         }}
 
                         @{user match {
-                            case Some(usr) if usr.roles.getOrElse(Array()).contains("ADMIN") => <li><a href="/admin">{messages("goods.load.menu")}</a></li>
+                            case Some(usr) if usr.roles.getOrElse(Array()).contains("ADMIN") => <li class={if(request.uri == routes.AdminController.adminView.url) "active" else ""}><a href="/admin">{messages("admin.menu")}</a></li>
                             case _ =>
                         }}
                     </ul>
