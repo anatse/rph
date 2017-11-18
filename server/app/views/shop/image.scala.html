@@ -1,0 +1,53 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import play.twirl.api.Html
+@import org.webjars.play.WebJarsUtil
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+@import forms.SignInForm.Data
+@import b3.inline.fieldConstructor
+@import scalajs._
+
+@(
+    signInForm: Form[Data],
+    socialProviders: SocialProviderRegistry,
+    user: Option[models.User] = None,
+    cart: Option[ShopCart] = None
+)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
+
+@main(messages("shop.page.title"), signInForm, socialProviders, user, cart) {
+    <div id="about" class="container-fluid">
+        <div class="form-group ">
+            <div class="input-group">
+                <label for="drugsSearch">@messages("search.label")</label>
+                <input type="text" rows="5" class="form-control search-field" id="drugsSearch" placeholder="@{messages("search.placeholder")}" required>
+            </div>
+            <div class="input-group">
+                <input type="file" class="form-control col-xs-3" columns="3" name="image">
+                <button type="button" class="btn btn-default">@messages("btn.save")</button>
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-bordered" id="goods">
+        <thead>
+            <tr>
+                <th>@messages("drug.name")</th>
+                <th>@messages("drug.producer")</th>
+                <th>@messages("drug.quentity")</th>
+            </tr>
+        </thead>
+
+        <tr class="clickable-row">
+            <th>Example</th>
+        </tr>
+        <tr class="clickable-row">
+            <th>Example 2</th>
+        </tr>
+    </table>
+
+    <script>
+            $('#goods').on('click', '.clickable-row', function(event) {
+                $(this).addClass('active').siblings().removeClass('active');
+            });
+    </script>
+}

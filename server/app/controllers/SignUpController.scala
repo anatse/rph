@@ -8,16 +8,16 @@ import com.mohiva.play.silhouette.api.repositories.AuthInfoRepository
 import com.mohiva.play.silhouette.api.services.AvatarService
 import com.mohiva.play.silhouette.api.util.PasswordHasherRegistry
 import com.mohiva.play.silhouette.impl.providers._
-import forms.SignUpForm
+import forms.{SignInForm, SignUpForm}
 import models.User
-import models.services.{ AuthTokenService, UserService }
+import models.services.{AuthTokenService, UserService}
 import org.webjars.play.WebJarsUtil
-import play.api.i18n.{ I18nSupport, Messages }
-import play.api.libs.mailer.{ Email, MailerClient }
-import play.api.mvc.{ AbstractController, AnyContent, ControllerComponents, Request }
+import play.api.i18n.{I18nSupport, Messages}
+import play.api.libs.mailer.{Email, MailerClient}
+import play.api.mvc.{AbstractController, AnyContent, ControllerComponents, Request}
 import utils.auth.DefaultEnv
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * The `Sign Up` controller.
@@ -41,6 +41,7 @@ class SignUpController @Inject() (
   authTokenService: AuthTokenService,
   avatarService: AvatarService,
   passwordHasherRegistry: PasswordHasherRegistry,
+  socialProviderRegistry: SocialProviderRegistry,
   mailerClient: MailerClient)(
   implicit
   webJarsUtil: WebJarsUtil,
@@ -52,7 +53,7 @@ class SignUpController @Inject() (
    * @return The result to display.
    */
   def view = silhouette.UnsecuredAction.async { implicit request: Request[AnyContent] =>
-    Future.successful(Ok(views.html.signUp(SignUpForm.form)))
+    Future.successful(Ok(views.html.signUp(SignUpForm.form, SignInForm.form, socialProviderRegistry)))
   }
 
   /**
@@ -62,21 +63,21 @@ class SignUpController @Inject() (
    */
   def submit = silhouette.UnsecuredAction.async { implicit request: Request[AnyContent] =>
     SignUpForm.form.bindFromRequest.fold(
-      form => Future.successful(BadRequest(views.html.signUp(form))),
+      form => Future.successful(BadRequest(views.html.signUp(form, SignInForm.form, socialProviderRegistry))),
       data => {
         val result = Redirect(routes.SignUpController.view()).flashing("info" -> Messages("sign.up.email.sent", data.email))
         val loginInfo = LoginInfo(CredentialsProvider.ID, data.email)
         userService.retrieve(loginInfo).flatMap {
           case Some(user) =>
-            val url = routes.SignInController.view().absoluteURL()
+            val url = routes.CompanyController.shopView().absoluteURL()
             mailerClient.send(Email(
               subject = Messages("email.already.signed.up.subject"),
               from = Messages("email.from"),
               to = Seq(data.email),
               bodyText = Some(views.txt.emails.alreadySignedUp(user, url).body),
               bodyHtml = Some(views.html.emails.alreadySignedUp(user, url).body)))
-
             Future.successful(result)
+
           case None =>
             val authInfo = passwordHasherRegistry.current.hash(data.password)
             val user = User(
@@ -88,7 +89,8 @@ class SignUpController @Inject() (
               fullName = Some(data.firstName + " " + data.lastName),
               email = Some(data.email),
               avatarURL = None,
-              activated = false)
+              activated = false,
+              roles = None)
             for {
               avatar <- avatarService.retrieveURL(data.email)
               user <- userService.save(user.copy(avatarURL = avatar))

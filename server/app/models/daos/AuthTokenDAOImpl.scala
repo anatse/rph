@@ -3,56 +3,23 @@ package models.daos
 import java.util.UUID
 import javax.inject.Inject
 
-import models.AuthToken
+import models.{AuthToken, MongoBaseDao}
 import org.joda.time.DateTime
-import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import play.db.NamedDatabase
-import slick.jdbc.JdbcProfile
-import slick.jdbc.meta.MTable.getTables
+import play.modules.reactivemongo.ReactiveMongoApi
+import reactivemongo.api.collections.bson.BSONCollection
+import reactivemongo.bson.{BSONDocumentReader, BSONDocumentWriter, Macros, document}
 
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.concurrent.duration._
-
-
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * Give access to the [[AuthToken]] object.
  */
-class AuthTokenDAOImpl @Inject() (@NamedDatabase("estima") protected val dbConfigProvider: DatabaseConfigProvider, implicit val ex: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] with AuthTokenDAO {
-  import profile.api._
-  import com.github.tototoshi.slick.PostgresJodaSupport._
+class AuthTokenDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, implicit val ex: ExecutionContext) extends AuthTokenDAO with MongoBaseDao {
 
-  implicit class ResultEnrichment[T](action: DBIO[Seq[T]]) {
-    def exactlyOne: DBIO[Option[T]] = action.flatMap { xs =>
-      xs.length match {
-        case 1 => DBIO.successful(Some(xs.head))
-        case 0 => DBIO.successful(None)
-        case n => DBIO.failed(new RuntimeException(s"Expected 1 result, not $n"))
-      }
-    }
-  }
+  private def tokensCollection:Future[BSONCollection] = mongoApi.database.map(_.collection("tokens"))
 
-  class AuthTokenTable(tag: Tag) extends Table[AuthToken](tag, "tokens") {
-    def expiry = column[DateTime]("EXPIRY")
-    def userID = column[UUID]("EXT_USER_ID")
-    def id = column[UUID]("ID", O.PrimaryKey)
-    def * = (id, userID, expiry) <> (AuthToken.tupled, AuthToken.unapply _)
-  }
-
-  // Create table
-  val tokens = TableQuery[AuthTokenTable]
-  def createTable () = {
-    if (!checkTableExists())
-      Await.result(db.run(DBIO.seq(tokens.schema.create)), 1 second)
-  }
-
-  def checkTableExists ():Boolean = {
-    val tables = Await.result(db.run(getTables), 1 seconds)
-    val isExists = !tables.filter(t => t.name.name.contains("tokens")).isEmpty
-    isExists
-  }
-
-  createTable
+  implicit def tokenWriter: BSONDocumentWriter[AuthToken] = Macros.writer[AuthToken]
+  implicit def tokenReader: BSONDocumentReader[AuthToken] = Macros.reader[AuthToken]
 
   /**
    * Finds a token by its ID.
@@ -60,21 +27,18 @@ class AuthTokenDAOImpl @Inject() (@NamedDatabase("estima") protected val dbConfi
    * @param id The unique token ID.
    * @return The found token or None if no token for the given ID could be found.
    */
-  def find(id: UUID) = {
-    var query = tokens.filter(u => u.id === id)
-    val found = Await.result(db.run(query.result.exactlyOne), 1 second)
-    Future.successful(found)
-  }
+  def find(id: UUID) = tokensCollection.flatMap(_.find(document("id" -> id)).one[AuthToken])
 
   /**
    * Finds expired tokens.
    *
    * @param dateTime The current date time.
    */
-  def findExpired(dateTime: DateTime) = {
-    var query = tokens.filter(u => u.expiry <= dateTime)
-    db.run(query.result)
-  }
+  def findExpired(dateTime: DateTime) = tokensCollection.flatMap(_.find(
+      document(
+        "expiry" -> document ("$lte" -> dateTime)
+      )
+    ).cursor[AuthToken]().collect[List](-1, handler[AuthToken]))
 
   /**
    * Saves a token.
@@ -82,10 +46,7 @@ class AuthTokenDAOImpl @Inject() (@NamedDatabase("estima") protected val dbConfi
    * @param token The token to save.
    * @return The saved token.
    */
-  def save(token: AuthToken) = {
-    val tokenWithId = (tokens returning tokens.map(_.id) into ((token, id) => token.copy(id = id))) += token
-    db.run(tokenWithId)
-  }
+  def save(token: AuthToken) = tokensCollection.flatMap(_.insert(token).map(ins => token))
 
   /**
    * Removes the token for the given ID.
@@ -93,8 +54,5 @@ class AuthTokenDAOImpl @Inject() (@NamedDatabase("estima") protected val dbConfi
    * @param id The ID for which the token should be removed.
    * @return A future to wait for the process to be completed.
    */
-  def remove(id: UUID) = {
-    var query = tokens.filter(u => u.id === id)
-    db.run(query.delete).map(_ => ())
-  }
+  def remove(id: UUID) = tokensCollection.flatMap(_.remove(document("id" -> id)).map(r => {}))
 }

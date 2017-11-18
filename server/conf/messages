@@ -44,6 +44,7 @@ change.password = Change password
 activate.account = Activate Account
 current.password = Current password
 new.password = New password
+insufficient_prifilegies = Insufficient privilegies
 
 remember.me = Remember my login on this computer
 or.use.social = Or use your existing account on one of the following services to sign in:
@@ -76,7 +77,7 @@ yahoo = Yahoo
 # Emails
 ##########
 
-email.from = rph <noreply@mohiva.com>
+email.from = PharmRus <noreply@pharmrus.ru>
 
 # Sign Up
 email.sign.up.subject = Welcome
@@ -114,3 +115,69 @@ prj.list.description = Here you can see list of projects in which you whenever p
 # Pages
 page.prev = Older
 page.next = Newer
+
+search.placeholder = Enter drug name for searchng
+search.label = Search
+
+company.title = Pharmrus Company
+company.name = Pharmrus
+company.description = Welcome to our shop, Reutov city, Komsomolskaya st 10/1
+
+# Menu items in navigation bar
+shop.menu.item = Drugs
+shop.page.title = Showcase for Pharmrus pharmacy
+
+cosmo.menu.item = Cosmetics
+contact.menu.item = Contacts
+articles.menu.item = Articles
+goods.load.menu = Goods upload
+short_cart.menu = Cart
+
+contact.message = Write to us, we will surely answer you soon
+contact.address.title = Address: 
+contact.phone.title = Phone:
+contact.email.title = Email:
+
+contact.city = Reutov city
+contact.address = Komsomolskaya st 10/1
+contact.phone = +74994097578
+contact.phonetext = +7 (499) 409-75-78
+contact.email = ruspharm10@gmail.com
+
+placeholder.name = Name
+placeholder.email = Email
+placeholder.comment = Comment
+send.email = Send
+
+#
+# SEO
+#
+main.seo.description = Finding a medicine cheap prices Reutov Moscow
+drug.name=Name
+drug.producer=Producer
+drug.quantity=Quantity
+drug.count=Count
+drug.price=Price
+drug.sum=Sum
+drug.update.btn=Update
+
+btn.save=Save
+
+cart.page.title=Shop Cart
+cart.description=Cart
+cart.request=Make an order
+cart.clear=Clear all
+cart.total=Total
+
+email.order.title=Order from website pharmrus24
+email.order.perform=anatolse@yandex.ru
+
+put-in-cart=To cart
+in-cart=Refresh
+price=Price
+
+admin.menu=Administration
+admin.description = Site admin
+goods.load.title = Upload goods
+goods.title= Goods management
+goods.groups.title = Groops management

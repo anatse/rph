@@ -8,7 +8,6 @@ import com.mohiva.play.silhouette.api.repositories.AuthInfoRepository
 import com.mohiva.play.silhouette.impl.providers._
 import models.services.UserService
 import play.api.i18n.{I18nSupport, Messages}
-import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, AnyContent, ControllerComponents, Request}
 import utils.auth.DefaultEnv
 
@@ -54,7 +53,7 @@ class SocialAuthController @Inject() (
             value <- silhouette.env.authenticatorService.init(authenticator)
 //          JWT Implementation
 //            result <- silhouette.env.authenticatorService.embed(value, Ok(Json.obj("token" -> value)))
-            result <- silhouette.env.authenticatorService.embed(value, Redirect(sourceUrl.getOrElse(routes.ApplicationController.index().url)).withHeaders("X-Auth-Token" -> s"$value"))
+            result <- silhouette.env.authenticatorService.embed(value, Redirect(sourceUrl.getOrElse(routes.CompanyController.shopView().url)).withHeaders("X-Auth-Token" -> s"$value"))
           } yield {
             //println (s"profile: ${profile}\nuser: ${user}\nauthInfo: ${authInfo}\nauthenticator: ${authenticator}\nvallue: ${value}\nresult: ${result}")
             silhouette.env.eventBus.publish(LoginEvent(user, request))
@@ -65,7 +64,7 @@ class SocialAuthController @Inject() (
     }).recover {
       case e: ProviderException =>
         logger.error("Unexpected provider error", e)
-        Redirect(routes.SignInController.view()).flashing("error" -> Messages("could.not.authenticate"))
+        Redirect(routes.CompanyController.shopView()).flashing("error" -> Messages("could.not.authenticate"))
     }
   }
 }

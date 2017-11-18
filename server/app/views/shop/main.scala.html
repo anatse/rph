@@ -1,0 +1,151 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import play.twirl.api.Html
+@import org.webjars.play.WebJarsUtil
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+@import forms.SignInForm.Data
+@import b3.inline.fieldConstructor
+
+@(
+    title: String,
+    signInForm: Form[Data],
+    socialProviders: SocialProviderRegistry,
+    user: Option[models.User] = None,
+    cart: Option[ShopCart] = None
+)(content: Html)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
+
+<!DOCTYPE html>
+<html lang="@messages.lang.code">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="@messages("main.seo.description")"/>
+        <meta name="theme-color" content="#1f5085">
+        <link rel="shortcut icon" type="image/png" href="@controllers.routes.Assets.at("images/favicon.png")">
+        <title>@title</title>
+        <link rel="stylesheet" href="@webJarsUtil.url("bootstrap.min.css")">
+        <link rel="stylesheet" href="@controllers.routes.Assets.at("styles/main_n.min.css")">
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        @*<script async src="https://www.googletagmanager.com/gtag/js?id=UA-109837457-1"></script>*@
+        @*<script>*@
+                @*window.dataLayer = window.dataLayer || [];*@
+                @*function gtag(){dataLayer.push(arguments);}*@
+                @*gtag('js', new Date());*@
+
+                @*gtag('config', 'UA-109837457-1');*@
+        @*</script>*@
+
+    </head>
+
+    <body>
+        <nav class="navbar navbar-default navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#myPage">@messages("company.name")</a>
+                </div>
+                <div class="collapse navbar-collapse" id="myNavbar">
+                    <ul class="nav navbar-nav navbar-left">
+                        <li class="@{if (request.uri == routes.CompanyController.shopView.url) "active" else ""}"><a href="@{if (request.uri == routes.CompanyController.shopView.url) "javascript:void();" else routes.CompanyController.shopView }">@messages("shop.menu.item")</a></li>
+                        @*<li><a href="javascript:void">@messages("cosmo.menu.item")</a></li>*@
+                        @*<li><a href="javascript:void">@messages("contact.menu.item")</a></li>*@
+                        @*<li><a href="javascript:void">@messages("articles.menu.item")</a></li>*@
+                    </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        @if(user.isDefined) {
+                            <li><a href="@routes.ApplicationController.signOut">@{user.get.fullName.getOrElse(user.get.name.getOrElse(""))}</a></li>
+                        } else {
+                            <li><a data-toggle="modal" data-target="#myModal">@messages("sign.in.title")</a></li>
+                            <li class="@{if(request.uri == routes.SignUpController.view.url) "active" else ""}"><a href="@{if(request.uri == routes.SignUpController.view.url) "javascript:void();" else routes.SignUpController.view}">@messages("sign.up.title")</a></li>
+                        }
+
+                        @{cart match {
+                            case Some(c) => <li class={if(request.uri == routes.CompanyController.cartView.url) "active" else ""}><a href="/cart">{messages("short_cart.menu")}:<span id="cart-badge" class="badge">{c.items.length}</span></a></li>
+                            case _ =>
+                        }}
+
+                        @{user match {
+                            case Some(usr) if usr.roles.getOrElse(Array()).contains("ADMIN") => <li class={if(request.uri == routes.AdminController.adminView.url) "active" else ""}><a href="/admin">{messages("admin.menu")}</a></li>
+                            case _ =>
+                        }}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        @if(user.isEmpty) {
+            <div id="myModal" class="modal fade" role="dialog">
+                <div class="modal-dialog modal-sm">
+                    @*Modal content*@
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">@messages("sign.in.credentials")</h4>
+                        </div>
+                        <div class="modal-body">
+                            @helper.form(action = controllers.routes.SignInController.submit(), 'role -> "form") {
+                                @helper.CSRF.formField
+                                @b3.email(signInForm("email"), '_hiddenLabel -> messages("email"), 'placeholder -> messages("email"), 'class -> "form-control input-lg")
+                                @b3.password(signInForm("password"), '_hiddenLabel -> messages("password"), 'placeholder -> messages("password"), 'class -> "form-control input-lg")
+                                @b3.checkbox(signInForm("rememberMe"), '_text -> messages("remember.me"), 'checked -> true)
+                                <div class="form-group">
+                                    <div>
+                                        <button id="submit" type="submit" value="submit" class="btn btn-lg btn-primary btn-block">@messages("sign.in")</button>
+                                    </div>
+                                </div>
+                                @b3.hidden(signInForm("redirectUrl"), 'id -> "backRedirect")
+                            }
+                        </div>
+                        <div class="modal-footer">
+                            @if(socialProviders.providers.nonEmpty) {
+                                <div class="social-providers">
+                                    <p>@messages("or.use.social")</p>
+                                    <div>
+                                    @for(p <- socialProviders.providers) {
+                                        <a href="@controllers.routes.SocialAuthController.authenticate(p.id)" class="provider @p.id" title="@messages(p.id)"><img src="@controllers.routes.Assets.at(s"images/providers/${p.id}.png")" width="24px" height="24px" alt="@messages(p.id)"></a>
+                                    }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <script type="text/javascript" src="@webJarsUtil.url("jquery.min.js")"></script>
+        <script type="text/javascript" src="@webJarsUtil.url("bootstrap.min.js")"></script>
+
+        @request.flash.get("error").map { msg =>
+            <div class="col-md-6 col-md-offset-3 alert alert-danger">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <strong>@messages("error")</strong> @msg
+            </div>
+        }
+        @request.flash.get("info").map { msg =>
+            <div class="col-md-6 col-md-offset-3 alert alert-info">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <strong>@messages("info")</strong> @msg
+            </div>
+        }
+        @request.flash.get("success").map { msg =>
+            <div class="col-md-6 col-md-offset-3 alert alert-success">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <strong>@messages("success")</strong> @msg
+            </div>
+        }
+        @content
+        <footer class="bg-grey">
+            <p><span class="glyphicon glyphicon-map-marker"></span>@messages("contact.city"), @messages("contact.address")</p>
+            <p><span class="glyphicon glyphicon-phone"></span><a href="tel:@messages("contact.phone")">@messages("contact.phonetext")</a></p>
+            <p><span class="glyphicon glyphicon-envelope"></span><a href="mailto:@messages("contact.email")">@messages("contact.email")</a></p>
+        </footer>
+    </body>
+</html>

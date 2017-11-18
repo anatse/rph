@@ -1,0 +1,79 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import org.webjars.play.WebJarsUtil
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+@import forms.SignInForm.Data
+@import scalajs._
+
+@(
+    signInForm: Form[Data],
+    socialProviders: SocialProviderRegistry,
+    user: Option[models.User] = None,
+    cart: ShopCart
+)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
+
+@main(messages("cart.page.title"), signInForm, socialProviders, user, Some(cart)) {
+  <script>
+      function updateItem (event, drugId) {rphApp.updateCartItem ('Csrf-Token', '@helper.CSRF.getToken.value', event, drugId);}
+  </script>
+
+  <div class="jumbotron text-center">
+    <p>@{messages("cart.description")}</p>
+  </div>
+
+  <div class="container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>@{messages("drug.name")}</th>
+          <th>@{messages("drug.count")}</th>
+          <th>@{messages("drug.price")}</th>
+          <th>@{messages("drug.sum")}</th>
+          <th data-visible="false"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for(item <- cart.items) {
+          <tr>
+            <td>@{item.drugName}</td>
+            <td><input type="number" class="form-control" id="num_@{item.drugId}" value="@{item.num}"></td>
+            <td>@{item.price}</td>
+            <td>@{item.price * item.num}</td>
+            <td><button type="button" class="btn btn-primary" onclick="updateItem(event, '@{item.drugId}');">@{messages("drug.update.btn")}</button></td>
+          </tr>
+        }
+      </tbody>
+
+      <tfoot>
+        <tr>
+          <td></td>
+          <td></td>
+          <td>@{messages("cart.total")}</td>
+          <th><span class="totalStars">@{cart.items.foldLeft(0.0)((a, item) => {a + item.price * item.num})}</span></th>
+        </tr>
+      </tfoot>
+    </table>
+
+    @helper.form(action = controllers.routes.CompanyController.cartSend(), 'role -> "form") {
+      @helper.CSRF.formField
+      <label for="email">@messages("email") *</label>
+      <div class="input-group">
+        <input type="email" class="form-control" name="email"  placeholder="user@@example.com" id="email" required value="@{user match {
+          case Some(usr) => usr.email
+          case _ =>
+        }}">
+        <span id="email-btn" class="input-group-btn">
+          <button type="submit" class="btn btn-default">@{messages("cart.request")}</button>
+        </span>
+      </div>
+    }
+
+    <p>
+      <button type="button" class="btn btn-primary">@{messages("cart.clear")}</button>
+    </p>
+  </div>
+
+  @html.scripts(projectName = "client",
+    name => s"/assets/$name",
+    name => getClass.getResource(s"/public/$name") != null)
+}

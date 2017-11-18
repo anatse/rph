@@ -1,5 +1,6 @@
 package controllers
 
+import java.net.URLEncoder
 import javax.inject.Inject
 
 import com.mohiva.play.silhouette.api.Authenticator.Implicits._
@@ -44,14 +45,6 @@ class SignInController @Inject() (
   webJarsUtil: WebJarsUtil,
   ex: ExecutionContext) extends AbstractController(components) with I18nSupport {
 
-  /**
-   * Views the `Sign In` page.
-   *
-   * @return The result to display.
-   */
-  def view = silhouette.UnsecuredAction.async { implicit request: Request[AnyContent] =>
-    Future.successful(Ok(views.html.rph.signIn(SignInForm.form, socialProviderRegistry)))
-  }
 
   /**
    * Handles the submitted form.
@@ -60,14 +53,19 @@ class SignInController @Inject() (
    */
   def submit = silhouette.UnsecuredAction.async { implicit request: Request[AnyContent] =>
     SignInForm.form.bindFromRequest.fold(
-      form => Future.successful(BadRequest(views.html.rph.signIn(form, socialProviderRegistry))),
+      form => {
+        Future.successful(BadRequest(""))
+      },
       data => {
         val credentials = Credentials(data.email, data.password)
-        credentialsProvider.authenticate(credentials).flatMap { loginInfo =>
-          val result = Redirect(routes.ApplicationController.index())
+        val auth = credentialsProvider.authenticate(credentials)
+        val redirectUrl = data.redirectUrl
+
+        auth.flatMap { loginInfo =>
+          val result = Redirect(redirectUrl)
           userService.retrieve(loginInfo).flatMap {
             case Some(user) if !user.activated =>
-              Future.successful(Ok(views.html.activateAccount(data.email)))
+              Future.successful(Ok(views.html.activateAccount(data.email, SignInForm.form, socialProviderRegistry)))
             case Some(user) =>
               val c = configuration.underlying
               silhouette.env.authenticatorService.create(loginInfo).map {
@@ -88,7 +86,8 @@ class SignInController @Inject() (
           }
         }.recover {
           case ex: ProviderException =>
-            Redirect(routes.SignInController.view()).flashing("error" -> Messages("invalid.credentials"))
+            ex.printStackTrace()
+            Redirect(redirectUrl).flashing("error" -> Messages("invalid.credentials"))
         }
       })
   }

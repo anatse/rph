@@ -3,10 +3,16 @@
 @import play.api.mvc.RequestHeader
 @import org.webjars.play.WebJarsUtil
 @import forms.SignUpForm.Data
+@import forms.SignInForm.{Data => SignInData}
 @import b3.inline.fieldConstructor
 @import scalajs._
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 
-@(signUpForm: Form[Data])(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
+@(
+    signUpForm: Form[Data],
+    signInForm: Form[SignInData],
+    socialProviders: SocialProviderRegistry
+)(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
 
 @content = {
     <div class="register-photo">
@@ -23,26 +29,24 @@
                 <div class="form-group">
                     <div class="checkbox">
                         <label class="control-label">
-                            <input type="checkbox" onchange="document.getElementById('submit').disabled = !this.checked;" />
-                            I agree to the <a data-toggle="modal" data-target="#myModal">license</a> terms.</label>
+                            <input type="checkbox" onchange="document.getElementById('submitRegistration').disabled = !this.checked;" />
+                            @messages("message.agree")<a data-toggle="modal" data-target="#licenseModal"> @messages("message.license")</a> terms.</label>
                     </div>
                 </div>
                 <div class="form-group">
-                    <button id="submit" disabled class="btn btn-primary btn-block" type="submit">@messages("sign.up")</button>
+                    <button id="submitRegistration" disabled class="btn btn-primary btn-block" type="submit">@messages("sign.up")</button>
                 </div>
-                <a href="@controllers.routes.SignInController.view" class="already">@messages("sign.in.now")</a>
+                <a href="@controllers.routes.CompanyController.shopView" class="already">@messages("sign.in.now")</a>
             }
         </div>
     </div>
 
-    <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal fade" id="licenseModal" role="dialog">
         <div class="modal-dialog modal-lg">
-
-                <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Modal Header</h4>
+                    <h4 class="modal-title">@messages("modal.agreement")</h4>
                 </div>
                 <div class="modal-body">
                     <p class="text-justify">
@@ -57,10 +61,13 @@
     </div>
 }
 
-@rph.main(messages("sign.up.title")) {@content}
+@shop.main(messages("sign.up.title"), signInForm, socialProviders) {@content}
 
-@html.scripts(projectName = "client",
+@html.scripts(projectName = "clientAdmin",
     name => s"/assets/$name",
     name => getClass.getResource(s"/public/$name") != null)
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.2.0/zxcvbn.js"></script>
+<script src="@controllers.routes.Assets.at("javascripts/zxcvbnShim.js")"></script>
 
 <script>pwdStrong();</script>

@@ -15,7 +15,8 @@ object SignInForm {
     mapping(
       "email" -> email,
       "password" -> nonEmptyText,
-      "rememberMe" -> boolean)(Data.apply)(Data.unapply))
+      "rememberMe" -> boolean,
+      "redirectUrl" -> nonEmptyText)(Data.apply)(Data.unapply))
 
   /**
    * The form data.
@@ -27,5 +28,6 @@ object SignInForm {
   case class Data(
     email: String,
     password: String,
-    rememberMe: Boolean)
+    rememberMe: Boolean,
+    redirectUrl: String)
 }

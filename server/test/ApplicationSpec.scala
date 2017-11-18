@@ -25,101 +25,101 @@ import scala.concurrent.ExecutionContext.Implicits.global
  * For more information, consult the wiki.
  */
 class ApplicationSpec extends PlaySpec with GuiceOneAppPerTest {
-  val identity = User(
-    userID = UUID.randomUUID(),
-    providerID = Some("facebook"),
-    providerKey = Some("user@facebook.com"),
-    firstName = None,
-    lastName = None,
-    fullName = None,
-    email = None,
-    avatarURL = None,
-    activated = true)
+//  val identity = User(
+//    userID = UUID.randomUUID(),
+//    providerID = Some("facebook"),
+//    providerKey = Some("user@facebook.com"),
+//    firstName = None,
+//    lastName = None,
+//    fullName = None,
+//    email = None,
+//    avatarURL = None,
+//    activated = true)
+//
+//  val li = LoginInfo (identity.providerID.get, identity.providerKey.get)
+//  implicit val env: Environment[DefaultEnv] = new FakeEnvironment[DefaultEnv](Seq(li -> identity))
+//
+//  class FakeModule extends AbstractModule with ScalaModule {
+//    def configure() = {
+//      bind[Environment[DefaultEnv]].toInstance(env)
+//    }
+//  }
+//
+//  // Create application object with test config
+//  implicit override def newAppForTest(testData: TestData): Application = new GuiceApplicationBuilder().
+//    overrides(new FakeModule).
+//    loadConfig(conf = {
+//      val testConfig = ConfigFactory.load("application.test.conf")
+//      Configuration(testConfig)
+//    }).
+//    build()
+//
+//  "Application controller" should {
+//    "Redirect to login page if user is unauthorized " in {
+//      val Some(redirectResult) = route(app, FakeRequest(ApplicationController.index).withAuthenticator[DefaultEnv](LoginInfo("invalid", "invalid")))
+//
+//      status(redirectResult) mustBe (SEE_OTHER)
+//
+//      val redirectURL = redirectLocation(redirectResult).getOrElse("")
+//
+//      redirectURL must startWith("/sign")
+//      val Some(unauthorizedResult) = route(app, addCSRFToken(FakeRequest(GET, redirectURL)))
+//
+//      status(unauthorizedResult) mustBe (OK)
+//      contentType(unauthorizedResult) mustBe (Some("text/html"))
+//      contentAsString(unauthorizedResult) must include("- Sign In")
+//    }
+//
+//    "send 404 on a bad request" in {
+//      route(app, FakeRequest(GET, "/boum")).map(status(_)) mustBe Some(NOT_FOUND)
+//    }
+//
+//    "return 200 if user is authorized" in {
+//      val Some(result) = route(app, addCSRFToken(FakeRequest(ApplicationController.index).withAuthenticator[DefaultEnv](li)))
+//      status(result) mustBe (OK)
+//    }
+//  }
 
-  val li = LoginInfo (identity.providerID.get, identity.providerKey.get)
-  implicit val env: Environment[DefaultEnv] = new FakeEnvironment[DefaultEnv](Seq(li -> identity))
-
-  class FakeModule extends AbstractModule with ScalaModule {
-    def configure() = {
-      bind[Environment[DefaultEnv]].toInstance(env)
-    }
-  }
-
-  // Create application object with test config
-  implicit override def newAppForTest(testData: TestData): Application = new GuiceApplicationBuilder().
-    overrides(new FakeModule).
-    loadConfig(conf = {
-      val testConfig = ConfigFactory.load("application.test.conf")
-      Configuration(testConfig)
-    }).
-    build()
-
-  "Application controller" should {
-    "Redirect to login page if user is unauthorized " in {
-      val Some(redirectResult) = route(app, FakeRequest(ApplicationController.index).withAuthenticator[DefaultEnv](LoginInfo("invalid", "invalid")))
-
-      status(redirectResult) mustBe (SEE_OTHER)
-
-      val redirectURL = redirectLocation(redirectResult).getOrElse("")
-
-      redirectURL must startWith("/sign")
-      val Some(unauthorizedResult) = route(app, addCSRFToken(FakeRequest(GET, redirectURL)))
-
-      status(unauthorizedResult) mustBe (OK)
-      contentType(unauthorizedResult) mustBe (Some("text/html"))
-      contentAsString(unauthorizedResult) must include("- Sign In")
-    }
-
-    "send 404 on a bad request" in {
-      route(app, FakeRequest(GET, "/boum")).map(status(_)) mustBe Some(NOT_FOUND)
-    }
-
-    "return 200 if user is authorized" in {
-      val Some(result) = route(app, addCSRFToken(FakeRequest(ApplicationController.index).withAuthenticator[DefaultEnv](li)))
-      status(result) mustBe (OK)
-    }
-  }
-
-  "Project controller" should {
-//    "drop all tables" in {
-//      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.dropAll).withAuthenticator[DefaultEnv](li)))
+//  "Project controller" should {
+////    "drop all tables" in {
+////      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.dropAll).withAuthenticator[DefaultEnv](li)))
+////      status(result) mustBe (OK)
+////
+////      contentType(result) mustBe (Some("text/plain"))
+////      contentAsString(result) must include("dropped")
+////    }
+//
+//    "create projects table" in {
+//      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.create).withAuthenticator[DefaultEnv](li)))
 //      status(result) mustBe (OK)
 //
 //      contentType(result) mustBe (Some("text/plain"))
-//      contentAsString(result) must include("dropped")
+//      contentAsString(result) must include("created")
 //    }
-
-    "create projects table" in {
-      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.create).withAuthenticator[DefaultEnv](li)))
-      status(result) mustBe (OK)
-
-      contentType(result) mustBe (Some("text/plain"))
-      contentAsString(result) must include("created")
-    }
-
-    "throws an exception when trying to create already created projects table" in {
-      val caught = intercept[org.h2.jdbc.JdbcSQLException] {
-        var Some(result) =route(app, addCSRFToken(FakeRequest(ProjectController.create).withAuthenticator[DefaultEnv](li)))
-        status(result) must not be(OK)
-      }
-
-      caught.getMessage must include("Table \"projects\" already exists")
-    }
-
-    "add new project" in {
-      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.index).withAuthenticator[DefaultEnv](li)))
-      status(result) mustBe (OK)
-
-      contentType(result) mustBe (Some("text/plain"))
-      contentAsString(result) must include("inserted")
-    }
-
-    "list all projects" in {
-      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.findAll(None, None)).withAuthenticator[DefaultEnv](li)))
-      status(result) mustBe (OK)
-
-      contentType(result) mustBe (Some("text/html"))
-      contentAsString(result) must include("Projects list")
-    }
-  }
+//
+//    "throws an exception when trying to create already created projects table" in {
+//      val caught = intercept[org.h2.jdbc.JdbcSQLException] {
+//        var Some(result) =route(app, addCSRFToken(FakeRequest(ProjectController.create).withAuthenticator[DefaultEnv](li)))
+//        status(result) must not be(OK)
+//      }
+//
+//      caught.getMessage must include("Table \"projects\" already exists")
+//    }
+//
+//    "add new project" in {
+//      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.index).withAuthenticator[DefaultEnv](li)))
+//      status(result) mustBe (OK)
+//
+//      contentType(result) mustBe (Some("text/plain"))
+//      contentAsString(result) must include("inserted")
+//    }
+//
+//    "list all projects" in {
+//      var Some(result) = route (app, addCSRFToken(FakeRequest(ProjectController.findAll(None, None)).withAuthenticator[DefaultEnv](li)))
+//      status(result) mustBe (OK)
+//
+//      contentType(result) mustBe (Some("text/html"))
+//      contentAsString(result) must include("Projects list")
+//    }
+//  }
 }

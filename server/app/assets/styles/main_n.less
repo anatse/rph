@@ -1,0 +1,353 @@
+@light-blue: #d0eefd;
+@nav-bkcolor: #1f5085;
+@font-family: Montserrat, sans-serif;
+@light-yellow: #fcfdd8;
+
+body {
+    font: 400 15px sans-serif;
+    line-height: 1.8;
+    //color: #818181;
+}
+
+h2 {
+    font-size: 24px;
+    text-transform: uppercase;
+    color: #303030;
+    font-weight: 600;
+    margin-bottom: 30px;
+}
+
+h4 {
+    font-size: 19px;
+    line-height: 1.375em;
+    color: #303030;
+    font-weight: 400;
+    margin-bottom: 30px;
+}
+
+.jumbotron {
+    //background-image: url("../images/bk/flea.jpg");
+    background-color: @light-blue;
+    color: @nav-bkcolor;
+    padding: 60px 0px;
+    font-family: @font-family;
+    margin-bottom: 1px !important;
+}
+
+.search-field {
+  background-color: @light-yellow;
+}
+
+.navbar li a, .navbar .navbar-brand {
+  color: white !important;
+}
+
+.navbar-nav li a:hover, .navbar-nav li.active a {
+  color: @nav-bkcolor !important;
+  background-color: white !important;
+}
+
+.navbar-default .navbar-toggle {
+  border-color: transparent;
+  color: #fff !important;
+}
+
+.alert {
+  z-index: 9999;
+}
+
+.navbar {
+  margin-bottom: 0;
+  background-color: @nav-bkcolor;
+  z-index: 9990;
+  border: 0;
+  font-size: 14px !important;
+  line-height: 1.42857143 !important;
+  /*letter-spacing: 4px;*/
+  border-radius: 0;
+  letter-spacing: 2px;
+  font-family: @font-family;
+}
+
+.btn {
+  background-color: @nav-bkcolor;
+  border-color: @nav-bkcolor;
+  color: white;
+}
+
+.panel-footer .input-group {
+  width: 60px;
+}
+
+.input-group .form-control {
+  display: inline-table;
+}
+
+.cart-btn {
+  min-width: 45px;
+}
+
+.incart:hover, .incart:focus, .incart:active, .incart.active {
+  background-color: rgba(21, 161, 21, 30%) !important;
+}
+
+.hide {
+  display: none;
+}
+
+.incart {
+  background-color: #15a115;
+  border-color: #15a115;
+}
+
+.btn:hover, .btn:focus, .btn:active, .btn.active, .open>.dropdown-toggle.btn-primary {
+  color: @nav-bkcolor;
+  background-color: rgba(31, 80, 133, 30%);
+  border-color: @nav-bkcolor;
+}
+
+.form-control {
+  color: @nav-bkcolor;
+}
+
+.container-fluid {
+
+}
+
+.producer {
+  font-size: 70%;
+}
+
+.bg-grey {
+    background-color: @light-blue;
+    padding: 10px;
+}
+
+.logo-small {
+    color: #41f4ab;
+    font-size: 50px;
+}
+
+.logo {
+    color: #f4511e;
+    font-size: 200px;
+}
+
+.thumbnail {
+    padding: 0 0 15px 0;
+    border: none;
+    border-radius: 0;
+}
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+    margin-bottom: 10px;
+}
+.item {
+    display: inline-block;
+    float: none;
+    vertical-align: top;
+}
+.item h4 {
+    font-size: 19px;
+    line-height: 1.375em;
+    font-weight: 400;
+    font-style: italic;
+    margin: 70px 0;
+}
+.item span {
+    font-style: normal;
+}
+
+.panel {
+    //border: 1px solid #f4511e;
+    border-radius:0 !important;
+    transition: box-shadow 0.5s;
+}
+
+.panel:hover {
+    box-shadow: 5px 0px 40px rgba(0,0,0, .2);
+}
+
+.panel-body {
+  background-color: @light-yellow;
+}
+
+.panel-heading {
+    background-color: @light-blue !important;
+    padding: 25px;
+    border-bottom: 1px solid transparent;
+    border-radius: 0px;
+}
+
+.panel-footer {
+    background-color: @light-blue !important;
+}
+
+.panel-footer h3 {
+    font-size: 32px;
+}
+.panel-footer h4 {
+    color: #aaa;
+    font-size: 14px;
+}
+
+footer .glyphicon {
+    font-size: 20px;
+    color: @nav-bkcolor;
+    line-height: 0.5;
+    margin: 10px;
+}
+
+@-webkit-keyframes slide {
+    0% {
+        opacity: 0;
+        -webkit-transform: translateY(70%);
+    }
+    100% {
+        opacity: 1;
+        -webkit-transform: translateY(0%);
+    }
+}
+@media screen and (max-width: 768px) {
+    .col-sm-4 {
+        text-align: center;
+        margin: 25px 0;
+    }
+    .btn-lg {
+        width: 100%;
+        margin-bottom: 35px;
+    }
+}
+@media screen and (max-width: 480px) {
+    .logo {
+        font-size: 150px;
+    }
+}
+
+.modal {
+  z-index: 9998;
+}
+
+.modal-dialog{
+      /* now you must set a margin left under zero - value is a half width your window */
+      /* this same situation is with height - example */
+    top: 20px;
+}
+
+.provider {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    border-radius: 2px;
+    outline: none;
+}
+.facebook { background: #3B5998; }
+.google { background: #D14836; }
+.twitter { background: #00ACED; }
+.yahoo { background: #731A8B; }
+.xing { background: #006567; }
+.vk { background: #567ca4; }
+
+.social-providers,
+.sign-in-now,
+.already-member,
+.not-a-member {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.description {
+    font-size: 90%;
+    font-family: Arial;
+}
+
+.badge {
+    background-color: @light-yellow;
+    color: @nav-bkcolor;
+}
+
+.register-photo {
+  background:#f1f7fc;
+  padding:80px 0;
+}
+
+.register-photo .image-holder {
+  display:table-cell;
+  width:auto;
+  background:url('/assets/img/meeting.jpg');
+  background-size:cover;
+}
+
+.register-photo .form-container {
+  display:table;
+  max-width:900px;
+  width:90%;
+  margin:0 auto;
+  box-shadow:2px 2px 5px rgba(0,0,0,0.1);
+}
+
+.register-photo form {
+  display:table-cell;
+  width:400px;
+  background-color:#ffffff;
+  padding:40px 60px;
+  color: @nav-bkcolor;
+}
+
+@media (max-width:991px) {
+  .register-photo form {
+    padding:40px;
+  }
+}
+
+.register-photo form h2 {
+  font-size:24px;
+  line-height:1.5;
+  margin-bottom:30px;
+}
+
+.register-photo form .form-control {
+  background:#f7f9fc;
+  border:none;
+  border-bottom:1px solid #dfe7f1;
+  border-radius:0;
+  box-shadow:none;
+  outline:none;
+  color:inherit;
+  text-indent:6px;
+  height:40px;
+}
+
+.register-photo form .checkbox {
+  font-size:13px;
+  line-height:20px;
+}
+
+.register-photo form .btn-primary {
+  background:#f4476b;
+  border:none;
+  border-radius:4px;
+  padding:11px;
+  box-shadow:none;
+  margin-top:35px;
+  text-shadow:none;
+  outline:none !important;
+}
+
+.register-photo form .btn-primary:hover, .register-photo form .btn-primary:active {
+  background:#eb3b60;
+}
+
+.register-photo form .btn-primary:active {
+  transform:translateY(1px);
+}
+
+.register-photo form .already {
+  display:block;
+  text-align:center;
+  font-size:12px;
+  color:#6f7a85;
+  opacity:0.9;
+  text-decoration:none;
+}

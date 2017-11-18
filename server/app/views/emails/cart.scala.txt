@@ -1,0 +1,4 @@
+@import play.api.i18n.Messages
+
+@(cart: models.ShopCart)(implicit messages: Messages)
+
