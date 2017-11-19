@@ -140,6 +140,14 @@ object ProductJS {
     )
   }
 
+  def getBaseSeoDescription () = {
+    val desc = jQuery("meta[name=description]").attr("content").asInstanceOf[String]
+    val index = desc.indexOf(",")
+    if (index > 0)
+      desc.substring(0, index)
+    else desc
+  }
+
   def onLoadProducts(e: Event)(pageSize: Int, offset: Int, search: String, csrfHeader: String, csrfValue: String, linkText: String): XMLHttpRequest => Unit = xhr => {
     if (xhr.status == 200) {
       val page = JSON.parse(xhr.responseText)
@@ -149,7 +157,7 @@ object ProductJS {
       val rows = dynGet[js.Array[js.Dynamic]] (page, "rows").get
 
       val realSearch = search
-      val seoDescription:StringBuffer = new StringBuffer("")
+      val seoDescription:StringBuffer = new StringBuffer(getBaseSeoDescription()).append(",")
 
       val msg = jQuery("#messages")
       val priceMsg = msg.attr("price-msg")
