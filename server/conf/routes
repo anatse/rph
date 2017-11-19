@@ -4,12 +4,8 @@
 
 # GET         /new                            controllers.CompanyController.view
 GET         /drugs/group                    controllers.CompanyController.findDrugsGroups
-POST        /drugs/groupProd                controllers.CompanyController.findByGroup
-GET         /drugs/prod                     controllers.CompanyController.findDrugsProducts(offset: Int, pageSize: Int, sort: Option[String])
-GET         /drugs/recom                    controllers.CompanyController.findRecommended(offset: Int, pageSize: Int)
-POST        /drugs/prod                     controllers.CompanyController.findDrugsProducts(offset: Int, pageSize: Int, sort: Option[String])
-GET         /drugs/fuzzySearch              controllers.CompanyController.combinedSearchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String])
-POST        /drugs/fuzzySearch              controllers.CompanyController.combinedSearchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String])
+GET         /drugs/recom                    controllers.CompanyController.findRecommended
+POST        /drugs/fuzzySearch              controllers.CompanyController.combinedSearchDrugsProducts
 POST        /drugs/cart/item                controllers.CompanyController.addItemToCart
 
 # Home page
@@ -45,13 +41,6 @@ GET         /drugs/rcmd/rm                  controllers.AdminController.removeRe
 POST        /drugs/setImage                 controllers.AdminController.setImageToDrug
 POST        /drigs/group                    controllers.AdminController.insertDrugsGroup
 POST        /druigs/filter                  controllers.AdminController.filterProducts
-
-
-#GET         /projects                        controllers.ProjectController.index
-#GET         /projects/create                 controllers.ProjectController.create
-#GET         /projects/list                   controllers.ProjectController.findAll(offset: Option[Int], pageSize: Option[Int])
-#POST        /projects/list                   controllers.ProjectController.jsonFindAll(offset: Option[Int], pageSize: Option[Int])
-#GET         /project/:prjId                  controllers.ProjectController.project(prjId: Long)
 
 POST        /goods/upload                   controllers.GoodsImportController.upload
 

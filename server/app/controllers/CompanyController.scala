@@ -13,11 +13,9 @@ import play.api.i18n.{I18nSupport, Messages}
 import play.api.libs.json.Json
 import play.api.libs.mailer.{Email, MailerClient}
 import play.api.mvc.{request, _}
-import utils.JsonUtil
 import utils.auth.DefaultEnv
 
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 import utils.CartUtil._
 
 class CompanyController @Inject()(
@@ -31,7 +29,27 @@ class CompanyController @Inject()(
   env: Environment)(
   implicit
     webJarsUtil: WebJarsUtil,
-    ex: ExecutionContext) extends AbstractController(components) with I18nSupport  {
+    ex: ExecutionContext) extends AbstractController(components) with I18nSupport with ModelImplicits  {
+
+  /**
+    * Function adds information from cart to products item for each item row
+    * @param frows products items
+    * @return products with cart information
+    */
+  private def addCartInfo(frows:Future[List[DrugsProduct]]):ShopCart => Future[List[DrugsProdRs]] = {
+    sc => cartDAO.find(sc).flatMap(
+      cart => cart match {
+        case Some(c) =>
+          frows.map (rows => rows.map (
+            row => c.items.find(_.drugId == row.id) match {
+              case Some(c) => DrugsProdRs(row, countInCart = c.num)
+              case _ => DrugsProdRs(row, countInCart = 0)
+            }
+          ))
+
+        case _ => frows.map (rows => rows.map (row => DrugsProdRs(row, countInCart = 0)))
+      })
+  }
 
   /**
     * Function builds main view (shop view)
@@ -42,103 +60,50 @@ class CompanyController @Inject()(
     val cart = cartDAO.find(getCart(sid, request.identity))
 
     // Add session uuid to current session. This operation performs only in view request
-    Future.successful(
-      Ok(views.html.shop.shop(SignInForm.form, socialProviderRegistry, request.identity, Await.result(cart, 1 second))).
-        withSession(request.session + ("uuid" -> sid))
-    )
+    cart.map(c => Ok(views.html.shop.shop(SignInForm.form, socialProviderRegistry, request.identity, c)).withSession(request.session + ("uuid" -> sid)))
   }
 
+  /**
+    * Function builds cart view
+    * @return
+    */
   def cartView = silhouette.UserAwareAction.async { implicit request =>
     val sid = sessionId(request2session)
     val cart = cartDAO.find(getCart(sid, request.identity))
-
-    Await.result(cart, 1 second) match {
-      case Some(cart) => Future.successful(
-        Ok(views.html.shop.cart(SignInForm.form, socialProviderRegistry, request.identity, cart)).withSession(request.session + ("uuid" -> sid))
-      )
-
-      case  _ => Future.successful(
-        Redirect(routes.CompanyController.shopView)
-      )
-    }
+    cart.map ( c => c match {
+      case Some(cart) => Ok(views.html.shop.cart(SignInForm.form, socialProviderRegistry, request.identity, cart)).withSession(request.session + ("uuid" -> sid))
+      case  _ => Redirect(routes.CompanyController.shopView)
+    })
   }
 
-  implicit val productWrites = Json.writes[DrugsProduct]
-  implicit val producRsWrites = Json.writes[DrugsProdRs]
-  implicit val productRqWrites = Json.writes[DrugsFindRq]
-  implicit val groupWrites = Json.writes[DrugsGroup]
-  implicit val groupReads = Json.reads[DrugsGroup]
-  implicit val drugsFindRqReads = Json.reads[DrugsFindRq]
-
-  implicit val scitemsWrites = Json.writes[ShopCartItem]
-  implicit val scitemsReads = Json.reads[ShopCartItem]
-
-  implicit val cartWrites = Json.writes[ShopCart]
-  implicit val cartReads = Json.reads[ShopCart]
-
-  implicit val recProductReads = Json.reads[RecommendedDrugs]
-  implicit val recProductWrites = Json.writes[RecommendedDrugs]
-
-  protected def makeResult (rows:List[DrugsProduct], realPageSize:Int, offset:Int) = {
-    val filterredRows = if (rows.length > realPageSize) rows.dropRight(1) else rows
-    Ok(Json.obj("rows" -> filterredRows, "pageSize" -> realPageSize, "offset" -> offset, "hasMore" -> (rows.length > realPageSize)))
-  }
-
-  protected def makeResultRS (rows:List[DrugsProdRs], realPageSize:Int, offset:Int) = {
-    val filterredRows = if (rows.length > realPageSize) rows.dropRight(1) else rows
-    Ok(Json.obj("rows" -> filterredRows, "pageSize" -> realPageSize, "offset" -> offset, "hasMore" -> (rows.length > realPageSize)))
-  }
-
+  /**
+    * Function retrieves all product groups. Product groups has only one level
+    * @return product groups
+    */
   def findDrugsGroups = silhouette.UserAwareAction.async { implicit request =>
     drugsGroupDAO.findAll(None, 0, 0).map(rows => Ok(Json.obj("rows" -> rows)))
   }
 
-  def findByGroup = silhouette.UserAwareAction(parse.json[DrugsFindRq]).async { implicit request =>
-    val findRq: DrugsFindRq = request.body
-    drugsProductDAO.findByGroup(
-      group = findRq.groups.getOrElse(Array[String]()),
-      text = findRq.text,
-      sortField = findRq.sorts,
-      offset = findRq.offset,
-      pageSize = findRq.pageSize + 1).map(rows => makeResult(rows, findRq.pageSize, findRq.offset))
+  def findRecommended = silhouette.UserAwareAction.async { implicit request =>
+    drugsProductDAO.findRecommended(0, 100).map(rows => Ok(Json.obj("rows" -> rows)))
   }
 
-  def addCartInfo(frows:Future[List[DrugsProduct]]):ShopCart => Future[List[DrugsProdRs]] = {
-    sc => cartDAO.find(sc).flatMap(
-      cart => cart match {
-        case Some(c) =>
-          frows.map (rows => rows.map (
-            row => c.items.find(_.drugId == row.id) match {
-                case Some(c) => DrugsProdRs(row, countInCart = c.num)
-                case _ => DrugsProdRs(row, countInCart = 0)
-              }
-            )
-          )
-
-        case _ => frows.map (rows => rows.map (row => DrugsProdRs(row, countInCart = 0)))
-      })
-  }
-
-  def findDrugsProducts(offset:Int, pageSize:Int, sort:Option[String] = None) = silhouette.UserAwareAction.async { implicit request =>
+  def combinedSearchDrugsProducts = silhouette.UserAwareAction(parse.json[DrugsFindRq]).async { implicit request =>
     val cart = getCart(sessionId(request2session), request.identity)
-    addCartInfo (drugsProductDAO.findAll(sort, offset, pageSize+1))(cart).map(
-      rows => makeResultRS(rows, pageSize, offset)
-    )
+    val find = request.body
+    if (find.text.getOrElse("") == "") {
+      addCartInfo(drugsProductDAO.findAll(None, find.offset, find.pageSize))(cart).map(
+        rows => makeResultRS(rows, find.pageSize, find.offset)
+      )
+    }
+    else
+      addCartInfo (drugsProductDAO.combinedSearch(find.copy(pageSize = find.pageSize + 1)))(cart).map(
+        rows => makeResultRS(rows, find.pageSize, find.offset)
+      )
   }
 
-  def findRecommended(offset:Int, pageSize:Int) = silhouette.UserAwareAction.async { implicit request =>
-    drugsProductDAO.findRecommended(offset, pageSize).map(rows => Ok(Json.obj("rows" -> rows)))
-  }
-
-  def combinedSearchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String] = None) = silhouette.UserAwareAction.async { implicit request =>
-    val cart = getCart(sessionId(request2session), request.identity)
-    addCartInfo (drugsProductDAO.combinedSearch(searchText, sort, offset, pageSize+1))(cart).map(
-      rows => makeResultRS(rows, pageSize, offset)
-    )
-  }
-
-  def addItemToCart = silhouette.UserAwareAction.async { implicit request =>
-    val item: ShopCartItem = JsonUtil.fromJson[ShopCartItem](request.body.asText.getOrElse("{}"))
+  def addItemToCart = silhouette.UserAwareAction(parse.json[ShopCartItem]).async { implicit request =>
+    val item: ShopCartItem = request.body //JsonUtil.fromJson[ShopCartItem](request.body.asText.getOrElse("{}"))
     val cart = getCart(sessionId(request2session), request.identity)
     cartDAO.saveItem(cart, item).flatMap(sc => cartDAO.find(cart)).map(c => Ok(Json.obj("cart" -> c)))
   }

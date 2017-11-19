@@ -2,6 +2,7 @@ package phr
 
 import org.scalajs.dom
 import org.scalajs.dom.Event
+import org.scalajs.dom.ext.Ajax
 import org.scalajs.dom.html.Input
 import org.scalajs.dom.raw.{Element, XMLHttpRequest}
 import org.scalajs.jquery.{JQueryAjaxSettings, _}
@@ -46,6 +47,8 @@ object ProductJS {
     val xhr = new XMLHttpRequest()
     xhr.open ("POST", url)
     xhr.setRequestHeader(csrfHeader, csrfValue)
+    xhr.setRequestHeader("Content-type", "application/json")
+    xhr.setRequestHeader("Accept", "application/json")
     xhr.onload = {(e:Event) => {
       if (xhr.status == 200) {
         val resp = JSON.parse(xhr.responseText)
@@ -65,7 +68,6 @@ object ProductJS {
           else {
             // If cart is empty
             if (rows.length == 0) {
-              dom.console.log("cart is empty")
               val incarts = jQuery(s"div.$incartClass")
               for (index <- 0 to incarts.length) {
                 val id = jQuery(incarts.get(index)).attr("id")
@@ -83,15 +85,15 @@ object ProductJS {
                 val foundBtn = jQuery(s"#$drugId")
 
                 if (foundBtn.length == 1) {
-                  val num = dynGet[Int](row, "num").get
-
                   if (num > 0)
                     addClass(drugId)
 
                   jQuery(s"#$drugId input").value(s"$num")
                   drugId
-                } else null
-              }.filter(id => id != null)
+                } else ""
+              }.filter(id => {
+                id != ""
+              })
 
               val incarts = jQuery(s"div.$incartClass")
               for (index <- 0 to incarts.length - 1) {
@@ -138,117 +140,121 @@ object ProductJS {
     )
   }
 
-  @JSExport
-  def findAll (pageSize: Int, offset: Int, search: String, csrfHeader: String, csrfValue: String, linkText: String) = {
-    var url = if (search != null && search != "") s"/drugs/fuzzySearch?searchText=$search&offset=$offset&pageSize=$pageSize"
-    else s"/drugs/prod?offset=$offset&pageSize=$pageSize"
+  def onLoadProducts(e: Event)(pageSize: Int, offset: Int, search: String, csrfHeader: String, csrfValue: String, linkText: String): XMLHttpRequest => Unit = xhr => {
+    if (xhr.status == 200) {
+      val page = JSON.parse(xhr.responseText)
+      val offsetJS:Int = dynGet[Int] (page, "offset").get
+      val pageSizeJS = dynGet[Int] (page, "pageSize").get
+      val hasMore = dynGet[Boolean] (page, "hasMore").get
+      val rows = dynGet[js.Array[js.Dynamic]] (page, "rows").get
 
-    val xhr = new XMLHttpRequest()
-    xhr.open ("POST", url)
+      val realSearch = search
+      val seoDescription:StringBuffer = new StringBuffer("")
 
-    xhr.onload = { (e: Event) =>
-      if (xhr.status == 200) {
-        val page = JSON.parse(xhr.responseText)
-        val offsetJS:Int = dynGet[Int] (page, "offset").get
-        val pageSizeJS = dynGet[Int] (page, "pageSize").get
-        val hasMore = dynGet[Boolean] (page, "hasMore").get
-        val rows = dynGet[js.Array[js.Dynamic]] (page, "rows").get
+      val msg = jQuery("#messages")
+      val priceMsg = msg.attr("price-msg")
+      val putInCart = msg.attr("put-in-cart")
+      val inCart = msg.attr("in-cart")
 
-        val realSearch = search
-        val seoDescription:StringBuffer = new StringBuffer("")
+      val htmlRow = for (drugRs <- rows) yield {
+        val countInCart = dynGet[Int] (drugRs, "countInCart").getOrElse(0)
+        val drug = drugRs.selectDynamic("dp")
 
-        val msg = jQuery("#messages")
-        val priceMsg = msg.attr("price-msg")
-        val putInCart = msg.attr("put-in-cart")
-        val inCart = msg.attr("in-cart")
+        val fullName:String = dynGet[String] (drug, "drugsFullName").getOrElse("")
+        val price:Double = dynGet[Double] (drug, "retailPrice").getOrElse(0)
+        val producerShortName:String = dynGet[String] (drug, "producerShortName").getOrElse("")
+        val drugId:String = dynGet[String] (drug, "id").getOrElse("")
 
-        val htmlRow = for (drugRs <- rows) yield {
-          val countInCart = dynGet[Int] (drugRs, "countInCart").getOrElse(0)
-          val drug = drugRs.selectDynamic("dp")
+        dynGet[String] (drug, "drugsShortName") match {
+          case Some(name) => seoDescription.append(name.split("[ ,.]+")(0)).append(s" $priceMsg: ").append(price).append(".00р, ")
+          case _ =>
+        }
 
-          val fullName:String = dynGet[String] (drug, "drugsFullName").getOrElse("")
-          val price:Double = dynGet[Double] (drug, "retailPrice").getOrElse(0)
-          val producerShortName:String = dynGet[String] (drug, "producerShortName").getOrElse("")
-          val drugId:String = dynGet[String] (drug, "id").getOrElse("")
+        val mnn:String = dynGet[String] (drug, "MNN").getOrElse("")
 
-          dynGet[String] (drug, "drugsShortName") match {
-            case Some(name) => seoDescription.append(name.split("[ ,.]+")(0)).append(s" $priceMsg: ").append(price).append(".00р, ")
-            case _ =>
-          }
-
-          val mnn:String = dynGet[String] (drug, "MNN").getOrElse("")
-
-          div (cls:="col-lg-3 col-sm-2 item")(
-            div (cls:="panel panel-primary")(
-              div (cls:="panel-body")(
-                img (cls:="img-responsive", src:=s"/assets/images/${dynGet[String] (drug, "drugImage").getOrElse("nophoto.png")}"),
-                p (`class`:="description")(fullName),
-                p (`class`:="producer")(producerShortName)
-              ),
-              div (cls:="panel-footer")(
-                s"$priceMsg: ${price}.00 р",
-                cartButon(drugId, countInCart)
-              )
+        div (cls:="col-lg-3 col-sm-2 item")(
+          div (cls:="panel panel-primary")(
+            div (cls:="panel-body")(
+              img (cls:="img-responsive", src:=s"/assets/images/${dynGet[String] (drug, "drugImage").getOrElse("nophoto.png")}"),
+              p (`class`:="description")(fullName),
+              p (`class`:="producer")(producerShortName)
+            ),
+            div (cls:="panel-footer")(
+              s"$priceMsg: ${price}.00 р",
+              cartButon(drugId, countInCart)
             )
           )
-        }
-
-        dom.document.querySelector(".row.drugs").innerHTML = htmlRow.map (_.render).mkString("")
-        jQuery("meta[name=description]").attr("content", seoDescription.toString)
-
-        rows.toList.foreach(drugRs => {
-          val drug = drugRs.selectDynamic("dp")
-          val drugId:String = dynGet[String] (drug, "id").getOrElse("")
-          val find = s"#${drugId}"
-          val fullName:String = dynGet[String] (drug, "drugsFullName").getOrElse("")
-          val price:Double = dynGet[Double] (drug, "retailPrice").getOrElse(0)
-
-          val inp = jQuery(s"#$drugId input")
-          jQuery(s"#$drugId span:contains('-')").click((event: Event) => addItem(csrfHeader, csrfValue, inp, ShopCartItem(drugId, fullName, -1, price)))
-          jQuery(s"#$drugId span:contains('+')").click((event: Event) => addItem(csrfHeader, csrfValue, inp, ShopCartItem(drugId, fullName, 1, price)))
-        })
-
-        // Set next button
-        if (hasMore) {
-          val nodeList = dom.document.querySelectorAll ("li.next")
-          for (i <- 0 until nodeList.length) {
-            val elem = nodeList.item(i)
-            elem.asInstanceOf[Element].classList.remove("disabled")
-            elem.firstChild.asInstanceOf[Element].setAttribute("href", s"#search=$realSearch,pageSize=$pageSizeJS,offset=${offsetJS + pageSizeJS}")
-          }
-        } else {
-          val nodeList = dom.document.querySelectorAll ("li.next")
-          for (i <- 0 until nodeList.length) {
-            val elem = nodeList.item(i)
-            elem.asInstanceOf[Element].classList.add("disabled")
-            elem.firstChild.asInstanceOf[Element].setAttribute("href", s"javascript:void(0);")
-          }
-        }
-
-        // Set prev button
-        if (offsetJS > 0) {
-          val realOffset = if (offsetJS - pageSizeJS < 0) 0 else offsetJS - pageSizeJS
-          val nodeList = dom.document.querySelectorAll ("li.previous")
-          for (i <- 0 until nodeList.length) {
-            val elem = nodeList.item(i)
-            elem.asInstanceOf[Element].classList.remove("disabled")
-            elem.firstChild.asInstanceOf[Element].setAttribute("href", s"#search=$realSearch,pageSize=$pageSizeJS,offset=$realOffset")
-          }
-        } else {
-          val nodeList = dom.document.querySelectorAll ("li.previous")
-          for (i <- 0 until nodeList.length) {
-            val elem = nodeList.item(i)
-            elem.asInstanceOf[Element].classList.add("disabled")
-            elem.firstChild.asInstanceOf[Element].setAttribute("href", s"javascript:void(0);")
-          }
-        }
-      } else  {
-        println(s"error: ${xhr.status}, ${xhr.statusText}")
+        )
       }
-    }
 
+      dom.document.querySelector(".row.drugs").innerHTML = htmlRow.map (_.render).mkString("")
+      jQuery("meta[name=description]").attr("content", seoDescription.toString)
+
+      rows.toList.foreach(drugRs => {
+        val drug = drugRs.selectDynamic("dp")
+        val drugId:String = dynGet[String] (drug, "id").getOrElse("")
+        val find = s"#${drugId}"
+        val fullName:String = dynGet[String] (drug, "drugsFullName").getOrElse("")
+        val price:Double = dynGet[Double] (drug, "retailPrice").getOrElse(0)
+
+        val inp = jQuery(s"#$drugId input")
+        jQuery(s"#$drugId span:contains('-')").click((event: Event) => addItem(csrfHeader, csrfValue, inp, ShopCartItem(drugId, fullName, -1, price)))
+        jQuery(s"#$drugId span:contains('+')").click((event: Event) => addItem(csrfHeader, csrfValue, inp, ShopCartItem(drugId, fullName, 1, price)))
+      })
+
+      // Set next button
+      if (hasMore) {
+        val nodeList = dom.document.querySelectorAll ("li.next")
+        for (i <- 0 until nodeList.length) {
+          val elem = nodeList.item(i)
+          elem.asInstanceOf[Element].classList.remove("disabled")
+          elem.firstChild.asInstanceOf[Element].setAttribute("href", s"#search=$realSearch,pageSize=$pageSizeJS,offset=${offsetJS + pageSizeJS}")
+        }
+      } else {
+        val nodeList = dom.document.querySelectorAll ("li.next")
+        for (i <- 0 until nodeList.length) {
+          val elem = nodeList.item(i)
+          elem.asInstanceOf[Element].classList.add("disabled")
+          elem.firstChild.asInstanceOf[Element].setAttribute("href", s"javascript:void(0);")
+        }
+      }
+
+      // Set prev button
+      if (offsetJS > 0) {
+        val realOffset = if (offsetJS - pageSizeJS < 0) 0 else offsetJS - pageSizeJS
+        val nodeList = dom.document.querySelectorAll ("li.previous")
+        for (i <- 0 until nodeList.length) {
+          val elem = nodeList.item(i)
+          elem.asInstanceOf[Element].classList.remove("disabled")
+          elem.firstChild.asInstanceOf[Element].setAttribute("href", s"#search=$realSearch,pageSize=$pageSizeJS,offset=$realOffset")
+        }
+      } else {
+        val nodeList = dom.document.querySelectorAll ("li.previous")
+        for (i <- 0 until nodeList.length) {
+          val elem = nodeList.item(i)
+          elem.asInstanceOf[Element].classList.add("disabled")
+          elem.firstChild.asInstanceOf[Element].setAttribute("href", s"javascript:void(0);")
+        }
+      }
+    } else  {
+      println(s"error: ${xhr.status}, ${xhr.statusText}")
+    }
+  }
+
+  @JSExport
+  def findAll (pageSize: Int, offset: Int, search: String, csrfHeader: String, csrfValue: String, linkText: String) = {
+    val xhr = new XMLHttpRequest()
+    xhr.open ("POST", "drugs/fuzzySearch")
+    xhr.onload = { (e: Event) => onLoadProducts (e)(pageSize, offset, search, csrfHeader, csrfValue, linkText).apply(xhr) }
     xhr.setRequestHeader(csrfHeader, csrfValue)
-    xhr.send()
+    xhr.setRequestHeader("Content-type", "application/json")
+    xhr.setRequestHeader("Accept", "application/json")
+    xhr.send(JSON.stringify(js.Dynamic.literal(
+      text = js.Dynamic.global.applyDynamic("decodeURIComponent")(search),
+      offset = offset,
+      pageSize = pageSize,
+      hasImage = -1
+    )))
   }
 
   val pattern = "[#|,]([\\w|=]+=[^,]*)+".r

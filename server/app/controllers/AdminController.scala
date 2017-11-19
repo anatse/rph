@@ -33,17 +33,7 @@ class AdminController @Inject()(
   cartDAO: CartDAO,
   mailerClient: MailerClient,
   env: Environment
- )(implicit webJarsUtil: WebJarsUtil, ex: ExecutionContext) extends AbstractController(components) with I18nSupport  {
-
-  implicit val groupWrites = Json.writes[DrugsGroup]
-  implicit val groupReads = Json.reads[DrugsGroup]
-  implicit val productWrites = Json.writes[DrugsProduct]
-  implicit val dfrReads = Json.reads[DrugsFindRq]
-
-  private def makeResult (rows:List[DrugsProduct], realPageSize:Int, offset:Int) = {
-    val filterredRows = if (rows.length > realPageSize) rows.dropRight(1) else rows
-    Ok(Json.obj("rows" -> filterredRows, "pageSize" -> realPageSize, "offset" -> offset, "hasMore" -> (rows.length > realPageSize)))
-  }
+ )(implicit webJarsUtil: WebJarsUtil, ex: ExecutionContext) extends AbstractController(components) with I18nSupport with ModelImplicits {
 
   def adminView = silhouette.SecuredAction(WithRoles("ADMIN")).async { implicit request =>
     val sid = sessionId(request2session)
@@ -86,7 +76,7 @@ class AdminController @Inject()(
 
   def filterProducts = silhouette.SecuredAction(parse.json[DrugsFindRq]).async { implicit request =>
     val drugsFindRq: DrugsFindRq = request.body
-    drugsProductDAO.filter(drugsFindRq.copy(pageSize = drugsFindRq.pageSize + 1)).map(rows => makeResult(rows, drugsFindRq.pageSize, drugsFindRq.offset))
+    drugsProductDAO.combinedSearch(drugsFindRq.copy(pageSize = drugsFindRq.pageSize + 1)).map(rows => makeResult(rows, drugsFindRq.pageSize, drugsFindRq.offset))
   }
 
   def addRecommended (drugId: String, orderNum: Int) = silhouette.SecuredAction(WithRoles("ADMIN")).async {

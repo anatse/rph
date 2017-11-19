@@ -1,4 +1,12 @@
 package models
 
-case class DrugsFindRq (groups: Option[Array[String]], text: Option[String], sorts: Option[String], offset: Int, pageSize: Int, drugImage: Option[String])
 case class DrugsProdRs (dp: DrugsProduct, countInCart: Int)
+
+case class DrugsFindRq (
+  groups: Option[Array[String]] = None,
+  text: Option[String] = None,
+  sorts: Option[Array[String]] = None,
+  hasImage: Int,
+  offset: Int,
+  pageSize: Int
+)
