@@ -15,7 +15,7 @@
 @main(messages("shop.page.title"), signInForm, socialProviders, user, cart) {
   <!--suppress JSUnusedLocalSymbols -->
   <script>
-          function load (pageSize, offset, search) {rphApp.findAll (pageSize, offset, search, 'Csrf-Token', '@helper.CSRF.getToken.value', '@messages("prj.goto")');}
+    function load (pageSize, offset, search) {rphApp.findAll (pageSize, offset, search, 'Csrf-Token', '@helper.CSRF.getToken.value', '@messages("prj.goto")');}
   </script>
 
   <div class="jumbotron text-center">

@@ -74,9 +74,8 @@ class AdminController @Inject()(
     }
   }
 
-  def filterProducts = silhouette.SecuredAction(parse.json[DrugsFindRq]).async { implicit request =>
-    val drugsFindRq: DrugsFindRq = request.body
-    drugsProductDAO.combinedSearch(drugsFindRq.copy(pageSize = drugsFindRq.pageSize + 1)).map(rows => makeResult(rows, drugsFindRq.pageSize, drugsFindRq.offset))
+  def filterProducts = silhouette.SecuredAction(parse.json[DrugsAdminRq]).async { implicit request =>
+    drugsProductDAO.getAll(request.body).map (rows => Ok(Json.obj("rows" -> rows)))
   }
 
   def addRecommended (drugId: String, orderNum: Int) = silhouette.SecuredAction(WithRoles("ADMIN")).async {

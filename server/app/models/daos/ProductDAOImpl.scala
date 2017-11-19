@@ -180,7 +180,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     filter.text match {
       case Some(text) => document("$or" -> BSONArray(
         document("drugsFullName" -> document("$regex" -> s".*${text}.*", "$options" -> "i")),
-        document("drugsFullName" -> document("$regex" -> s".*${fixKeyboardLayout(filter.text.getOrElse(""))}.*", "$options" -> "i"))
+        document("drugsFullName" -> document("$regex" -> s".*${fixKeyboardLayout(text)}.*", "$options" -> "i"))
       ))
       case _ => document()
     }
@@ -220,6 +220,21 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
       case _ => document()
     }
   }
+
+  override def getAll(dp:DrugsAdminRq) = productCollection.flatMap(
+    _.find(
+      if (dp.drugsFullName != "") {
+        document("$or" -> BSONArray (
+          document("drugsFullName" -> document("$regex" -> s".*${dp.drugsFullName}.*", "$options" -> "i")),
+          document("drugsFullName" -> document("$regex" -> s".*${fixKeyboardLayout(dp.drugsFullName)}.*", "$options" -> "i"))
+        ))
+      }
+      else
+        document()
+    )
+      .projection(projection)
+      .cursor[DrugsProduct]()
+      .collect[List](-1, handler[DrugsProduct]))
 
   /**
     * Function retrieves recommended drugs from database using sorting and paging

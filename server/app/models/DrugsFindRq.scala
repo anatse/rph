@@ -10,3 +10,5 @@ case class DrugsFindRq (
   offset: Int,
   pageSize: Int
 )
+
+case class DrugsAdminRq (drugsFullName: String)

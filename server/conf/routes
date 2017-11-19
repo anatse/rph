@@ -40,7 +40,7 @@ GET         /drugs/rcmd/rm                  controllers.AdminController.removeRe
 
 POST        /drugs/setImage                 controllers.AdminController.setImageToDrug
 POST        /drigs/group                    controllers.AdminController.insertDrugsGroup
-POST        /druigs/filter                  controllers.AdminController.filterProducts
+POST        /drugs/filter                   controllers.AdminController.filterProducts
 
 POST        /goods/upload                   controllers.GoodsImportController.upload
 

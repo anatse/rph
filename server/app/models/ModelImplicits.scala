@@ -11,6 +11,9 @@ trait ModelImplicits {
   implicit val producRsWrites = Json.writes[DrugsProdRs]
   implicit val producRsReads = Json.reads[DrugsProdRs]
 
+  implicit val producAdmRsWrites = Json.writes[DrugsAdminRq]
+  implicit val producAdmRsReads = Json.reads[DrugsAdminRq]
+
   implicit val productRqWrites = Json.writes[DrugsFindRq]
   implicit val drugsFindRqReads = Json.reads[DrugsFindRq]
 

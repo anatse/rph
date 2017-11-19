@@ -183,3 +183,10 @@ goods.title = Товары
 goods.groups.title = Группы товаров
 goods.upload.button = Загрузить
 upload.result = Результат загрузки
+
+grid.field.drugsFullName = Название
+grid.field.drugsShortName = Сокр. название
+grid.field.ost = Кол-во
+grid.field.retailPrice = Цена
+grid.field.image = Изобр
+grid.field.groups = Группы

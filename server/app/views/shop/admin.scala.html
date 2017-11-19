@@ -13,6 +13,10 @@
 )(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
 
 @main(messages("cart.page.title"), signInForm, socialProviders, user, cart) {
+  <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css" />
+  <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css" />
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
+
   <script>
       function updateItem (event, drugId) {rphApp.updateCartItem ('Csrf-Token', '@helper.CSRF.getToken.value', event, drugId);}
   </script>
@@ -29,8 +33,9 @@
     </ul>
 
     <div class="tab-content">
-      @* Upload goods *@
       <div id="goods-upload" class="tab-pane fade in active">
+        <h3>@Messages("goods.load.title")</h3>
+
         @helper.form(action = routes.GoodsImportController.upload, 'enctype -> "multipart/form-data", 'name -> "fileinfo") {
           @helper.CSRF.formField
           <input type="file" name="fileinfo" class="fileuploader">
@@ -63,8 +68,91 @@
       </div>
 
       <div id="goods" class="tab-pane fade">
-        <h3>HOME</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+        <h3>@Messages("goods.title")</h3>
+        <div id="jsGrid"></div>
+        <div id="dialog" title="Image Full Size View">
+          <img id="imagePreview" />
+        </div>
+
+        <script>
+            $("#dialog").show({
+              modal: true,
+              autoOpen: false,
+              position: {
+                my: "center",
+                at: "center",
+                of: $("#jsgrid")
+              }
+            });
+
+            $("#jsGrid").jsGrid({
+              height: "auto",
+              width: "100%",
+
+              sorting: true,
+              paging: true,
+              autoload: true,
+              editing: false,
+              selecting: true,
+
+              pageIndex: 1,
+              pageSize: 10,
+              filtering: true,
+
+              controller: {
+                loadData: function(filter) {
+                  var d = $.Deferred();
+
+                  console.log (filter)
+
+                  $.ajax({
+                    url: "/drugs/filter",
+                    method: "POST",
+
+                    data: JSON.stringify(filter),
+                    dataType: "json",
+                    headers:{
+                      'Csrf-Token': '@helper.CSRF.getToken.value',
+                      'Content-type': 'application/json',
+                      'Accept': 'application/json'
+                    }
+                  }).done(function(response) {
+                    d.resolve(response.rows);
+                  });
+
+                  return d.promise();
+                }
+              },
+
+              fields: [
+                { name: "id", type: "text", visible: false },
+                { name: "drugsFullName", title: '@messages("grid.field.drugsFullName")', autosearch: true, type: "text", width: 150 },
+                { name: "shortName", title: '@messages("grid.field.drugsShortName")', type: "text", width: 100 },
+                { name: "ost", title: '@messages("grid.field.ost")', type: "number", autosearch: false, width: 100 },
+                { name: "retailPrice", title: '@messages("grid.field.retailPrice")', type: "number", autosearch: false, width: 100 },
+                {
+                  name: "drugImage",
+                  title: '@messages("grid.field.image")',
+                  itemTemplate: function(val, item) {
+                    return $("<img>").attr("src", val).css({ width: 58, height: 30 }).on("click", function() {
+                      $("#imagePreview").attr("src", item.Img);
+                      $("#dialog").dialog("open");
+                    });
+                  },
+                  insertTemplate: function() {
+                    var insertControl = this.insertControl = $("<input>").prop("type", "file");
+                    return insertControl;
+                  },
+                  insertValue: function() {
+                    return this.insertControl[0].files[0];
+                  },
+                  align: "center",
+                  width: 120
+                },
+                { name: "drugGroups", title: '@messages("grid.field.groups")', type: "select", autosearch: false, width: 100 }
+              ]
+            });
+        </script>
       </div>
 
       <div id="groups" class="tab-pane fade">

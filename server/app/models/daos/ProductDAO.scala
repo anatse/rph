@@ -1,11 +1,13 @@
 package models.daos
 
 import reactivemongo.api.commands.{UpdateWriteResult, WriteResult}
-import models.{DrugsFindRq, DrugsProduct, RecommendedDrugs}
+import models.{DrugsAdminRq, DrugsFindRq, DrugsProduct, RecommendedDrugs}
 
 import scala.concurrent.Future
 
 trait ProductDAO extends BaseDAO[DrugsProduct] {
+  def getAll(dp:DrugsAdminRq): Future[List[DrugsProduct]]
+
   def combinedSearch (filter:DrugsFindRq): Future[List[DrugsProduct]]
 
   // Admin functions
