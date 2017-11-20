@@ -4,7 +4,6 @@
 
 # GET         /new                            controllers.CompanyController.view
 GET         /drugs/group                    controllers.CompanyController.findDrugsGroups
-GET         /drugs/recom                    controllers.CompanyController.findRecommended
 POST        /drugs/fuzzySearch              controllers.CompanyController.combinedSearchDrugsProducts
 POST        /drugs/cart/item                controllers.CompanyController.addItemToCart
 
@@ -33,15 +32,16 @@ GET         /account/activate/:token        controllers.ActivateAccountControlle
 
 # Admin functions
 GET         /admin                          controllers.AdminController.adminView
-GET         /images                         controllers.AdminController.setImageView
 GET         /drugs/create                   controllers.AdminController.create
+
+POST        /drugs/recom                    controllers.AdminController.findRecommended
 GET         /drugs/rcmd/add                 controllers.AdminController.addRecommended(drugId: String, orderNum: Int)
 GET         /drugs/rcmd/rm                  controllers.AdminController.removeRecommended(drugId: String)
 
 POST        /drugs/setImage                 controllers.AdminController.setImageToDrug
+GET         /images                         controllers.AdminController.downloadAllImages
 POST        /drigs/group                    controllers.AdminController.insertDrugsGroup
 POST        /drugs/filter                   controllers.AdminController.filterProducts
-
 POST        /goods/upload                   controllers.GoodsImportController.upload
 
 # Map static resources from the /public folder to the /assets URL path

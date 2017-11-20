@@ -181,6 +181,7 @@ admin.description = Алминистрирование сайта
 goods.load.title = Загрузка, обновление товаров
 goods.title = Товары
 goods.groups.title = Группы товаров
+goods.recommended.title = Рекомендуемые
 goods.upload.button = Загрузить
 upload.result = Результат загрузки
 
@@ -190,3 +191,5 @@ grid.field.ost = Кол-во
 grid.field.retailPrice = Цена
 grid.field.image = Изобр
 grid.field.groups = Группы
+
+form.image.set = Загрузить изображение
