@@ -193,3 +193,5 @@ grid.field.image = Image
 grid.field.groups = Groups
 
 form.image.set = Thumb
+
+images.download = Download all iamges

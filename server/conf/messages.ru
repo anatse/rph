@@ -193,3 +193,4 @@ grid.field.image = Изобр
 grid.field.groups = Группы
 
 form.image.set = Загрузить изображение
+images.download = Скачать все изображения
