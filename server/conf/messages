@@ -194,4 +194,5 @@ grid.field.groups = Groups
 
 form.image.set = Thumb
 
-images.download = Download all iamges
+images.download = Download all images
+button.addTorrcom = To recommended

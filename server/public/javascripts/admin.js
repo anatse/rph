@@ -1,64 +1,107 @@
-function createProductsGrid (csrfHeader, csrfToken) {
-    $("#jsGrid").jsGrid({
-        height: "auto",
-        width: "100%",
+function loadRecomProducts (csrfHeader, csrfToken) {
+    return function () {
+        var headers = {
+            'Content-type': 'application/json',
+            'Accept': 'application/json'
+        };
 
-        sorting: true,
-        paging: true,
-        autoload: true,
-        editing: false,
-        selecting: true,
+        headers[csrfHeader] = csrfToken;
 
-        pageIndex: 1,
-        pageSize: 10,
-        filtering: true,
+        var d = $.Deferred();
+        $.ajax({
+            url: "/drugs/recom",
+            method: "POST",
+            dataType: "json",
+            headers: headers
+        }).done(function (response) {
+            d.resolve(response.rows);
+        });
 
-        controller: {
-            loadData: function(filter) {
-                var d = $.Deferred();
-                $.ajax({
-                    url: "/drugs/filter",
-                    method: "POST",
-                    data: JSON.stringify(filter),
-                    dataType: "json",
-                    headers:{
-                        csrfHeader: csrfToken,
-                        'Content-type': 'application/json',
-                        'Accept': 'application/json'
-                    }
-                }).done(function(response) {
-                    d.resolve(response.rows);
-                });
+        return d.promise();
+    }
+}
 
-                return d.promise();
-            }
-        },
+function loadProducts (csrfHeader, csrfToken) {
+    return function (filter) {
+        var headers = {
+            'Content-type': 'application/json',
+            'Accept': 'application/json'
+        };
 
-        fields: [
-            { name: "id", type: "text", visible: false },
-            { name: "drugsFullName", title: '@messages("grid.field.drugsFullName")', autosearch: true, type: "text", width: 150 },
-            { name: "shortName", title: '@messages("grid.field.drugsShortName")', type: "text", width: 100 },
-            { name: "ost", title: '@messages("grid.field.ost")', type: "number", autosearch: false, width: 100 },
-            { name: "retailPrice", title: '@messages("grid.field.retailPrice")', type: "number", autosearch: false, width: 100 },
-            {
-                name: "drugImage",
-                title: '@messages("grid.field.image")',
-                itemTemplate: function(val, item) {
-                    return $("<img>").attr("src", val).css({ width: 58, height: 30 }).on("click", function() {
-                        console.log ('test');
-                    });
-                },
-                insertTemplate: function() {
-                    var insertControl = this.insertControl = $("<input>").prop("type", "file");
-                    return insertControl;
-                },
-                insertValue: function() {
-                    return this.insertControl[0].files[0];
-                },
-                align: "center",
-                width: 120
-            },
-            { name: "drugGroups", title: '@messages("grid.field.groups")', type: "select", autosearch: false, width: 100 }
-        ]
+        headers[csrfHeader] = csrfToken;
+
+        var d = $.Deferred();
+        $.ajax({
+            url: "/drugs/filter",
+            method: "POST",
+            data: JSON.stringify(filter),
+            dataType: "json",
+            headers: headers
+        }).done(function (response) {
+            d.resolve(response.rows);
+        });
+
+        return d.promise();
+    }
+}
+
+function addRecommended (csrfHeader, csrfToken, drugId, onOk) {
+    var headers = {
+        'Content-type': 'application/json',
+        'Accept': 'application/json'
+    };
+
+    console.log($)
+
+    headers[csrfHeader] = csrfToken;
+
+    var d = $.Deferred();
+    $.ajax({
+        url: "/drugs/rcmd/add?drugId=" +drugId + "&orderNum=1",
+        method: "POST",
+        data: JSON.stringify({
+            drugId: "",
+            orderNum: 1
+        }),
+        dataType: "json",
+        headers: headers
+    }).done(function (response) {
+        if (response.status == 200)
+            onOk();
+        else
+            console.log(response);
     });
+
+    return d.promise();
+}
+
+function removeRecommended (csrfHeader, csrfToken, drugId, onOk) {
+    var headers = {
+        'Content-type': 'application/json',
+        'Accept': 'application/json'
+    };
+
+    console.log($)
+
+    headers[csrfHeader] = csrfToken;
+
+    var d = $.Deferred();
+    $.ajax({
+        url: "/drugs/rcmd/rm?drugId=" +drugId + "&orderNum=1",
+        method: "POST",
+        data: JSON.stringify({
+            drugId: "",
+            orderNum: 1
+        }),
+        dataType: "json",
+        headers: headers
+    }).done(function (response) {
+        console.log(response);
+        if (response.status == 200)
+            onOk();
+        else
+            console.log(response);
+    });
+
+    return d.promise();
 }

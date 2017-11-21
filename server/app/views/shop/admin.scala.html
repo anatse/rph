@@ -16,6 +16,7 @@
   <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css" />
   <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css" />
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
+  <script type="text/javascript" src="@controllers.routes.Assets.at("javascripts/admin.js")"></script>
 
   <script>
       function updateItem (event, drugId) {rphApp.updateCartItem ('Csrf-Token', '@helper.CSRF.getToken.value', event, drugId);}
@@ -116,65 +117,60 @@
               filtering: true,
 
               controller: {
-                loadData: function(filter) {
-                  var d = $.Deferred();
-                  $.ajax({
-                    url: "/drugs/filter",
-                    method: "POST",
-                    data: JSON.stringify(filter),
-                    dataType: "json",
-                    headers:{
-                      'Csrf-Token': '@helper.CSRF.getToken.value',
-                      'Content-type': 'application/json',
-                      'Accept': 'application/json'
-                    }
-                  }).done(function(response) {
-                    d.resolve(response.rows);
-                  });
-
-                  return d.promise();
-                }
+                loadData: loadProducts('Csrf-Token', '@helper.CSRF.getToken.value')
               },
 
               fields: [
                 { name: "id", type: "text", visible: false },
                 { name: "drugsFullName", title: '@messages("grid.field.drugsFullName")', autosearch: true, type: "text", width: 150 },
                 { name: "shortName", title: '@messages("grid.field.drugsShortName")', type: "text", width: 100 },
-                { name: "ost", title: '@messages("grid.field.ost")', type: "number", autosearch: false, width: 100 },
-                { name: "retailPrice", title: '@messages("grid.field.retailPrice")', type: "number", autosearch: false, width: 100 },
+                { name: "ost", title: '@messages("grid.field.ost")', type: "number", autosearch: false, width: 60 },
+                { name: "retailPrice", title: '@messages("grid.field.retailPrice")', type: "number", autosearch: false, width: 60 },
                 {
                   name: "drugImage",
                   title: '@messages("grid.field.image")',
                   itemTemplate: function(val, item) {
-                    return $("<img>").attr("src", "/assets/images/" + val).css({ width: 58, height: 30 }).on("click", function() {
+                    return $("<img>").attr("src", val ? "/assets/images/" + val : "").css({ width: 58, height: 30 }).on("click", function() {
                       $("#myModal #id").attr("value", item.id);
                       $('#myModal').modal('show');
+//                      $('#myModal').on('shown.bs.modal', function () {
+//                        console.log("on shown")
+//                      });
                     });
                   },
-                  insertTemplate: function() {
-                    var insertControl = this.insertControl = $("<input>").prop("type", "file");
-                    return insertControl;
-                  },
-                  insertValue: function() {
-                    return this.insertControl[0].files[0];
+                  align: "center",
+                  width: 60
+                },
+                { name: "drugGroups", title: '@messages("grid.field.groups")', type: "select", autosearch: false, width: 100 },
+                {
+                  name: "addToRecom",
+                  title: '@messages("button.addTorrcom")',
+                  itemTemplate: function(val, item) {
+                    return $("<button>", {
+                      class: "input-group-addon btn",
+                      text: "+"
+                    }).on("click", function() {
+                        addRecommended('Csrf-Token', '@helper.CSRF.getToken.value', item.id);
+                    });
                   },
                   align: "center",
-                  width: 120
-                },
-                { name: "drugGroups", title: '@messages("grid.field.groups")', type: "select", autosearch: false, width: 100 }
+                  width: 40
+                }
               ]
             });
 
-            var form = document.forms.namedItem("add-image");
-            form.addEventListener('submit', function(ev) {
+            var form = document.forms.namedItem("set-image");
+            form.addEventListener('submit', function (ev) {
               var oData = new FormData(form);
               var oReq = new XMLHttpRequest();
               oReq.open(form.method, form.action, true);
-              oReq.onload = function(oEvent) {
+              oReq.onload = function (oEvent) {
                 if (oReq.status == 200) {
-                  console.log(oReq.responseText);
+                  $('#myModal').modal('hide');
+                  $("#productsGrid").jsGrid("loadData");
                 } else {
-                  console.log(oReq.status + "\n" + oReq.responseText);
+                  alert ("Error occured");
+                  console.log(oReq.status + "\n" + oReq);
                 }
               };
 
@@ -202,28 +198,13 @@
                   autoload: true,
                   editing: false,
                   selecting: true,
+                  deleteButton: true,
 
                   pageIndex: 1,
                   pageSize: 10,
 
                   controller: {
-                    loadData: function(filter) {
-                      var d = $.Deferred();
-                      $.ajax({
-                        url: "/drugs/recom",
-                        method: "POST",
-                        dataType: "json",
-                        headers:{
-                          'Csrf-Token': '@helper.CSRF.getToken.value',
-                          'Content-type': 'application/json',
-                          'Accept': 'application/json'
-                        }
-                      }).done(function(response) {
-                        d.resolve(response.rows);
-                      });
-
-                      return d.promise();
-                    }
+                    loadData: loadRecomProducts('Csrf-Token', '@helper.CSRF.getToken.value')
                   },
 
                   fields: [
@@ -236,7 +217,7 @@
                       name: "drugImage",
                       title: '@messages("grid.field.image")',
                       itemTemplate: function(val, item) {
-                        return $("<img>").attr("src", "/assets/images/" + val).css({ width: 58, height: 30 });
+                        return $("<img>").attr("src", val ? "/assets/images/" + val : "").css({ width: 58, height: 30 });
                       },
                       insertTemplate: function() {
                         var insertControl = this.insertControl = $("<input>").prop("type", "file");
@@ -248,7 +229,20 @@
                       align: "center",
                       width: 120
                     },
-                    { name: "drugGroups", title: '@messages("grid.field.groups")', type: "select", autosearch: false, width: 100 }
+                    {
+                      name: "addToRecom",
+                      title: '@messages("button.addTorrcom")',
+                      itemTemplate: function(val, item) {
+                        return $("<button>", {
+                          class: "input-group-addon btn",
+                          text: "-"
+                        }).on("click", function() {
+                          removeRecommended('Csrf-Token', '@helper.CSRF.getToken.value', item.id, function() {$("#recomGrid").jsGrid("loadData");});
+                        });
+                      },
+                      align: "center",
+                      width: 40
+                    }
                   ]
                 });
         </script>

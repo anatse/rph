@@ -35,8 +35,8 @@ GET         /admin                          controllers.AdminController.adminVie
 GET         /drugs/create                   controllers.AdminController.create
 
 POST        /drugs/recom                    controllers.AdminController.findRecommended
-GET         /drugs/rcmd/add                 controllers.AdminController.addRecommended(drugId: String, orderNum: Int)
-GET         /drugs/rcmd/rm                  controllers.AdminController.removeRecommended(drugId: String)
+POST        /drugs/rcmd/add                 controllers.AdminController.addRecommended(drugId: String, orderNum: Int)
+POST        /drugs/rcmd/rm                  controllers.AdminController.removeRecommended(drugId: String)
 
 POST        /drugs/setImage                 controllers.AdminController.setImageToDrug
 GET         /images                         controllers.AdminController.downloadAllImages
