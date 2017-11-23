@@ -187,18 +187,17 @@
               ]
             });
 
-            var form = document.forms.namedItem("set-image");
-            form.addEventListener('submit', function (ev) {
-              var oData = new FormData(form);
+            var form1 = document.forms.namedItem("set-image");
+            form1.addEventListener('submit', function (ev) {
+              var oData = new FormData(form1);
               var oReq = new XMLHttpRequest();
-              oReq.open(form.method, form.action, true);
+              oReq.open(form.method, form1.action, true);
               oReq.onload = function (oEvent) {
                 if (oReq.status == 200) {
                   $('#myModal').modal('hide');
                   $("#productsGrid").jsGrid("loadData");
                 } else {
                   alert ("Error occured");
-                  console.log(oReq.status + "\n" + oReq);
                 }
               };
 
@@ -206,10 +205,10 @@
               ev.preventDefault();
             }, false);
 
-            form = document.forms.namedItem("set-order");
-            form.addEventListener('submit', function (ev) {
-              var oData = new FormData(form);
-              addRecommended('Csrf-Token', '@helper.CSRF.getToken.value', form.id.value, form.orderNum.value, function() {
+            var form2 = document.forms.namedItem("set-order");
+            form2.addEventListener('submit', function (ev) {
+              var oData = new FormData(form2);
+              addRecommended('Csrf-Token', '@helper.CSRF.getToken.value', form2.id.value, form2.orderNum.value, function() {
                 $('#dlgOrderNum').modal('hide');
               });
               ev.preventDefault();
