@@ -195,3 +195,6 @@ grid.field.groups = Группы
 form.image.set = Загрузить изображение
 images.download = Скачать все изображения
 button.addTorrcom = В рекомендуемые
+button.save = Сохранить
+order.num = Порядковый номер
+form.order.set = Установка порядкового номера

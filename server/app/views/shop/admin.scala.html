@@ -38,10 +38,37 @@
               <input type="hidden" id="id" name="id"/>
             </div>
             <div>
-              <button id="submit" type="submit" value="submit" class="btn btn-lg btn-primary btn-block">@messages("sign.in")</button>
+              <button id="submit" type="submit" value="submit" class="btn btn-lg btn-primary btn-block">@messages("button.save")</button>
             </div>
           </div>
         }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="dlgOrderNum" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">@messages("form.order.set")</h4>
+        </div>
+        <div class="modal-body">
+        <form role="form", name="set-order">
+          <div class="form-group">
+            <div>
+              <div class="form-group">
+                <label for="orderNum">@messages("order.num"):</label>
+                <input type="number" class="form-control" id="orderNum" name="orderNum">
+              </div>
+              <input type="hidden" id="id" name="id"/>
+            </div>
+            <div>
+              <button id="submit" type="submit" value="submit" class="btn btn-lg btn-primary btn-block">@messages("button.save")</button>
+            </div>
+          </div>
+        </form>
         </div>
       </div>
     </div>
@@ -150,7 +177,8 @@
                       class: "input-group-addon btn",
                       text: "+"
                     }).on("click", function() {
-                        addRecommended('Csrf-Token', '@helper.CSRF.getToken.value', item.id);
+                      $("#dlgOrderNum #id").attr("value", item.id);
+                      $('#dlgOrderNum').modal('show');
                     });
                   },
                   align: "center",
@@ -175,6 +203,15 @@
               };
 
               oReq.send(oData);
+              ev.preventDefault();
+            }, false);
+
+            form = document.forms.namedItem("set-order");
+            form.addEventListener('submit', function (ev) {
+              var oData = new FormData(form);
+              addRecommended('Csrf-Token', '@helper.CSRF.getToken.value', form.id.value, form.orderNum.value, function() {
+                $('#dlgOrderNum').modal('hide');
+              });
               ev.preventDefault();
             }, false);
         </script>

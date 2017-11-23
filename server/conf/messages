@@ -196,3 +196,7 @@ form.image.set = Thumb
 
 images.download = Download all images
 button.addTorrcom = To recommended
+button.save = Save
+
+order.num = Order Number
+form.order.set = Set Order Number

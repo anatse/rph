@@ -45,34 +45,27 @@ function loadProducts (csrfHeader, csrfToken) {
     }
 }
 
-function addRecommended (csrfHeader, csrfToken, drugId, onOk) {
+function addRecommended (csrfHeader, csrfToken, drugId, orderNum, onOk) {
     var headers = {
         'Content-type': 'application/json',
         'Accept': 'application/json'
     };
 
-    console.log($)
-
     headers[csrfHeader] = csrfToken;
-
-    var d = $.Deferred();
     $.ajax({
-        url: "/drugs/rcmd/add?drugId=" +drugId + "&orderNum=1",
+        url: "/drugs/rcmd/add?drugId=" +drugId + "&orderNum=" + orderNum,
         method: "POST",
         data: JSON.stringify({
             drugId: "",
             orderNum: 1
         }),
         dataType: "json",
-        headers: headers
-    }).done(function (response) {
-        if (response.status == 200)
+        headers: headers,
+        complete: function () {
+            $("#recomGrid").jsGrid("loadData");
             onOk();
-        else
-            console.log(response);
+        }
     });
-
-    return d.promise();
 }
 
 function removeRecommended (csrfHeader, csrfToken, drugId, onOk) {
@@ -81,11 +74,7 @@ function removeRecommended (csrfHeader, csrfToken, drugId, onOk) {
         'Accept': 'application/json'
     };
 
-    console.log($)
-
     headers[csrfHeader] = csrfToken;
-
-    var d = $.Deferred();
     $.ajax({
         url: "/drugs/rcmd/rm?drugId=" +drugId + "&orderNum=1",
         method: "POST",
@@ -94,14 +83,10 @@ function removeRecommended (csrfHeader, csrfToken, drugId, onOk) {
             orderNum: 1
         }),
         dataType: "json",
-        headers: headers
-    }).done(function (response) {
-        console.log(response);
-        if (response.status == 200)
+        headers: headers,
+        complete: function () {
+            $("#recomGrid").jsGrid("loadData");
             onOk();
-        else
-            console.log(response);
+        }
     });
-
-    return d.promise();
 }
