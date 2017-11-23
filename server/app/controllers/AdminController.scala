@@ -63,7 +63,7 @@ class AdminController @Inject()(
     val id = request.body.dataParts("id")(0)
     image match {
       case Some(file) =>
-        val folderPath = env.getFile("/public/images");
+        val folderPath = getImagedFolder
         val imagePath = s"${folderPath.getAbsolutePath}/${id}.jpg"
         val imageName = s"${id}.jpg"
         val fp = new File (imagePath)
@@ -75,9 +75,12 @@ class AdminController @Inject()(
     }
   }
 
+  def getImagedFolder = new File("/app/server/public/images/")
+
   def downloadAllImages = silhouette.SecuredAction.async { request =>
     Future {
-      val folderPath = env.getFile("/public/images")
+//      val folderPath = env.getFile("/public/images")
+      val folderPath = getImagedFolder
 
       import java.io.{BufferedInputStream, FileInputStream, FileOutputStream}
       import java.util.zip.{ZipEntry, ZipOutputStream}
