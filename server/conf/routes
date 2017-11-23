@@ -4,12 +4,7 @@
 
 # GET         /new                            controllers.CompanyController.view
 GET         /drugs/group                    controllers.CompanyController.findDrugsGroups
-POST        /drugs/groupProd                controllers.CompanyController.findByGroup
-GET         /drugs/prod                     controllers.CompanyController.findDrugsProducts(offset: Int, pageSize: Int, sort: Option[String])
-GET         /drugs/recom                    controllers.CompanyController.findRecommended(offset: Int, pageSize: Int)
-POST        /drugs/prod                     controllers.CompanyController.findDrugsProducts(offset: Int, pageSize: Int, sort: Option[String])
-GET         /drugs/fuzzySearch              controllers.CompanyController.combinedSearchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String])
-POST        /drugs/fuzzySearch              controllers.CompanyController.combinedSearchDrugsProducts(searchText:String, offset:Int, pageSize:Int, sort:Option[String])
+POST        /drugs/fuzzySearch              controllers.CompanyController.combinedSearchDrugsProducts
 POST        /drugs/cart/item                controllers.CompanyController.addItemToCart
 
 # Home page
@@ -37,22 +32,16 @@ GET         /account/activate/:token        controllers.ActivateAccountControlle
 
 # Admin functions
 GET         /admin                          controllers.AdminController.adminView
-GET         /images                         controllers.AdminController.setImageView
 GET         /drugs/create                   controllers.AdminController.create
-GET         /drugs/rcmd/add                 controllers.AdminController.addRecommended(drugId: String, orderNum: Int)
-GET         /drugs/rcmd/rm                  controllers.AdminController.removeRecommended(drugId: String)
+
+POST        /drugs/recom                    controllers.AdminController.findRecommended
+POST        /drugs/rcmd/add                 controllers.AdminController.addRecommended(drugId: String, orderNum: Int)
+POST        /drugs/rcmd/rm                  controllers.AdminController.removeRecommended(drugId: String)
 
 POST        /drugs/setImage                 controllers.AdminController.setImageToDrug
+GET         /images                         controllers.AdminController.downloadAllImages
 POST        /drigs/group                    controllers.AdminController.insertDrugsGroup
-POST        /druigs/filter                  controllers.AdminController.filterProducts
-
-
-#GET         /projects                        controllers.ProjectController.index
-#GET         /projects/create                 controllers.ProjectController.create
-#GET         /projects/list                   controllers.ProjectController.findAll(offset: Option[Int], pageSize: Option[Int])
-#POST        /projects/list                   controllers.ProjectController.jsonFindAll(offset: Option[Int], pageSize: Option[Int])
-#GET         /project/:prjId                  controllers.ProjectController.project(prjId: Long)
-
+POST        /drugs/filter                   controllers.AdminController.filterProducts
 POST        /goods/upload                   controllers.GoodsImportController.upload
 
 # Map static resources from the /public folder to the /assets URL path

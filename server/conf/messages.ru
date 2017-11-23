@@ -120,7 +120,7 @@ search.label = Поиск
 
 company.title = ООО Фармрус
 company.name = ООО Фармрус
-company.description = Добро пожаловать в магазин, г Реутов, ул Комсомольская д 10 к 1
+company.description = Аптека, г Реутов, ул Комсомольская д 10 к 1, тел. +7 (499) 409-75-78
 
 # Menu items in navigation bar
 shop.menu.item = Лекарства
@@ -151,7 +151,7 @@ send.email = Отправить
 #
 # SEO
 #
-main.seo.description = Поиск лекарства дешевые цены Реутов Москва
+main.seo.description = Поиск лекарства дешевые цены Реутов ФармРус
 
 drug.name=Название
 drug.producer=Производитель
@@ -181,3 +181,20 @@ admin.description = Алминистрирование сайта
 goods.load.title = Загрузка, обновление товаров
 goods.title = Товары
 goods.groups.title = Группы товаров
+goods.recommended.title = Рекомендуемые
+goods.upload.button = Загрузить
+upload.result = Результат загрузки
+
+grid.field.drugsFullName = Название
+grid.field.drugsShortName = Сокр. название
+grid.field.ost = Кол-во
+grid.field.retailPrice = Цена
+grid.field.image = Изобр
+grid.field.groups = Группы
+
+form.image.set = Загрузить изображение
+images.download = Скачать все изображения
+button.addTorrcom = В рекомендуемые
+button.save = Сохранить
+order.num = Порядковый номер
+form.order.set = Установка порядкового номера

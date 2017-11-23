@@ -13,9 +13,66 @@
 )(implicit request: RequestHeader, messages: Messages, webJarsUtil: WebJarsUtil)
 
 @main(messages("cart.page.title"), signInForm, socialProviders, user, cart) {
+  <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css" />
+  <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css" />
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
+  <script type="text/javascript" src="@controllers.routes.Assets.at("javascripts/admin.js")"></script>
+
   <script>
       function updateItem (event, drugId) {rphApp.updateCartItem ('Csrf-Token', '@helper.CSRF.getToken.value', event, drugId);}
   </script>
+
+  <div id="myModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">@messages("form.image.set")</h4>
+        </div>
+        <div class="modal-body">
+        @helper.form(action = controllers.routes.AdminController.setImageToDrug(), 'enctype -> "multipart/form-data", 'role -> "form", 'name -> "set-image") {
+          @helper.CSRF.formField
+          <div class="form-group">
+            <div>
+              <input type="file" name="image"/>
+              <input type="hidden" id="id" name="id"/>
+            </div>
+            <div>
+              <button id="submit" type="submit" value="submit" class="btn btn-lg btn-primary btn-block">@messages("button.save")</button>
+            </div>
+          </div>
+        }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="dlgOrderNum" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">@messages("form.order.set")</h4>
+        </div>
+        <div class="modal-body">
+        <form role="form", name="set-order">
+          <div class="form-group">
+            <div>
+              <div class="form-group">
+                <label for="orderNum">@messages("order.num"):</label>
+                <input type="number" class="form-control" id="orderNum" name="orderNum">
+              </div>
+              <input type="hidden" id="id" name="id"/>
+            </div>
+            <div>
+              <button id="submit" type="submit" value="submit" class="btn btn-lg btn-primary btn-block">@messages("button.save")</button>
+            </div>
+          </div>
+        </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="jumbotron text-center">
     <p>@{messages("admin.description")}</p>
@@ -26,29 +83,206 @@
       <li class="active"><a data-toggle="tab" href="#goods-upload">@messages("goods.load.title")</a></li>
       <li><a data-toggle="tab" href="#goods">@messages("goods.title")</a></li>
       <li><a data-toggle="tab" href="#groups">@messages("goods.groups.title")</a></li>
+      <li><a data-toggle="tab" href="#recommended">@messages("goods.recommended.title")</a></li>
     </ul>
 
     <div class="tab-content">
-      @* Upload goods *@
       <div id="goods-upload" class="tab-pane fade in active">
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-        @helper.form(action = routes.GoodsImportController.upload, 'enctype -> "multipart/form-data") {
+        <h3>@Messages("goods.load.title")</h3>
+
+        @helper.form(action = routes.GoodsImportController.upload, 'enctype -> "multipart/form-data", 'name -> "fileinfo") {
           @helper.CSRF.formField
-          <input type="file" name="data">
-          <p>
-            <input type="submit">
-          </p>
+          <input type="file" name="fileinfo" class="fileuploader">
+          <button type="submit" class="btn btn-primary">@messages("goods.upload.button")</button>
         }
+
+        <div class="form-group">
+          <label for="comment">@messages("upload.result")</label>
+          <textarea class="form-control" rows="5" id="upload-res"></textarea>
+        </div>
+
+        <script>
+            var form = document.forms.namedItem("fileinfo");
+            form.addEventListener('submit', function(ev) {
+              var oData = new FormData(form);
+              var oReq = new XMLHttpRequest();
+              oReq.open(form.method, form.action, true);
+              oReq.onload = function(oEvent) {
+                if (oReq.status == 200) {
+                  $("textarea#upload-res").val(oReq.responseText);
+                } else {
+                  $("textarea#upload-res").val(oReq.status + "\n" + oReq.responseText);
+                }
+              };
+
+              oReq.send(oData);
+              ev.preventDefault();
+            }, false);
+        </script>
       </div>
 
-      <div id="goods" class="tab-pane fade in active">
-        <h3>HOME</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <div id="goods" class="tab-pane fade">
+        <h3>@Messages("goods.title")</h3>
+        <p>
+          <a href="images">@messages("images.download")</a>
+        </p>
+
+        <div id="productsGrid"></div>
+        <script>
+            $("#productsGrid").jsGrid({
+              height: "auto",
+              width: "100%",
+
+              sorting: true,
+              paging: true,
+              autoload: true,
+              editing: false,
+              selecting: true,
+
+              pageIndex: 1,
+              pageSize: 10,
+              filtering: true,
+
+              controller: {
+                loadData: loadProducts('Csrf-Token', '@helper.CSRF.getToken.value')
+              },
+
+              fields: [
+                { name: "id", type: "text", visible: false },
+                { name: "drugsFullName", title: '@messages("grid.field.drugsFullName")', autosearch: true, type: "text", width: 150 },
+                { name: "shortName", title: '@messages("grid.field.drugsShortName")', type: "text", width: 100 },
+                { name: "ost", title: '@messages("grid.field.ost")', type: "number", autosearch: false, width: 60 },
+                { name: "retailPrice", title: '@messages("grid.field.retailPrice")', type: "number", autosearch: false, width: 60 },
+                {
+                  name: "drugImage",
+                  title: '@messages("grid.field.image")',
+                  itemTemplate: function(val, item) {
+                    return $("<img>").attr("src", val ? "/assets/images/" + val : "").css({ width: 58, height: 30 }).on("click", function() {
+                      $("#myModal #id").attr("value", item.id);
+                      $('#myModal').modal('show');
+//                      $('#myModal').on('shown.bs.modal', function () {
+//                        console.log("on shown")
+//                      });
+                    });
+                  },
+                  align: "center",
+                  width: 60
+                },
+                { name: "drugGroups", title: '@messages("grid.field.groups")', type: "select", autosearch: false, width: 100 },
+                {
+                  name: "addToRecom",
+                  title: '@messages("button.addTorrcom")',
+                  itemTemplate: function(val, item) {
+                    return $("<button>", {
+                      class: "input-group-addon btn",
+                      text: "+"
+                    }).on("click", function() {
+                      $("#dlgOrderNum #id").attr("value", item.id);
+                      $('#dlgOrderNum').modal('show');
+                    });
+                  },
+                  align: "center",
+                  width: 40
+                }
+              ]
+            });
+
+            var form = document.forms.namedItem("set-image");
+            form.addEventListener('submit', function (ev) {
+              var oData = new FormData(form);
+              var oReq = new XMLHttpRequest();
+              oReq.open(form.method, form.action, true);
+              oReq.onload = function (oEvent) {
+                if (oReq.status == 200) {
+                  $('#myModal').modal('hide');
+                  $("#productsGrid").jsGrid("loadData");
+                } else {
+                  alert ("Error occured");
+                  console.log(oReq.status + "\n" + oReq);
+                }
+              };
+
+              oReq.send(oData);
+              ev.preventDefault();
+            }, false);
+
+            form = document.forms.namedItem("set-order");
+            form.addEventListener('submit', function (ev) {
+              var oData = new FormData(form);
+              addRecommended('Csrf-Token', '@helper.CSRF.getToken.value', form.id.value, form.orderNum.value, function() {
+                $('#dlgOrderNum').modal('hide');
+              });
+              ev.preventDefault();
+            }, false);
+        </script>
       </div>
 
       <div id="groups" class="tab-pane fade">
         <h3>@messages("goods.groups.title")</h3>
-        <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+
+      </div>
+
+      <div id="recommended" class="tab-pane fade">
+        <h3>@messages("goods.recommended.title")</h3>
+        <div id="recomGrid"></div>
+        <script>
+                $("#recomGrid").jsGrid({
+                  height: "auto",
+                  width: "100%",
+
+                  sorting: true,
+                  paging: true,
+                  autoload: true,
+                  editing: false,
+                  selecting: true,
+                  deleteButton: true,
+
+                  pageIndex: 1,
+                  pageSize: 10,
+
+                  controller: {
+                    loadData: loadRecomProducts('Csrf-Token', '@helper.CSRF.getToken.value')
+                  },
+
+                  fields: [
+                    { name: "id", type: "text", visible: false },
+                    { name: "drugsFullName", title: '@messages("grid.field.drugsFullName")', autosearch: true, type: "text", width: 150 },
+                    { name: "shortName", title: '@messages("grid.field.drugsShortName")', type: "text", width: 100 },
+                    { name: "ost", title: '@messages("grid.field.ost")', type: "number", autosearch: false, width: 100 },
+                    { name: "retailPrice", title: '@messages("grid.field.retailPrice")', type: "number", autosearch: false, width: 100 },
+                    {
+                      name: "drugImage",
+                      title: '@messages("grid.field.image")',
+                      itemTemplate: function(val, item) {
+                        return $("<img>").attr("src", val ? "/assets/images/" + val : "").css({ width: 58, height: 30 });
+                      },
+                      insertTemplate: function() {
+                        var insertControl = this.insertControl = $("<input>").prop("type", "file");
+                        return insertControl;
+                      },
+                      insertValue: function() {
+                        return this.insertControl[0].files[0];
+                      },
+                      align: "center",
+                      width: 120
+                    },
+                    {
+                      name: "addToRecom",
+                      title: '@messages("button.addTorrcom")',
+                      itemTemplate: function(val, item) {
+                        return $("<button>", {
+                          class: "input-group-addon btn",
+                          text: "-"
+                        }).on("click", function() {
+                          removeRecommended('Csrf-Token', '@helper.CSRF.getToken.value', item.id, function() {$("#recomGrid").jsGrid("loadData");});
+                        });
+                      },
+                      align: "center",
+                      width: 40
+                    }
+                  ]
+                });
+        </script>
       </div>
     </div>
   </div>

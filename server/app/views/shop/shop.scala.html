@@ -15,7 +15,7 @@
 @main(messages("shop.page.title"), signInForm, socialProviders, user, cart) {
   <!--suppress JSUnusedLocalSymbols -->
   <script>
-          function load (pageSize, offset, search) {rphApp.findAll (pageSize, offset, search, 'Csrf-Token', '@helper.CSRF.getToken.value', '@messages("prj.goto")');}
+    function load (pageSize, offset, search) {rphApp.findAll (pageSize, offset, search, 'Csrf-Token', '@helper.CSRF.getToken.value', '@messages("prj.goto")');}
   </script>
 
   <div class="jumbotron text-center">
@@ -41,8 +41,8 @@
       <div class="container">
         <nav>
           <ul class="pager">
-            <li class="previous disabled"><a href="javascript:void(0);">@messages("page.prev")</a></li>
-            <li class="next disabled"><a href="javascript:void(0);">@messages("page.next")</a></li>
+            <li class="previous disabled"><a href="javascript:void(0);">&larr; @messages("page.prev")</a></li>
+            <li class="next disabled"><a href="javascript:void(0);">@messages("page.next") &rarr;</a></li>
           </ul>
         </nav>
         <div class="row drugs">
@@ -50,8 +50,8 @@
         </div>
         <nav>
           <ul class="pager">
-            <li class="previous disabled"><a href="javascript:void(0);">@messages("page.prev")</a></li>
-            <li class="next disabled"><a href="javascript:void(0);">@messages("page.next")</a></li>
+            <li class="previous disabled"><a href="javascript:void(0);">&larr; @messages("page.prev")</a></li>
+            <li class="next disabled"><a href="javascript:void(0);">@messages("page.next") &rarr;</a></li>
           </ul>
         </nav>
       </div>

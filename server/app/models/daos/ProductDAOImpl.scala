@@ -6,13 +6,13 @@ import reactivemongo.api.collections.bson.BSONCollection
 import scala.concurrent.Future
 import javax.inject.Inject
 
-import play.api.cache.{AsyncCacheApi, NamedCache, SyncCacheApi}
+import play.api.cache.{NamedCache, SyncCacheApi}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.QueryOpts
-import reactivemongo.api.commands.UpdateWriteResult
+import reactivemongo.api.commands.{UpdateWriteResult, WriteResult}
 import reactivemongo.api.indexes.Index
 import reactivemongo.api.indexes.IndexType.Text
-import reactivemongo.bson.{BSONArray, BSONDocumentReader, BSONDocumentWriter, BSONElement, Macros, document}
+import reactivemongo.bson.{BSONArray, BSONDocument, BSONDocumentReader, BSONDocumentWriter, BSONElement, BSONValue, Macros, Producer, document}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -29,13 +29,22 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
   implicit def recProductWriter: BSONDocumentWriter[RecommendedDrugs] = Macros.writer[RecommendedDrugs]
   implicit def recPproductReader: BSONDocumentReader[RecommendedDrugs] = Macros.reader[RecommendedDrugs]
 
-  def createTextIndex () = productCollection.flatMap(
+  /**
+    * Function create or replace text index for products
+    * @return
+    */
+  override def createTextIndex () = productCollection.flatMap(
     collection => collection.indexesManager.create(Index(
       key = Seq(
         "drugsFullName" -> Text,
         "drugsShortName" -> Text,
         "drugFullName" -> Text,
-        "producerFullName" -> Text
+        "producerFullName" -> Text,
+        "producerShortName" -> Text,
+        "supplierName" -> Text,
+        "barCode" -> Text,
+        "drugGroups" -> Text,
+        "MNN" -> Text
       ),
       name = Some("productSearchText"),
       options = document (
@@ -46,26 +55,26 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
 
   /**
     * Function used to create soundex representation for the given word
-    * @param inpStr
+    * @param inpStr input string
     * @return soundex representation
     */
   private def soundex (inpStr: String): String = cacheApi.getOrElseUpdate[String](s"soundex.$inpStr"){
     List[(String, String)](
-      ("ЙО|ИО|ЙЕ|ИЕ" -> "И"),
-      ("О|Ы|Я" -> "А"),
-      ("Е|Ё|Э" -> "И"),
-      ("Ю" -> "У"),
-      ("Б" -> "П"),
-      ("З" -> "С"),
-      ("Д" -> "Т"),
-      ("В" -> "Ф"),
-      ("Г" -> "К"),
-      ("ТС|ДС" -> "Ц"),
-      ("Н{2,}" -> "Н"),
-      ("С{2,}" -> "С"),
-      ("Р{2,}" -> "Р"),
-      ("М{2,}" -> "М"),
-      ("[УЕАЫОИЯЮЭ]{1,}$" -> "")
+      "ЙО|ИО|ЙЕ|ИЕ" -> "И",
+      "О|Ы|Я" -> "А",
+      "Е|Ё|Э" -> "И",
+      "Ю" -> "У",
+      "Б" -> "П",
+      "З" -> "С",
+      "Д" -> "Т",
+      "В" -> "Ф",
+      "Г" -> "К",
+      "ТС|ДС" -> "Ц",
+      "Н{2,}" -> "Н",
+      "С{2,}" -> "С",
+      "Р{2,}" -> "Р",
+      "М{2,}" -> "М",
+      "[УЕАЫОИЯЮЭ]{1,}$" -> ""
     ).foldLeft(inpStr.toUpperCase())((inp, m) => {inp.replaceAll(m._1, m._2)})
   }
 
@@ -84,6 +93,11 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     drug.copy(sndWords = Some(soundexWords))
   }
 
+  /**
+    * Function fix keyboar layout for russian
+    * @param str string to fix layout
+    * @return
+    */
   private def fixKeyboardLayout (str: String): String = cacheApi.getOrElseUpdate[String](s"ruslayout.$str"){
     val replacer = Map(
       'q' -> 'й', 'w' -> 'ц', 'e' -> 'у', 'r' -> 'к', 't' -> 'е', 'y' -> 'н', 'u' -> 'г',
@@ -96,6 +110,9 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     str.toLowerCase.map(c => replacer.getOrElse(c, c))
   }
 
+  /**
+    * Constant defines product projection, i.e. fields which will be passed to result object
+    */
   private lazy val projection = document (
     "barCode" -> 1,
     "id" -> 1,
@@ -117,96 +134,107 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     "seoTags" -> 1
   )
 
+  override def findById(id: String) = productCollection.flatMap(_.find(document("_id" -> id)).projection(projection).one[DrugsProduct])
+  override def save(product: DrugsProduct) = productCollection.flatMap(_.update(document("_id" -> product.id), product, upsert = true).map(_.upserted.map(ups => product).head))
+  override def remove(id: String) = productCollection.flatMap(_.remove(document("_id" -> id)).map(r => {}))
+
+  private def buildSorts (fields:Option[Array[String]]) = fields.getOrElse(Array[String]("retailPrice")).map(f => document(f -> 1)).toSeq
+
+  private def buildQueryArray (filter:DrugsFindRq, doc:BSONValue, onlyExistence:Boolean = true) = {
+    var arr = BSONArray(doc)
+    // Add groups information
+    filter.groups match {
+      case Some(groups) => arr = arr ++ document("drugGroups" -> document("$in" -> groups))
+      case _ =>
+    }
+
+    // Add information about image (exists or not)
+    if (filter.hasImage == 0) {
+      arr = arr ++ document("drugImage" -> document("$exists" -> false))
+    } else if (filter.hasImage == 1) {
+      arr = arr ++ document("drugImage" -> document("$exists" -> true))
+    }
+
+    // Additional filter for quantity of products
+    if (onlyExistence) {
+      arr = arr ++ document("ost" -> document("$gt" -> 0))
+    }
+
+    arr
+  }
+
+  private def processWithAdditionalFilter (filter:DrugsFindRq)(doc:BSONValue) = productCollection.flatMap(_.find(
+      document("$and" ->
+        buildQueryArray (filter, doc),
+      )).projection(projection).options(QueryOpts().skip(filter.offset).batchSize(filter.pageSize))
+      .sort(document(buildSorts(filter.sorts):_*))
+      .cursor[DrugsProduct]()
+      .collect[List](filter.pageSize, handler[DrugsProduct]))
+
   /**
-    * Function find drugs by drusFullName only but user regexp search
-    * @param text String to search
-    * @param sortField sorting field
-    * @param offset offset
-    * @param pageSize pageSize
+    * Function find drugs by drugsFullName only but user regexp search
+    * @param filter data to filter request
     * @return list of the found drugs
     */
-  def searchbyDrugName (text: String, sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(
-    document (BSONElement.provided("$and" ->
-      BSONArray(
-        document("$or" -> BSONArray(
-            document("drugsFullName" -> document("$regex" -> s".*${text}.*", "$options" -> "i")),
-            document("drugsFullName" -> document("$regex" -> s".*${fixKeyboardLayout(text)}.*", "$options" -> "i"))
-          )
-        ),
-        document("ost" -> document("$gt" -> 0))
-      )))).projection(projection).options(QueryOpts().skip(offset).batchSize(pageSize))
-    .sort(document(sortField.getOrElse("retailPrice") -> 1))
-    .cursor[DrugsProduct]()
-    .collect[List](pageSize, handler[DrugsProduct]))
+  private def searchbyDrugName (filter:DrugsFindRq) = processWithAdditionalFilter (filter) {
+    filter.text match {
+      case Some(text) => document("$or" -> BSONArray(
+        document("drugsFullName" -> document("$regex" -> s".*${text}.*", "$options" -> "i")),
+        document("drugsFullName" -> document("$regex" -> s".*${fixKeyboardLayout(text)}.*", "$options" -> "i"))
+      ))
+      case _ => document()
+    }
+  }
 
   /**
     * Function searches drugs using mongo text index. This text index custructs from name and description and producer of drugs
-    * @param text text to search
-    * @param sortField field to sroting result set
-    * @param offset offset
-    * @param pageSize page size
+    * @param filter
     * @return list of found drugs
     */
-  def textSearch (text: String, sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap(_.find(
-    document (BSONElement.provided("$and" ->
-      BSONArray(
-        document("$text" -> document(
-          "$search" -> text,
-          "$caseSensitive" -> false)
-        ),
-        document("ost" -> document("$gt" -> 0))
-      )))).projection(projection).options(QueryOpts().skip(offset).batchSize(pageSize))
-      .sort(document(sortField.getOrElse("retailPrice") -> 1))
-      .cursor[DrugsProduct]()
-      .collect[List](pageSize, handler[DrugsProduct]))
+  private def textSearch (filter:DrugsFindRq) = processWithAdditionalFilter (filter) {
+    filter.text match {
+      case Some(text) => document("$text" -> document(
+        "$search" -> text,
+        "$caseSensitive" -> false)
+      )
+
+      case _ => document()
+    }
+  }
 
   /**
     * Function searchs drugs using soundex function. This function prepares array of words and stored its within drugs object.
     * Eache text string will be splitted by words and next these words converts to sondex form. After mongo searchs intersects between
     * thwo words arrays - stored in database and computed from search string
-    * @param text text toi search
-    * @param sortField sort field
-    * @param offset offset
-    * @param pageSize page size
+    * @param filter
     * @return list of found drugs
     */
-  override def fuzzySearch(text: String, sortField: Option[String], offset: Int, pageSize: Int) = productCollection.flatMap (col => {
-    val words = text.split(regexp).map(soundex(_))
-    // Add fixed layout strings to find
-    val allWords = words ++ fixKeyboardLayout(text).split(regexp).map(soundex(_))
+  private def fuzzySearch(filter:DrugsFindRq) = processWithAdditionalFilter (filter) {
+    filter.text match {
+      case Some(text) =>
+        val words = text.split(regexp).map(soundex(_))
+        // Add fixed layout strings to find
+        val allWords = words ++ fixKeyboardLayout(text).split(regexp).map(soundex(_))
+        document("sndWords" -> document("$in" -> allWords))
 
-    col.find(
-      document (BSONElement.provided("$and" ->
-        BSONArray(
-          document("sndWords" -> document("$in" -> allWords)),
-          document("ost" -> document("$gt" -> 0))
+      case _ => document()
+    }
+  }
+
+  override def getAll(dp:DrugsAdminRq) = productCollection.flatMap(
+    _.find(
+      if (dp.drugsFullName != "") {
+        document("$or" -> BSONArray (
+          document("drugsFullName" -> document("$regex" -> s".*${dp.drugsFullName}.*", "$options" -> "i")),
+          document("drugsFullName" -> document("$regex" -> s".*${fixKeyboardLayout(dp.drugsFullName)}.*", "$options" -> "i"))
         ))
-      )
-    ).projection(projection).options(QueryOpts().skip(offset).batchSize(pageSize))
-      .sort(document (sortField.getOrElse("retailPrice") -> 1))
-      .cursor[DrugsProduct]()
-      .collect[List](pageSize, handler[DrugsProduct])
-  })
-
-  override def findByGroup (group: Array[String], text: Option[String], sortField: Option[String], offset: Int, pageSize: Int): Future[List[DrugsProduct]] =
-    productCollection.flatMap (col => {
-      val arr = BSONArray(document("drugGroups" -> document("$in" -> group)))
-      text match {
-        case Some(txt) => val words = txt.split(regexp).map(soundex(_))
-          val allWords = words ++ fixKeyboardLayout(txt).split(regexp).map(soundex(_))
-          arr.add (document("sndWords" -> document("$in" -> allWords)))
-        case _ =>
       }
-
-      arr.add(document("ost" -> document("$gt" -> 0)))
-
-      col.find(
-        document ("$and" -> arr)
-      ).projection(projection).options(QueryOpts().skip(offset).batchSize(pageSize))
-        .sort(document (sortField.getOrElse("retailPrice") -> 1))
-        .cursor[DrugsProduct]()
-        .collect[List](pageSize, handler[DrugsProduct])
-    })
+      else
+        document()
+    )
+      .projection(projection)
+      .cursor[DrugsProduct]()
+      .collect[List](-1, handler[DrugsProduct]))
 
   /**
     * Function retrieves recommended drugs from database using sorting and paging
@@ -215,42 +243,26 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     * @param pageSize page size
     * @return list of found drugs
     */
-  override def findAll(sortField: Option[String], offset: Int, pageSize: Int) = recommendedCollection.flatMap (
-    _.find(document()).options(QueryOpts().skip(offset).batchSize(pageSize))
+  override def findAll(sortField: Option[String], offset: Int, pageSize: Int) = findRecommended
+
+  override def findRecommended  = recommendedCollection.flatMap (
+    _.find(document())
       .sort (document("orderNum" -> 1))
       .cursor[RecommendedDrugs]()
-      .collect[List](pageSize, handler[RecommendedDrugs])
+      .collect[List](-1, handler[RecommendedDrugs])
   ).flatMap(rd => {
-    printf(s"found recommended: ${rd}")
-
-    Future.sequence(
-      rd.map(
-        r => findById(r.drugProductId).map (dp => {
-          dp.getOrElse(null)
-        })
-      )
-    ).map(r => r.filter(drugs => drugs != null))
+    val drugIds = rd.map(r => r.drugProductId)
+    val drugOrderMap = rd.map (r => (r.drugProductId -> r.orderNum)).toMap
+    productCollection.flatMap(_.find(document("_id" -> document("$in" -> drugIds))).projection(projection)
+      .cursor[DrugsProduct]()
+      .collect[List](-1, handler[DrugsProduct])).map (list => list.sortWith((e1, e2) => drugOrderMap(e1.id) < drugOrderMap(e2.id)))
   })
-
-  override def findRecommended (offset: Int, pageSize: Int) = recommendedCollection.flatMap (
-    _.find(document()).options(QueryOpts().skip(offset).batchSize(pageSize))
-      .sort (document("orderNum" -> 1))
-      .cursor[RecommendedDrugs]()
-      .collect[List](pageSize, handler[RecommendedDrugs])
-  )
 
   override def addRecommended (drugId: String, orderNum: Int): Future[Unit] = recommendedCollection.flatMap(
     _.update(document ("_id" -> drugId), RecommendedDrugs(drugId, orderNum), upsert = true)
-  ).map(r => {printf(s"r: ${r}\n")})
+  ).map(r => {})
 
   override def removeRecommended (drugId: String) = recommendedCollection.flatMap(_.remove(document("_id" -> drugId))).map(r => {})
-
-  override def findById(id: String) = {
-    printf (s"findbyId: $id")
-    productCollection.flatMap(_.find(document("_id" -> id)).projection(projection).one[DrugsProduct])
-  }
-  override def save(product: DrugsProduct) = productCollection.flatMap(_.update(document("_id" -> product.id), product, upsert = true).map(_.upserted.map(ups => product).head))
-  override def remove(id: String) = productCollection.flatMap(_.remove(document("_id" -> id)).map(r => {}))
 
   /**
     * Function updates or inserts given products. Only part of the drug attributes wil be changes. Suck additional attribues as
@@ -268,11 +280,8 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
                 "_id" -> entity.id,
                 "barCode" -> entity.barCode,
                 "drugsFullName" -> entity.drugsFullName,
-//                "drugFullName" -> entity.drugFullName,
                 "drugsShortName" -> entity.drugsShortName,
                 "ost" -> entity.ost,
-//                "ostFirst" -> entity.ostFirst,
-//                "ostLast" -> entity.ostLast,
                 "retailPrice" -> entity.retailPrice,
                 "tradeTech" -> entity.tradeTech,
                 "producerFullName" -> entity.producerFullName,
@@ -314,50 +323,26 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     *   <li>Fuzzy search</li>
     * </ul>
     *
-    * @param text test to search
-    * @param sortField sorting
-    * @param offset offset
-    * @param pageSize page size
+    * @param filter
     * @return list of found drugs
     */
-  override def combinedSearch (text: String, sortField: Option[String], offset: Int, pageSize: Int) = searchbyDrugName(text, sortField, offset, pageSize).flatMap(
-    res =>
-      // If not found then trying to text search
-      if (res.size == 0)
-        textSearch(text, sortField, offset, pageSize).flatMap(
-          result =>
-            // If not found then trying to fuzzy search
-            if (result.size == 0)
-              fuzzySearch (text, sortField, offset, pageSize)
-            else
-              Future.successful(result)
+  override def combinedSearch (filter:DrugsFindRq) = searchbyDrugName(filter).flatMap(
+    res => // If not found then trying to text search
+      if (res.size == 0) {
+        textSearch(filter).flatMap(result => // If not found then trying to fuzzy search
+          if (result.size == 0)
+            fuzzySearch(filter)
+          else
+            Future.successful(result)
         )
-      else
-        Future.successful(res)
+      }
+      else Future.successful(res)
   )
 
   /**
-    * Not used because andThen not working as I imagined.
-    * TODO fix my imagination
-    * @param text
-    * @param sortField
-    * @param offset
-    * @param pageSize
-    * @return
-    */
-  @Deprecated
-  def _notWorkingCombinedSearch (text: String, sortField: Option[String], offset: Int, pageSize: Int) =
-    searchbyDrugName(text, sortField, offset, pageSize) andThen {
-      case Success(res) if (res.size == 0) =>
-        textSearch(text, sortField, offset, pageSize) andThen {
-          case Success(result) if (result.size == 0) => fuzzySearch (text, sortField, offset, pageSize)
-        }
-    }
-
-  /**
     * Function set image to desired drug
-    * @param id
-    * @param imageUrl
+    * @param id identifier of drug
+    * @param imageUrl image url
     * @return changed drug
     */
   override def addImage(id: String, imageUrl: String) = productCollection.flatMap(_.findAndUpdate(
@@ -368,8 +353,8 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
 
   /**
     * Function set image to desired drug
-    * @param id
-    * @param groups
+    * @param id identifier of drug
+    * @param groups group list
     * @return changed drug
     */
   override def setGroups (id: String, groups: Array[String]) = productCollection.flatMap(_.findAndUpdate(
@@ -377,38 +362,4 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
       document("$set" -> document ( "drugGroups" -> groups)),
       fetchNewObject = true
     ).map(r => r.result[DrugsProduct]))
-
-
-  /**
-    * Filter by fields in request
-    * @param filter
-    * @return
-    */
-  override def filter(filter: DrugsFindRq) = productCollection.flatMap (col => {
-    val arr = BSONArray()
-
-    filter.groups match {
-      case Some(grps) => arr.add (document("drugGroups" -> document("$in" -> grps)))
-      case _ =>
-    }
-
-    filter.text match {
-      case Some(txt) => val words = txt.split(regexp).map(soundex(_))
-        val allWords = words ++ fixKeyboardLayout(txt).split(regexp).map(soundex(_))
-        arr.add (document("sndWords" -> document("$in" -> allWords)))
-      case _ =>
-    }
-
-    filter.drugImage match {
-      case Some(txt) => arr.add (document("drugImage" -> document("$in" -> txt)))
-      case _ =>
-    }
-
-    col.find(
-      document ("$and" -> arr)
-    ).projection(projection).options(QueryOpts().skip(filter.offset).batchSize(filter.pageSize))
-      .sort(document (filter.sorts.getOrElse("drugsFullName") -> 1))
-      .cursor[DrugsProduct]()
-      .collect[List](filter.pageSize, handler[DrugsProduct])
-  })
 }

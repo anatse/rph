@@ -1,16 +1,14 @@
 package models.daos
 
 import reactivemongo.api.commands.{UpdateWriteResult, WriteResult}
-import models.{DrugsFindRq, DrugsProduct, RecommendedDrugs}
+import models.{DrugsAdminRq, DrugsFindRq, DrugsProduct, RecommendedDrugs}
 
 import scala.concurrent.Future
 
 trait ProductDAO extends BaseDAO[DrugsProduct] {
-  def fuzzySearch (text: String, sortField: Option[String], offset: Int, pageSize: Int): Future[List[DrugsProduct]]
-  def textSearch (text: String, sortField: Option[String], offset: Int, pageSize: Int): Future[List[DrugsProduct]]
-  def combinedSearch (text: String, sortField: Option[String], offset: Int, pageSize: Int): Future[List[DrugsProduct]]
-  def findByGroup (group: Array[String], text: Option[String], sortField: Option[String], offset: Int, pageSize: Int): Future[List[DrugsProduct]]
-  def filter (filter: DrugsFindRq): Future[List[DrugsProduct]]
+  def getAll(dp:DrugsAdminRq): Future[List[DrugsProduct]]
+
+  def combinedSearch (filter:DrugsFindRq): Future[List[DrugsProduct]]
 
   // Admin functions
   def createTextIndex ():Future[WriteResult]
@@ -21,7 +19,7 @@ trait ProductDAO extends BaseDAO[DrugsProduct] {
   def addImage (id: String, imageUrl: String):Future[Option[DrugsProduct]]
   def setGroups (id: String, groups: Array[String]):Future[Option[DrugsProduct]]
 
-  def findRecommended (offset: Int, pageSize: Int): Future[List[RecommendedDrugs]]
+  def findRecommended: Future[List[DrugsProduct]]
   def addRecommended (drugId: String, orderNum: Int): Future[Unit]
   def removeRecommended (drugId: String): Future[Unit]
 }

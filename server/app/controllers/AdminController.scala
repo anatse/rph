@@ -1,6 +1,6 @@
 package controllers
 
-import java.io.File
+import java.io.{File, FileFilter}
 import java.nio.file.{CopyOption, Files, Paths, StandardCopyOption}
 import javax.inject.Inject
 
@@ -33,17 +33,7 @@ class AdminController @Inject()(
   cartDAO: CartDAO,
   mailerClient: MailerClient,
   env: Environment
- )(implicit webJarsUtil: WebJarsUtil, ex: ExecutionContext) extends AbstractController(components) with I18nSupport  {
-
-  implicit val groupWrites = Json.writes[DrugsGroup]
-  implicit val groupReads = Json.reads[DrugsGroup]
-  implicit val productWrites = Json.writes[DrugsProduct]
-  implicit val dfrReads = Json.reads[DrugsFindRq]
-
-  private def makeResult (rows:List[DrugsProduct], realPageSize:Int, offset:Int) = {
-    val filterredRows = if (rows.length > realPageSize) rows.dropRight(1) else rows
-    Ok(Json.obj("rows" -> filterredRows, "pageSize" -> realPageSize, "offset" -> offset, "hasMore" -> (rows.length > realPageSize)))
-  }
+ )(implicit webJarsUtil: WebJarsUtil, ex: ExecutionContext) extends AbstractController(components) with I18nSupport with ModelImplicits {
 
   def adminView = silhouette.SecuredAction(WithRoles("ADMIN")).async { implicit request =>
     val sid = sessionId(request2session)
@@ -77,6 +67,7 @@ class AdminController @Inject()(
         val imagePath = s"${folderPath.getAbsolutePath}/${id}.jpg"
         val imageName = s"${id}.jpg"
         val fp = new File (imagePath)
+
         Files.copy(file.ref.path, fp.toPath, StandardCopyOption.REPLACE_EXISTING)
         drugsProductDAO.addImage(id, imageName).map (row => Ok(Json.obj("res" -> row)))
 
@@ -84,9 +75,50 @@ class AdminController @Inject()(
     }
   }
 
-  def filterProducts = silhouette.SecuredAction(parse.json[DrugsFindRq]).async { implicit request =>
-    val drugsFindRq: DrugsFindRq = request.body
-    drugsProductDAO.filter(drugsFindRq.copy(pageSize = drugsFindRq.pageSize + 1)).map(rows => makeResult(rows, drugsFindRq.pageSize, drugsFindRq.offset))
+  def downloadAllImages = silhouette.SecuredAction.async { request =>
+    Future {
+      val folderPath = env.getFile("/public/images")
+
+      import java.io.{BufferedInputStream, FileInputStream, FileOutputStream}
+      import java.util.zip.{ZipEntry, ZipOutputStream}
+
+      val zipFile = s"${folderPath.getAbsolutePath}/images.zip"
+      val zip = new ZipOutputStream(new FileOutputStream(zipFile))
+
+      folderPath.listFiles(new FileFilter() {
+        override def accept(pathname: File) = {
+          val pat = ".*\\.(jpg|png|jpeg|bmp)$".r
+          !pathname.isDirectory && !pat.findFirstIn(pathname.getName).isEmpty
+        }
+      }).foreach { file =>
+        val fileName = file.getName
+        zip.putNextEntry(new ZipEntry(fileName))
+        val in = new BufferedInputStream(new FileInputStream(file))
+        var b = in.read()
+        while (b > -1) {
+          zip.write(b)
+          b = in.read()
+        }
+
+        println(s"added file: ${fileName}")
+        in.close()
+        zip.closeEntry()
+      }
+      zip.close()
+
+      Ok.sendFile(
+        content = new java.io.File(zipFile),
+        fileName = _ => "images.zip"
+      )
+    }
+  }
+
+  def filterProducts = silhouette.SecuredAction(parse.json[DrugsAdminRq]).async { implicit request =>
+    drugsProductDAO.getAll(request.body).map (rows => Ok(Json.obj("rows" -> rows)))
+  }
+
+  def findRecommended = silhouette.UserAwareAction.async { implicit request =>
+    drugsProductDAO.findRecommended.map(rows => Ok(Json.obj("rows" -> rows)))
   }
 
   def addRecommended (drugId: String, orderNum: Int) = silhouette.SecuredAction(WithRoles("ADMIN")).async {
