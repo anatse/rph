@@ -183,7 +183,7 @@ object ProductJS {
         div (cls:="col-lg-3 col-sm-2 item")(
           div (cls:="panel panel-primary")(
             div (cls:="panel-body")(
-              img (cls:="img-responsive", src:=s"/assets/images/${dynGet[String] (drug, "drugImage").getOrElse("nophoto.png")}", style:="width:230px;height:118px"),
+              img (cls:="img-responsive", src:=s"${dynGet[String] (drug, "drugImage").getOrElse("/assets/images/nophoto.png")}", style:="width:230px;height:118px"),
               p (`class`:="description")(fullName),
               p (`class`:="producer")(producerShortName)
             ),

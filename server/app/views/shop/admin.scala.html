@@ -157,7 +157,7 @@
                   name: "drugImage",
                   title: '@messages("grid.field.image")',
                   itemTemplate: function(val, item) {
-                    return $("<img>").attr("src", val ? "/assets/images/" + val : "").css({ width: 58, height: 30 }).on("click", function() {
+                    return $("<img>").attr("src", val ? val : "").css({ width: 58, height: 30 }).on("click", function() {
                       $("#myModal #id").attr("value", item.id);
                       $('#myModal').modal('show');
 //                      $('#myModal').on('shown.bs.modal', function () {
@@ -253,7 +253,7 @@
                       name: "drugImage",
                       title: '@messages("grid.field.image")',
                       itemTemplate: function(val, item) {
-                        return $("<img>").attr("src", val ? "/assets/images/" + val : "").css({ width: 58, height: 30 });
+                        return $("<img>").attr("src", val ? val : "").css({ width: 58, height: 30 });
                       },
                       insertTemplate: function() {
                         var insertControl = this.insertControl = $("<input>").prop("type", "file");
