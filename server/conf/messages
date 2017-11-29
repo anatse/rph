@@ -181,6 +181,7 @@ admin.description = Site admin
 goods.load.title = Upload goods
 goods.title = Goods management
 goods.groups.title = Groops management
+goods.recommended.title = Recommended
 goods.upload.button = Upload
 upload.result = Upload result
 
@@ -190,3 +191,12 @@ grid.field.ost = Quantity
 grid.field.retailPrice = Price
 grid.field.image = Image
 grid.field.groups = Groups
+
+form.image.set = Thumb
+
+images.download = Download all images
+button.addTorrcom = To recommended
+button.save = Save
+
+order.num = Order Number
+form.order.set = Set Order Number

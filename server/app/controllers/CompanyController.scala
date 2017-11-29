@@ -84,10 +84,6 @@ class CompanyController @Inject()(
     drugsGroupDAO.findAll(None, 0, 0).map(rows => Ok(Json.obj("rows" -> rows)))
   }
 
-  def findRecommended = silhouette.UserAwareAction.async { implicit request =>
-    drugsProductDAO.findRecommended(0, 100).map(rows => Ok(Json.obj("rows" -> rows)))
-  }
-
   def combinedSearchDrugsProducts = silhouette.UserAwareAction(parse.json[DrugsFindRq]).async { implicit request =>
     val cart = getCart(sessionId(request2session), request.identity)
     val find = request.body

@@ -243,24 +243,20 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     * @param pageSize page size
     * @return list of found drugs
     */
-  override def findAll(sortField: Option[String], offset: Int, pageSize: Int) = recommendedCollection.flatMap (
-    _.find(document()).options(QueryOpts().skip(offset).batchSize(pageSize))
+  override def findAll(sortField: Option[String], offset: Int, pageSize: Int) = findRecommended
+
+  override def findRecommended  = recommendedCollection.flatMap (
+    _.find(document())
       .sort (document("orderNum" -> 1))
       .cursor[RecommendedDrugs]()
-      .collect[List](pageSize, handler[RecommendedDrugs])
+      .collect[List](-1, handler[RecommendedDrugs])
   ).flatMap(rd => {
     val drugIds = rd.map(r => r.drugProductId)
+    val drugOrderMap = rd.map (r => (r.drugProductId -> r.orderNum)).toMap
     productCollection.flatMap(_.find(document("_id" -> document("$in" -> drugIds))).projection(projection)
       .cursor[DrugsProduct]()
-      .collect[List](-1, handler[DrugsProduct]))
+      .collect[List](-1, handler[DrugsProduct])).map (list => list.sortWith((e1, e2) => drugOrderMap(e1.id) < drugOrderMap(e2.id)))
   })
-
-  override def findRecommended (offset: Int, pageSize: Int) = recommendedCollection.flatMap (
-    _.find(document()).options(QueryOpts().skip(offset).batchSize(pageSize))
-      .sort (document("orderNum" -> 1))
-      .cursor[RecommendedDrugs]()
-      .collect[List](pageSize, handler[RecommendedDrugs])
-  )
 
   override def addRecommended (drugId: String, orderNum: Int): Future[Unit] = recommendedCollection.flatMap(
     _.update(document ("_id" -> drugId), RecommendedDrugs(drugId, orderNum), upsert = true)

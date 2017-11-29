@@ -44,6 +44,9 @@ lazy val server = (project in file("server")).settings(
     // mongoDB
     "org.reactivemongo" %% "play2-reactivemongo" % "0.12.6-play26",
 
+    // For cloudinary
+    "com.cloudinary" % "cloudinary-http44" % "1.16.0",
+
     // json
     "com.fasterxml.jackson.core" % "jackson-databind" % "2.+",
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.+",
@@ -98,4 +101,5 @@ lazy val sharedJvm = shared.jvm
 lazy val sharedJs = shared.js
 
 // loads the server project at sbt startup
-onLoad in Global := (Command.process("project server", _: State)) compose (onLoad in Global).value
+//onLoad in Global := (Command.process("project server", _: State)) compose (onLoad in Global)
+onLoad in Global ~= (_ andThen ("project server" :: _))
