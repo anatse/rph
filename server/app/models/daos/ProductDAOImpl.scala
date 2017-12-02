@@ -330,7 +330,6 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
   override def combinedSearch (filter:DrugsFindRq) = searchbyDrugName(filter).flatMap(
     res => // If not found then trying to text search
       if (res.size == 0) {
-        println (s"searchByName: ${res.size}")
         textSearch(filter).flatMap(result => // If not found then trying to fuzzy search
           if (result.size == 0)
             fuzzySearch(filter)
