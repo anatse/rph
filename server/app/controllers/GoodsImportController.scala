@@ -19,23 +19,25 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 case class UpsertRes (ok:Int = 0, upserted: Int = 0, modified: Int = 0, errors: Int = 0)
 
+//noinspection TypeAnnotation
 class GoodsImportController @Inject()(
     components: ControllerComponents,
     silhouette: Silhouette[DefaultEnv],
     productDAO: ProductDAO)(implicit webJarsUtil: WebJarsUtil) extends AbstractController(components) with I18nSupport with Logger {
 
-  implicit val resWrites = Json.writes[UpsertRes]
-  implicit val resReads = Json.reads[UpsertRes]
+  private implicit val resWrites = Json.writes[UpsertRes]
+  private implicit val resReads = Json.reads[UpsertRes]
 
   def upload = silhouette.SecuredAction (parse.multipartFormData).async { request =>
     val drugsToSave = Try[List[DrugsProduct]] (request.body.file("fileinfo").map { picture =>
       val filename = picture.filename
       val fileText = Source.fromFile(picture.ref.path.toString).mkString
-      if (fileText.length == 0) throw (new RuntimeException(s"Empty file: $filename $fileText"))
+      if (fileText.length == 0) throw new RuntimeException(s"Empty file: $filename $fileText")
 
-      val mapValues = JsonUtil.fromJson[List[Map[String, Option[String]]]](fileText);
+      val mapValues = JsonUtil.fromJson[List[Map[String, Option[String]]]](fileText)
       mapValues.map (v => {
         DrugsProduct (
+          drugsID = v("DrugsID").get,
           retailPrice = v("RetailPrice").getOrElse("0").toDouble,
           barCode = v("BarCode").getOrElse(""),
           tradeTech = v("TradeTech").getOrElse(""),
@@ -48,7 +50,7 @@ class GoodsImportController @Inject()(
           producerShortName = v("ProducerShortName").getOrElse(""),
           drugsShortName = v("DrugsShortName").getOrElse(""),
           packaging = v("Packaging").getOrElse(""),
-          id = v("ID").getOrElse(""),
+          id = v("ID").get,
           unitShortName = v("UnitShortName").getOrElse("")
         )
       })
