@@ -42,7 +42,7 @@ lazy val server = (project in file("server")).settings(
     "com.enragedginger" %% "akka-quartz-scheduler" % "1.+",
 
     // mongoDB
-    "org.reactivemongo" %% "play2-reactivemongo" % "0.12.6-play26",
+    "org.reactivemongo" %% "play2-reactivemongo" % "0.12.7-play26",
 
     // For cloudinary
     "com.cloudinary" % "cloudinary-http44" % "1.16.0",
@@ -62,7 +62,7 @@ lazy val server = (project in file("server")).settings(
     filters
   ),
   javaOptions in Test += "-Dlogger.file=conf/logback.xml"
-).enablePlugins(PlayScala, PlayAkkaHttp2Support, SbtWeb).
+).enablePlugins(PlayScala, PlayAkkaHttp2Support, SbtWeb, JavaAppPackaging).
   aggregate(client, clientAdmin).
   dependsOn(sharedJvm)
 

@@ -92,7 +92,7 @@ object ProductJS {
                   drugId
                 } else ""
               }.filter(id => {
-                id != ""
+                id.equals("")
               })
 
               val incarts = jQuery(s"div.$incartClass")
