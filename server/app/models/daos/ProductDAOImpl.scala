@@ -116,6 +116,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
   private lazy val projection = document (
     "barCode" -> 1,
     "id" -> 1,
+    "drugsID" -> 1,
     "drugsFullName" -> 1,
     "drugsShortName" -> 1,
     "ost" -> 1,
@@ -212,9 +213,9 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
   private def fuzzySearch(filter:DrugsFindRq) = processWithAdditionalFilter (filter) {
     filter.text match {
       case Some(text) =>
-        val words = text.split(regexp).map(soundex(_))
+        val words = text.split(regexp).map(soundex _)
         // Add fixed layout strings to find
-        val allWords = words ++ fixKeyboardLayout(text).split(regexp).map(soundex(_))
+        val allWords = words ++ fixKeyboardLayout(text).split(regexp).map(soundex _)
         document("sndWords" -> document("$in" -> allWords))
 
       case _ => document()
@@ -324,7 +325,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
             "_id" -> entity.id),
             document (
               "$set" -> document (
-                "_id" -> entity.id,
+                "drugsID" -> entity.drugsID,
                 "barCode" -> entity.barCode,
                 "drugsFullName" -> entity.drugsFullName,
                 "drugsShortName" -> entity.drugsShortName,
@@ -346,7 +347,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
         )
         res.onComplete {
           case Failure(e) => e.printStackTrace()
-          case Success(writeResult) => {}
+          case Success(_) => {}
         }
 
         res
@@ -393,7 +394,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     * @return changed drug
     */
   override def addImage(id: String, imageUrl: String) = productCollection.flatMap(_.findAndUpdate(
-      document("_id" -> id),
+      document("drugsID" -> id),
       document("$set" -> document ( "drugImage" -> imageUrl)),
       fetchNewObject = true
     ).map(r => r.result[DrugsProduct]))

@@ -53,7 +53,7 @@ function addRecommended (csrfHeader, csrfToken, drugId, orderNum, onOk) {
 
     headers[csrfHeader] = csrfToken;
     $.ajax({
-        url: "/drugs/rcmd/add?drugId=" +drugId + "&orderNum=" + orderNum,
+        url: "/drugs/rcmd/add?drugId=" + drugId + "&orderNum=" + orderNum,
         method: "POST",
         data: JSON.stringify({
             drugId: "",
@@ -76,7 +76,7 @@ function removeRecommended (csrfHeader, csrfToken, drugId, onOk) {
 
     headers[csrfHeader] = csrfToken;
     $.ajax({
-        url: "/drugs/rcmd/rm?drugId=" +drugId + "&orderNum=1",
+        url: "/drugs/rcmd/rm?drugId=" + drugId + "&orderNum=1",
         method: "POST",
         data: JSON.stringify({
             drugId: "",

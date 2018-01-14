@@ -23,6 +23,7 @@ case class DrugsProduct(
    @Key ("_id") id: String,
    barCode: String,
 
+   drugsID: String,
    drugsFullName: String,
    drugsShortName: String,
 
