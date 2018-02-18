@@ -51,6 +51,10 @@ lazy val server = (project in file("server")).settings(
     "com.fasterxml.jackson.core" % "jackson-databind" % "2.+",
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.+",
 
+    // HTML Parser
+    "net.ruippeixotog" %% "scala-scraper" % "2.1.0",
+
+    // Testing
     "com.mohiva" %% "play-silhouette-testkit" % silhouetteVersion % "test",
     "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.1" % "test",
     specs2 % Test,

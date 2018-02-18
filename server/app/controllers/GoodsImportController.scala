@@ -2,7 +2,11 @@ package controllers
 
 import javax.inject.Inject
 
+import akka.actor.ActorRef
+import com.google.inject.name.Named
 import com.mohiva.play.silhouette.api.Silhouette
+import jobs.PictureLoader
+import jobs.PictureLoader.LoadAll
 import models.DrugsProduct
 import models.daos.ProductDAO
 import org.webjars.play.WebJarsUtil
@@ -13,7 +17,7 @@ import utils.{JsonUtil, Logger}
 import utils.auth.DefaultEnv
 
 import scala.concurrent.Future
-import scala.io.Source
+import scala.io.{Codec, Source}
 import scala.util.{Failure, Success, Try}
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -21,9 +25,10 @@ case class UpsertRes (ok:Int = 0, upserted: Int = 0, modified: Int = 0, errors: 
 
 //noinspection TypeAnnotation
 class GoodsImportController @Inject()(
-    components: ControllerComponents,
-    silhouette: Silhouette[DefaultEnv],
-    productDAO: ProductDAO)(implicit webJarsUtil: WebJarsUtil) extends AbstractController(components) with I18nSupport with Logger {
+  components: ControllerComponents,
+  silhouette: Silhouette[DefaultEnv],
+  @Named("picture-loader") pictureLoader: ActorRef,
+  productDAO: ProductDAO)(implicit webJarsUtil: WebJarsUtil) extends AbstractController(components) with I18nSupport with Logger {
 
   private implicit val resWrites = Json.writes[UpsertRes]
   private implicit val resReads = Json.reads[UpsertRes]
@@ -31,7 +36,7 @@ class GoodsImportController @Inject()(
   def upload = silhouette.SecuredAction (parse.multipartFormData).async { request =>
     val drugsToSave = Try[List[DrugsProduct]] (request.body.file("fileinfo").map { picture =>
       val filename = picture.filename
-      val fileText = Source.fromFile(picture.ref.path.toString).mkString
+      val fileText = Source.fromFile(picture.ref.path.toString, "utf-8").mkString
       if (fileText.length == 0) throw new RuntimeException(s"Empty file: $filename $fileText")
 
       val mapValues = JsonUtil.fromJson[List[Map[String, Option[String]]]](fileText)
@@ -70,10 +75,15 @@ class GoodsImportController @Inject()(
             }
           }
 
+          // Call uploadAll pictures
+          pictureLoader ! LoadAll
+
           Future.successful(Ok(Json.obj("res" -> obj)))
         }
       )
-      case Failure(e) => Future.successful(BadRequest(e.getMessage))
+      case Failure(e) =>
+        logger.error(e.getMessage, e)
+        Future.successful(BadRequest(s"Error occured: ${e.getMessage}/${e.getCause}"))
     }
   }
 }
