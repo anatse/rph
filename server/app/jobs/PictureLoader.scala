@@ -2,9 +2,9 @@ package jobs
 
 import javax.inject.Inject
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.{Actor}
 import akka.routing.{ActorRefRoutee, RoundRobinRoutingLogic, Router}
-import com.cloudinary.{Cloudinary, Transformation}
+import com.cloudinary.{Cloudinary}
 import jobs.PictureLoader.{LoadAll, LoadUpdated}
 import models.{DrugsAdminRq, DrugsProduct}
 import models.daos.ProductDAO
@@ -37,8 +37,6 @@ class PictureLoader @Inject() (configuration: Configuration, productDAO: Product
     * Create pool of actors with routing
     */
   val workerRoute = makeLocalRouter
-
-
 
   override def receive: Receive = {
     case LoadAll =>
