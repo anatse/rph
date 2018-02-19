@@ -4,10 +4,13 @@ import java.io.{File, FileFilter}
 import java.nio.file.{CopyOption, Files, Paths, StandardCopyOption}
 import javax.inject.Inject
 
+import akka.actor.ActorRef
 import com.cloudinary.{Cloudinary, Transformation}
+import com.google.inject.name.Named
 import com.mohiva.play.silhouette.api.Silhouette
 import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 import forms.SignInForm
+import jobs.PictureLoader.{LoadAll, LoadByName}
 import models.{ShopCart, _}
 import models.daos.{CartDAO, DrugsGroupDAO, ProductDAO}
 import models.services.WithRoles
@@ -36,6 +39,7 @@ class AdminController @Inject()(
    cartDAO: CartDAO,
    mailerClient: MailerClient,
    cloudinary: Cloudinary,
+   @Named("picture-loader") pictureLoader: ActorRef,
    env: Environment
  )(implicit webJarsUtil: WebJarsUtil, ex: ExecutionContext) extends AbstractController(components) with I18nSupport with ModelImplicits {
 
@@ -60,6 +64,17 @@ class AdminController @Inject()(
 
   def create = silhouette.SecuredAction.async { implicit request =>
     drugsProductDAO.createTextIndex().map(_ => Ok("OK"))
+  }
+
+  /**
+    *
+    * @param drugName
+    * @return
+    */
+  def getPicturesFromAptru(drugName:String) = silhouette.SecuredAction.async { implicit request =>
+    // Call uploadAll pictures
+    pictureLoader ! LoadByName (drugName)
+    Future.successful(Ok("process started"))
   }
 
   def setImageToDrug = silhouette.SecuredAction (parse.multipartFormData).async { request =>

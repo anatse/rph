@@ -33,6 +33,7 @@ GET         /account/activate/:token        controllers.ActivateAccountControlle
 # Admin functions
 GET         /admin                          controllers.AdminController.adminView
 GET         /drugs/create                   controllers.AdminController.create
+GET         /drugs/searchpics               controllers.AdminController.getPicturesFromAptru(name: String)
 
 POST        /drugs/recom                    controllers.AdminController.findRecommended
 POST        /drugs/rcmd/add                 controllers.AdminController.addRecommended(drugId: String, orderNum: Int)

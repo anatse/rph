@@ -2,10 +2,10 @@ package jobs
 
 import javax.inject.Inject
 
-import akka.actor.{Actor}
+import akka.actor.Actor
 import akka.routing.{ActorRefRoutee, RoundRobinRoutingLogic, Router}
-import com.cloudinary.{Cloudinary}
-import jobs.PictureLoader.{LoadAll, LoadUpdated}
+import com.cloudinary.Cloudinary
+import jobs.PictureLoader.{LoadAll, LoadByName, LoadUpdated}
 import models.{DrugsAdminRq, DrugsProduct}
 import models.daos.ProductDAO
 import play.api.Configuration
@@ -39,13 +39,17 @@ class PictureLoader @Inject() (configuration: Configuration, productDAO: Product
   val workerRoute = makeLocalRouter
 
   override def receive: Receive = {
-    case LoadAll =>
-      // for all drugs it need to load pictures from other site. Site should be defined within child actor (workRoute)
+    case LoadAll => // for all drugs it need to load pictures from other site. Site should be defined within child actor (workRoute)
       productDAO.getAll(DrugsAdminRq("Антигриппин")).onComplete(_ match {
-          case Success(drugList) => drugList.foreach(drug => workerRoute.route(drug, sender()))
-          case Failure(e) => logger.error(s"Fail to get product list: ${e.getMessage}")
-        }
-      )
+        case Success(drugList) => drugList.foreach(drug => workerRoute.route(drug, sender()))
+        case Failure(e) => logger.error(s"Fail to get product list: ${e.getMessage}")
+      })
+
+    case ln:LoadByName => // for all drugs it need to load pictures from other site. Site should be defined within child actor (workRoute)
+      productDAO.getAll(DrugsAdminRq(ln.name)).onComplete(_ match {
+        case Success(drugList) => drugList.foreach(drug => workerRoute.route(drug, sender()))
+        case Failure(e) => logger.error(s"Fail to get product list: ${e.getMessage}")
+      })
 
     case LoadUpdated(ids) =>
       ids.foreach (id => workerRoute.route(id, self))
@@ -54,5 +58,6 @@ class PictureLoader @Inject() (configuration: Configuration, productDAO: Product
 
 object PictureLoader {
   case object LoadAll
+  case class LoadByName (name: String)
   case class LoadUpdated (ids: List[DrugsProduct])
 }
