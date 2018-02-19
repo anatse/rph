@@ -44,7 +44,7 @@ class PictureLoadWorker(cloudinary: Cloudinary, productDAO: ProductDAO) extends 
     val uploadInfo = cloudinary.uploader().upload(si.imgData, Map("folder" -> "drugs", "public_id" -> s"${si.drugId}").asJava)
     var trx = new Transformation()
     trx = trx.width(230)
-    trx = trx.height(118)
+    trx = trx.height(180)
     val url = cloudinary.url().secure(true).format("jpg")
       .transformation(trx.crop("fit"))
       .generate(s"drugs/${si.drugId}");
