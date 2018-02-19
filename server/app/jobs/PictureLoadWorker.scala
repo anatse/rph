@@ -12,6 +12,7 @@ import utils.Logger
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 class PictureLoadWorker(cloudinary: Cloudinary, productDAO: ProductDAO) extends Actor with Logger {
@@ -49,6 +50,7 @@ class PictureLoadWorker(cloudinary: Cloudinary, productDAO: ProductDAO) extends 
       .generate(s"drugs/${si.drugId}");
 
     logger.info(s"Trying to set image for ${si.drugId}")
+    import context.dispatcher
     productDAO.addImage(si.drugId, url).onComplete {
       case Success(_) => logger.info("Successfully set image")
       case Failure(e) => logger.error("Error set image", e)
