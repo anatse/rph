@@ -12,6 +12,8 @@ import utils.Logger
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 
+import scala.util.{Failure, Success}
+
 class PictureLoadWorker(cloudinary: Cloudinary, productDAO: ProductDAO) extends Actor with Logger {
   val browser = JsoupBrowser()
 
@@ -36,7 +38,7 @@ class PictureLoadWorker(cloudinary: Cloudinary, productDAO: ProductDAO) extends 
   private final def setImage (si: SetImage) = {
     import scala.collection.JavaConverters._
 
-    logger.info(s"Trying to set image for ${si.drugId} length: ${si.imgData.length}")
+    logger.info(s"Trying to save image for ${si.drugId} length: ${si.imgData.length}")
 
     val uploadInfo = cloudinary.uploader().upload(si.imgData, Map("folder" -> "drugs", "public_id" -> s"${si.drugId}").asJava)
     var trx = new Transformation()
@@ -46,7 +48,11 @@ class PictureLoadWorker(cloudinary: Cloudinary, productDAO: ProductDAO) extends 
       .transformation(trx.crop("fit"))
       .generate(s"drugs/${si.drugId}");
 
-    productDAO.addImage(si.drugId, url)
+    logger.info(s"Trying to set image for ${si.drugId}")
+    productDAO.addImage(si.drugId, url).onComplete {
+      case Success(_) => logger.info("Successfully set image")
+      case Failure(e) => logger.error("Error set image", e)
+    }
   }
 
   override def receive: Receive = {
@@ -64,7 +70,7 @@ class PictureLoadWorker(cloudinary: Cloudinary, productDAO: ProductDAO) extends 
             val imgDoc = browser.get(childUrl)
             val img = imgDoc >> element ("figure > img")
             val imgData = loadImage (s"https://apteka.ru${img.attr("src")}")
-            setImage (SetImage(dp.id, imgData))
+            setImage (SetImage(dp.drugsID, imgData))
         }
       }
       else {
