@@ -180,10 +180,13 @@ object ProductJS {
 
         val mnn:String = dynGet[String] (drug, "MNN").getOrElse("")
 
+        val imgUrl = s"${dynGet[String] (drug, "drugImage").getOrElse("/assets/images/nophoto.png")}"
+
         div (cls:="col-lg-3 col-sm-2 item")(
           div (cls:="panel panel-primary")(
             div (cls:="panel-body")(
-              img (cls:="img-responsive", src:=s"${dynGet[String] (drug, "drugImage").getOrElse("/assets/images/nophoto.png")}", style:="width:230px;height:118px"),
+              div (style:=s"width:230px;height:118px;background: url($imgUrl);background-size: contain"),
+              //img (cls:="img-responsive", src:=s"${dynGet[String] (drug, "drugImage").getOrElse("/assets/images/nophoto.png")}", style:="width:230px;height:118px"),
               p (`class`:="description")(fullName),
               p (`class`:="producer")(producerShortName)
             ),
