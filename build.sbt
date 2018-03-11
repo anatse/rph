@@ -45,7 +45,7 @@ lazy val server = (project in file("server")).settings(
     "org.reactivemongo" %% "play2-reactivemongo" % "0.12.7-play26",
 
     // For cloudinary
-    "com.cloudinary" % "cloudinary-http44" % "1.16.0",
+    "com.cloudinary" % "cloudinary-http44" % "1.17.0",
 
     // json
     "com.fasterxml.jackson.core" % "jackson-databind" % "2.+",
