@@ -2,8 +2,9 @@ import sbt.Keys.resolvers
 
 name := """rph"""
 
-val scalaV = "2.12.4"
+val scalaV = "2.12.6"
 val silhouetteVersion = "5.+"
+val akkaVersion = "2.5.12"
 
 lazy val server = (project in file("server")).settings(
   scalaVersion := scalaV,
@@ -15,6 +16,16 @@ lazy val server = (project in file("server")).settings(
   scalacOptions := Seq("-unchecked", "-deprecation", "-opt-inline-from"),
   // triggers scalaJSPipeline when using compile or continuous compilation
   compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
+  dependencyOverrides ++= Seq(
+    "com.google.guava" % "guava" % "23.0",
+    "com.typesafe.akka" %% "akka-stream" % akkaVersion,
+    "com.typesafe.akka" %% "akka-actor" % akkaVersion,
+    "org.eclipse.sisu" % "org.eclipse.sisu.plexus" % "0.3.2",
+    "org.eclipse.sisu" % "org.eclipse.sisu.inject" % "0.3.2",
+    "org.webjars" % "webjars-locator-core" % "0.33",
+    "org.codehaus.plexus" % "plexus-utils" % "3.0.22",
+    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6"
+  ),
   resolvers ++= Seq (
     "Atlassian Releases" at "https://maven.atlassian.com/public/",
     "Sonatype Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/"
