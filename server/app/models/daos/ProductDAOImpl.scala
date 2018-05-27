@@ -268,53 +268,6 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
 
   override def removeRecommended (drugId: String) = recommendedCollection.flatMap(_.remove(document("_id" -> drugId))).map(r => {})
 
-//  def updateMany(coll: BSONCollection, docs: Iterable[BSONDocument]) = {
-//    val update = coll.update(ordered = true)
-//    val elements = docs.map { doc =>
-//
-//      update.element(
-//        q = BSONDocument("update" -> "selector"),
-//        u = BSONDocument("$set" -> doc),
-//        upsert = true,
-//        multi = false)
-//    }
-//
-//    update.many(elements)
-//  }
-
-//  def bulkUpsert1 (entities: List[DrugsProduct]) = productCollection.flatMap(col => {
-//    val update = col.update(ordered = true)
-//    val updEntities = entities.map (
-//      entity => {
-//        update.UpdateCommand.UpdateElement(
-//           q = BSONDocument("update" -> document("_id" -> entity.id)),
-//           u = BSONDocument("$set" -> document (
-//             "$set" -> document (
-//               "_id" -> entity.id,
-//               "barCode" -> entity.barCode,
-//               "drugsFullName" -> entity.drugsFullName,
-//               "drugsShortName" -> entity.drugsShortName,
-//               "ost" -> entity.ost,
-//               "retailPrice" -> entity.retailPrice,
-//               "tradeTech" -> entity.tradeTech,
-//               "producerFullName" -> entity.producerFullName,
-//               "producerShortName" -> entity.producerShortName,
-//               "supplierFullName" -> entity.supplierFullName,
-//               "MNN" -> entity.MNN,
-//               "unitFullName" -> entity.unitFullName,
-//               "unitShortName" -> entity.unitShortName,
-//               "packaging" -> entity.packaging,
-//               "sndWords" -> entity.sndWords
-//             )
-//           )),
-//           upsert = true,
-//           multi = false)
-//         })
-//
-//        update.many(updEntities)
-//    }
-//  )
-
   /**
     * Function updates or inserts given products. Only part of the drug attributes wil be changes. Suck additional attribues as
     * groups, seo tags and so on not changes by bulk upserts. Its can be changed manually only

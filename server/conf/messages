@@ -77,7 +77,7 @@ yahoo = Yahoo
 # Emails
 ##########
 
-email.from = PharmRus <noreply@pharmrus.ru>
+email.from = PharmRus <noreply@pharmrus24.ru>
 
 # Sign Up
 email.sign.up.subject = Welcome
@@ -160,6 +160,14 @@ drug.count=Count
 drug.price=Price
 drug.sum=Sum
 drug.update.btn=Update
+drug.availableOnStock=Available on stock
+
+user.name=Client
+user.phone=Client's phone
+user.mail=Client's mail
+
+yes=Yes
+no=No
 
 btn.save=Save
 

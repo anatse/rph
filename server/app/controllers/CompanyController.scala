@@ -128,4 +128,23 @@ class CompanyController @Inject()(
       }
     ).map(_ => Redirect(routes.CompanyController.shopView))
   }
+
+  /**
+    * Send email about order brom remote cart. Used by android application
+    * @return
+    */
+  def remoteCartSend = silhouette.UserAwareAction(parse.json[List[RemoteCart]]).async { implicit request =>
+    val cart = request.body
+    val bodyHtml = views.html.emails.remoteCart(sc.get).body
+    val orderNum = Math.abs(bodyHtml.hashCode() % 1000000)
+
+    Future {
+      mailerClient.send(Email(
+        subject = s"$orderNum: ${Messages("email.order.title")}",
+        from = Messages("email.from"),
+        to = Seq(Messages("email.order.perform")),
+        bodyHtml = Some(views.html.emails.remoteCart(sc.get).body)
+      )
+    }.map(c => Ok(Json.obj("orderNo" -> orderNum)))
+  }
 }
