@@ -144,7 +144,7 @@ class CompanyController @Inject()(
         from = Messages("email.from"),
         to = Seq(Messages("email.order.perform")),
         bodyHtml = Some(views.html.emails.remoteCart(sc.get).body)
-      )
+      ))
     }.map(c => Ok(Json.obj("orderNo" -> orderNum)))
   }
 }
