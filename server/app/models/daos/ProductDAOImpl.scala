@@ -140,7 +140,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
   override def remove(id: String) = productCollection.flatMap(_.remove(document("_id" -> id)).map(r => {}))
 
   private def buildSorts (fields:Option[Array[String]]) = fields.getOrElse(Array[String]("retailPrice")).map(f => document(f.split(":") match {
-    case Array(s1, s2) => (s1 -> s2)
+    case Array(s1, s2) => (s1 -> s2.toInt)
     case Array(s1) => (s1 -> 1)
   })).toSeq
 
