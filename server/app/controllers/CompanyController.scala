@@ -29,7 +29,8 @@ class CompanyController @Inject()(
   env: Environment)(
   implicit
     webJarsUtil: WebJarsUtil,
-    ex: ExecutionContext) extends AbstractController(components) with I18nSupport with ModelImplicits  {
+    ex: ExecutionContext
+  ) extends AbstractController(components) with I18nSupport with ModelImplicits  {
 
   /**
     * Function adds information from cart to products item for each item row
@@ -140,10 +141,10 @@ class CompanyController @Inject()(
 
     Future {
       mailerClient.send(Email(
-        subject = s"$orderNum: ${Messages("email.order.title")}",
+        subject = s"${orderNum}: " + Messages("email.order.title"),
         from = Messages("email.from"),
         to = Seq(Messages("email.order.perform")),
-        bodyHtml = Some(views.html.emails.remoteCart(sc.get).body)
+        bodyHtml = Some(views.html.emails.remoteCart(cart).body)
       ))
     }.map(c => Ok(Json.obj("orderNo" -> orderNum)))
   }

@@ -29,6 +29,9 @@ trait ModelImplicits {
   implicit val recProductReads = Json.reads[RecommendedDrugs]
   implicit val recProductWrites = Json.writes[RecommendedDrugs]
 
+  implicit val rcReads = Json.reads[RemoteCart]
+  implicit val rcWrites = Json.writes[RemoteCart]
+
   protected def makeResult (rows:List[DrugsProduct], realPageSize:Int, offset:Int) = {
     val filterredRows = if (rows.length > realPageSize) rows.dropRight(1) else rows
     Ok(Json.obj("rows" -> filterredRows, "pageSize" -> realPageSize, "offset" -> offset, "hasMore" -> (rows.length > realPageSize)))
