@@ -10,7 +10,7 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.1.2")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.3.4")
 
-addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "4.18.0")
+// addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "4.18.0")
 
 addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.7.0")
 
