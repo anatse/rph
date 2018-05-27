@@ -141,7 +141,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
 
   private def buildSorts (fields:Option[Array[String]]) = fields.getOrElse(Array[String]("retailPrice")).map(f => document(f -> 1)).toSeq
 
-  private def buildQueryArray (filter:DrugsFindRq, doc:BSONValue, onlyExistence:Boolean = true) = {
+  private def buildQueryArray (filter:DrugsFindRq, doc:BSONValue, onlyExistence:Boolean = false) = {
     var arr = BSONArray(doc)
     // Add groups information
     filter.groups match {
