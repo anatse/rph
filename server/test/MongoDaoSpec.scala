@@ -74,7 +74,7 @@ class MongoDaoSpec extends PlaySpec with GuiceOneAppPerTest {
   implicit val env = new FakeEnvironment[DefaultEnv](Seq(li -> identity))
 
   class FakeModule extends AbstractModule with ScalaModule {
-    def configure() = {
+    override def configure() = {
       bind[Environment[DefaultEnv]].toInstance(env)
     }
   }
