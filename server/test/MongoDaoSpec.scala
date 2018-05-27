@@ -79,6 +79,7 @@ class MongoDaoSpec extends PlaySpec with GuiceOneAppPerTest {
     }
   }
 
+
   // Create application object with test config
   implicit override def newAppForTest(testData: TestData): Application = new GuiceApplicationBuilder().
       overrides(new FakeModule).
