@@ -139,7 +139,10 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
   override def save(product: DrugsProduct) = productCollection.flatMap(_.update(document("_id" -> product.id), product, upsert = true).map(_.upserted.map(ups => product).head))
   override def remove(id: String) = productCollection.flatMap(_.remove(document("_id" -> id)).map(r => {}))
 
-  private def buildSorts (fields:Option[Array[String]]) = fields.getOrElse(Array[String]("retailPrice")).map(f => document(f -> 1)).toSeq
+  private def buildSorts (fields:Option[Array[String]]) = fields.getOrElse(Array[String]("retailPrice")).map(f => document(f.split(":") match {
+    case Array(s1, s2) => (s1 -> s2)
+    case Array(s1) => (s1 -> 1)
+  })).toSeq
 
   private def buildQueryArray (filter:DrugsFindRq, doc:BSONValue, onlyExistence:Boolean = false) = {
     var arr = BSONArray(doc)
