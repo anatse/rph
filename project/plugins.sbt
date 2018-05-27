@@ -10,10 +10,6 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.1.2")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.3.4")
 
-// addSbtPlugin("com.twitter" %% "scrooge-sbt-plugin" % "4.18.0")
-
-addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.7.0")
-
  addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.+")
 
  addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.+")
@@ -23,7 +19,5 @@ addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.7.0")
  addSbtPlugin("com.typesafe.sbt" % "sbt-gzip" % "1.+")
 
  addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.+")
-
-addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "4.0.0")
 
  addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.+")
