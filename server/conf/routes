@@ -6,6 +6,7 @@
 GET         /drugs/group                    controllers.CompanyController.findDrugsGroups
 POST        /drugs/fuzzySearch              controllers.CompanyController.combinedSearchDrugsProducts
 POST        /drugs/cart/item                controllers.CompanyController.addItemToCart
+POST        /drugs/remoteCart               controllers.CompanyController.remoteCartSend
 
 # Home page
 GET         /                               controllers.CompanyController.shopView
