@@ -6,11 +6,17 @@
 <html>
     <body>
         <p>
-            @messages("user.name"): @{cart.userName} <br/>
-            @messages("user.phone"): @{cart.userPhone} <br/>
-            @messages("user.mail"): @{cart.userMail} <br/>
-            @messages("order.comment"): @{cart.comment} <br/>
+            @messages("user.name"): @{cart.userName}
         </p>
+        <p>
+            @messages("user.phone"): @{cart.userPhone}
+        </p>
+        <p>
+            @messages("user.mail"): @{cart.userMail}
+        </p>
+        <pre>
+            @messages("order.comment"): @{cart.comment}
+        </pre>
 
         <table class="table">
             <thead>
