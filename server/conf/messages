@@ -165,6 +165,7 @@ drug.availableOnStock=Available on stock
 user.name=Client
 user.phone=Client's phone
 user.mail=Client's mail
+order.comment=Order comment
 
 yes=Yes
 no=No

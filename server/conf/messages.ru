@@ -164,6 +164,7 @@ drug.availableOnStock=Наличие
 user.name=Клиент
 user.phone=Телефон клиента
 user.mail=Почта клиента
+order.comment=Комментарий к заказу
 
 yes=Да
 no=Заказ

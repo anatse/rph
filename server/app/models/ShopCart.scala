@@ -9,5 +9,6 @@ case class RemoteCart (
   userName: String,
   userPhone: String,
   userMail: String,
+  comment: String,
   items: List[RemoteCartItem]
 )
