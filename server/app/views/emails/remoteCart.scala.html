@@ -27,7 +27,7 @@
             @for(item <- cart.items) {
                 <tr>
                     <td>@{item.drugName}</td>
-                    <td><input type="number" class="form-control" id="num_@{item.drugId}" value="@{item.num}"></td>
+                    <td>@{item.num}</td>
                     <td>@{item.price}</td>
                     <td>@{item.price * item.num}</td>
                     <td>@{item.producer}</td>
