@@ -144,7 +144,7 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
     case Array(s1) => (s1 -> 1)
   })).toSeq
 
-  private def buildQueryArray (filter:DrugsFindRq, doc:BSONValue, onlyExistence:Boolean = false) = {
+  private def buildQueryArray (filter:DrugsFindRq, doc:BSONValue, onlyExistence:Boolean = true) = {
     var arr = BSONArray(doc)
     // Add groups information
     filter.groups match {
@@ -318,6 +318,13 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
       }
     ).map(_ => {})
 
+
+  private def prepareResult (products:List[DrugsProduct]): Future[List[DrugsProduct]] = {
+    Future.successful{
+      products.map(p => if (p.ost == 0) p.copy (retailPrice = 0) else p)
+    }
+  }
+
   /**
     * Function combines all types of search drugs in the following order <br/>
     * Next search algorithm will be used only if the previous search found no results
@@ -335,12 +342,12 @@ class ProductDAOImpl @Inject() (val mongoApi: ReactiveMongoApi, @NamedCache("use
       if (res.size == 0) {
         textSearch(filter).flatMap(result => // If not found then trying to fuzzy search
           if (result.size == 0)
-            fuzzySearch(filter)
+            fuzzySearch(filter).flatMap (prepareResult(_))
           else
-            Future.successful(result)
+            prepareResult(result)
         )
       }
-      else Future.successful(res)
+      else prepareResult(res)
   )
 
   /**
