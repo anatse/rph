@@ -108,9 +108,9 @@ lazy val clientAdmin = (project in file("clientAdmin")).settings(
   dependsOn(sharedJs).
   dependsOn(sharedJvm)
 
-lazy val shared = (crossProject.crossType(CrossType.Pure) in file("shared")).
-  settings(scalaVersion := scalaV).
-  jsConfigure(_ enablePlugins ScalaJSWeb)
+//lazy val shared = (crossProject.crossType(CrossType.Pure) in file("shared")).
+//  settings(scalaVersion := scalaV).
+//  jsConfigure(_ enablePlugins ScalaJSWeb)
 
 lazy val sharedJvm = shared.jvm
 lazy val sharedJs = shared.js
