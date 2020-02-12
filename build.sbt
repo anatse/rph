@@ -2,7 +2,7 @@ import sbt.Keys.resolvers
 
 name := """rph"""
 
-val scalaV = "2.12.6"
+val scalaV = "2.12.10"
 val silhouetteVersion = "5.+"
 val akkaVersion = "2.5.12"
 
